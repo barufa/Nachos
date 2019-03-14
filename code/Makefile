@@ -46,6 +46,6 @@ print:
 	                 bin/noff.h bin/coff.h bin/coff2noff.c             \
 	                 userland/*.h userland/*.c userland/*.s'
 
-delete_dep: clean
+polish: clean
 	@rm -f */Makefile.depends
 
