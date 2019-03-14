@@ -45,3 +45,12 @@ print:
 	                 machine/*.hh machine/*.cc                         \
 	                 bin/noff.h bin/coff.h bin/coff2noff.c             \
 	                 userland/*.h userland/*.c userland/*.s'
+
+delete_dep:
+	@rm -f */Makefile.depends
+
+sync: clean delete_dep
+	clear	
+	git add .
+	git commit -m 'Modificando Make'
+	git push
