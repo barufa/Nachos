@@ -1,4 +1,4 @@
-# Read me!
+# Nachos
 
 *Nachos* (*Not Another Completely Heuristic Operating System*) is an
 educational operating system.
