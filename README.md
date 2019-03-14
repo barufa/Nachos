@@ -22,7 +22,7 @@ was released in 2019 by teachers of the National University of Rosario.
 * [The Nachos Instructional Operating System](http://lazowska.cs.washington.edu/nachos.pdf)
 * [A Road Map Through Nachos](https://users.cs.duke.edu/~narten/110/nachos/main/main.html)
 
-### Similar projectss
+### Similar projects
 
 * [Nachos 5](https://people.eecs.berkeley.edu/~kubitron/courses/cs162-F05/Nachos/walk/walk.html)
 * [Pintos](http://www.scs.stanford.edu/11wi-cs140/reference/index.html)
