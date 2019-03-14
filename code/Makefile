@@ -49,8 +49,11 @@ print:
 delete_dep:
 	@rm -f */Makefile.depends
 
+say:
+	echo 
+
 sync: clean delete_dep
 	clear	
 	git add .
-	git commit -m 'Modificando Make'
+	git commit -m '$(CMT)'
 	git push
