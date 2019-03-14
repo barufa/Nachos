@@ -46,10 +46,6 @@ print:
 	                 bin/noff.h bin/coff.h bin/coff2noff.c             \
 	                 userland/*.h userland/*.c userland/*.s'
 
-delete_dep:
+delete_dep: clean
 	@rm -f */Makefile.depends
 
-sync: clean delete_dep
-	git add .
-	git commit -m '$(CMT)'
-	git push
