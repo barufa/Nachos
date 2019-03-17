@@ -25,7 +25,7 @@ Practica 1:
 10) USER_PROGRAM se define en los archivos Makefile de los directorios network/, vmem/, userprog/ y filesys/
     FILESYS_NEEDED se define en los archivos Makefile de network/, vmem/, userprog/ y filesys/
     FILESYS_STUB se define en los archivos Makefile de userprog/ y vmem/
-    NETWORK se define en los archivos Makefile de network
+    NETWORK se define en los archivos Makefile de network/
 11)
 12) La funcion main() del programa nachos se encuentra en code/threads/main.cc ???
 13) La linea de comandos soporta:
