@@ -4,4 +4,38 @@ Practica 1:
 2)A traves de NumPhysPages en machine.h
 3)Posee 132kb.
 4)Simula 60 instrucciones
-5)mips_sim linea 180
+5)En el archivo mips_sim.cc se encuentra el codigo de las operaciones simuladas. En el caso de OP_ADD simplemente se calcula la suma de los valores almacenados en los registros rs y tr y se almacena el resultado en el registro rd. En caso de que se produzca overflow se lanza una excepcion.
+6)
+7)
+8)Las distintas banderas son:
+* `+` -- Activa todos los mensajes de depuracion
+* `t` -- Activa los mensajes de depuracion correspondientes a los hilos de ejecucion
+* `s` -- Activa los mensajes de depuracion correspondientes a semaforos, locks, and variables de condicion.
+* `i` -- Activa los mensajes de depuracion correspondientes a las interrupciones simuladas.
+* `m` -- Activa los mensajes de depuracion correspondientes a la emulacion de la maquina (requiere *USER_PROGRAM*).
+* `d` -- Activa los mensajes de depuracion correspondientes a la emulacion del disco (requiere *FILESYS*).
+* `f` -- Activa los mensajes de depuracion correspondientes al simeta de archivos (requiere *FILESYS*).
+* `a` -- Activa los mensajes de depuracion correspondientes al espacio de direcciones(requiere *USER_PROGRAM*).
+* `n` -- Activa los mensajes de depuracion correspondientes a la emulacion de red (requiere *NETWORK*).
+9) ASSERT: Recibe un valor booleano
+	En caso de false, imprime que condicion no se cumple y en que archivo y depues aborta la ejecucion
+	En caso de true, no se realiza ningun cambio
+   DEBUG: Recibe una bandera, una cadena de formato y argumentos variables
+	En caso de que la bandara este abilitada y la cadena no sea nula, se imprime un mensaje de depuracion con su bandera correspondiente usando la cadena de formato y consumiendo los argumentos con va_list.?
+10) USER_PROGRAM se define en los archivos Makefile de los directorios network/, vmem/, userprog/ y filesys/
+    FILESYS_NEEDED se define en los archivos Makefile de network/, vmem/, userprog/ y filesys/
+    FILESYS_STUB se define en los archivos Makefile de userprog/ y vmem/
+    NETWORK se define en los archivos Makefile de network
+11)
+12) La funcion main() del programa nachos se encuentra en code/threads/main.cc ???
+13) La linea de comandos soporta:
+	nachos [-d <debugflags>] [-p] [-rs <random seed #>] [-z]
+               [-s] [-x <nachos file>] [-tc <consoleIn> <consoleOut>]
+               [-f] [-cp <unix file> <nachos file>] [-pr <nachos file>]
+               [-rm <nachos file>] [-ls] [-D] [-tf]
+               [-n <network reliability>] [-id <machine id>]
+               [-tn <other machine id>]
+La opcion rs toma una semilla para generar Yields en punstos aleatorios??
+14)
+15)
+16)
