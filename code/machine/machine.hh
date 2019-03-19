@@ -31,20 +31,21 @@
 // more because we need to be able to start/stop a user program between
 // any two instructions (thus we need to keep track of things like load
 // delay slots, etc.)
+enum {
+    STACK_REG      = 29,  ///< User's stack pointer.
+    RET_ADDR_REG   = 31,  ///< Holds return address for procedure calls.
+    HI_REG         = 32,  ///< Double register to hold multiply result.
+    LO_REG         = 33,
+    PC_REG         = 34,  ///< Current program counter.
+    NEXT_PC_REG    = 35,  ///< Next program counter (for branch delay).
+    PREV_PC_REG    = 36,  ///< Previous program counter (for debugging).
+    LOAD_REG       = 37,  ///< The register target of a delayed load.
+    LOAD_VALUE_REG = 38,  ///< The value to be loaded by a delayed load.
+    BAD_VADDR_REG  = 39,  ///< The failing virtual address on an exception.
 
-#define STACK_REG       29  ///< User's stack pointer.
-#define RET_ADDR_REG    31  ///< Holds return address for procedure calls.
-#define HI_REG          32  ///< Double register to hold multiply result.
-#define LO_REG          33
-#define PC_REG          34  ///< Current program counter.
-#define NEXT_PC_REG     35  ///< Next program counter (for branch delay).
-#define PREV_PC_REG     36  ///< Previous program counter (for debugging).
-#define LOAD_REG        37  ///< The register target of a delayed load.
-#define LOAD_VALUE_REG  38  ///< The value to be loaded by a delayed load.
-#define BAD_VADDR_REG   39  ///< The failing virtual address on an exception.
-
-#define NUM_GP_REGS     32  ///< 32 general purpose registers on MIPS.
-#define NUM_TOTAL_REGS  40
+    NUM_GP_REGS    = 32,  ///< 32 general purpose registers on MIPS.
+    NUM_TOTAL_REGS = 40
+};
 
 class Instruction;
 

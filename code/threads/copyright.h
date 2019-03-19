@@ -22,7 +22,7 @@
 /// TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
-static const char *VERSION = "Nachos (unr19a)";
+static const char *VERSION = "Nachos (unr19b)";
 
 static const char *COPYRIGHT = "\
 Copyright (c) 1992-1993 The Regents of the University of California.\n\

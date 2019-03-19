@@ -23,11 +23,11 @@
 # you need to call some inline functions from the debugger.
 
 # Copyright (c) 1992      The Regents of the University of California.
-#               2016-2017 Docentes de la Universidad Nacional de Rosario.
+#               2016-2019 Docentes de la Universidad Nacional de Rosario.
 # All rights reserved.  See `copyright.h` for copyright notice and
 # limitation of liability and disclaimer of warranty provisions.
 
-CXXFLAGS = -g -Wall -Wshadow $(INCLUDE_DIRS) $(DEFINES) $(HOST) -DCHANGED
+CXXFLAGS = -std=c++11 -g -Wall -Wshadow $(INCLUDE_DIRS) $(DEFINES) $(HOST)
 LDFLAGS  =
 
 # These definitions may change as the software is updated.
@@ -130,11 +130,14 @@ VMEM_HDR =
 VMEM_SRC =
 VMEM_OBJ =
 
-FILESYS_HDR = ../filesys/directory.hh   \
-              ../filesys/file_header.hh \
-              ../filesys/file_system.hh \
-              ../filesys/open_file.hh   \
-              ../filesys/synch_disk.hh  \
+FILESYS_HDR = ../filesys/directory.hh       \
+              ../filesys/directory_entry.hh \
+              ../filesys/file_header.hh     \
+              ../filesys/file_system.hh     \
+              ../filesys/open_file.hh       \
+              ../filesys/raw_directory.hh   \
+              ../filesys/raw_file_header.hh \
+              ../filesys/synch_disk.hh      \
               ../machine/disk.hh
 FILESYS_SRC = ../filesys/directory.cc   \
               ../filesys/file_header.cc \

@@ -24,7 +24,7 @@
 
 #include "transfer.hh"
 #include "syscall.h"
-#include "filesys/directory.hh"
+#include "filesys/directory_entry.hh"
 #include "threads/system.hh"
 
 

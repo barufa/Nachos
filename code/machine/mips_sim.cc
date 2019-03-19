@@ -222,7 +222,7 @@ Machine::ExecInstruction(const Instruction *instr)
             break;
 
         case OP_BGEZAL:
-            registers[R31] = registers[NEXT_PC_REG] + 4;
+            registers[RET_ADDR_REG] = registers[NEXT_PC_REG] + 4;
         case OP_BGEZ:
             if (!(registers[instr->rs] & SIGN_BIT))
                 pcAfter = registers[NEXT_PC_REG] + IndexToAddr(instr->extra);
@@ -239,7 +239,7 @@ Machine::ExecInstruction(const Instruction *instr)
             break;
 
         case OP_BLTZAL:
-            registers[R31] = registers[NEXT_PC_REG] + 4;
+            registers[RET_ADDR_REG] = registers[NEXT_PC_REG] + 4;
         case OP_BLTZ:
             if (registers[instr->rs] & SIGN_BIT)
                 pcAfter = registers[NEXT_PC_REG] + IndexToAddr(instr->extra);
@@ -277,7 +277,7 @@ Machine::ExecInstruction(const Instruction *instr)
             break;
 
         case OP_JAL:
-            registers[R31] = registers[NEXT_PC_REG] + 4;
+            registers[RET_ADDR_REG] = registers[NEXT_PC_REG] + 4;
         case OP_J:
             pcAfter = (pcAfter & 0xF0000000) | IndexToAddr(instr->extra);
             break;

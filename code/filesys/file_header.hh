@@ -9,16 +9,13 @@
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
-#ifndef NACHOS_FILESYS_FILEHDR__HH
-#define NACHOS_FILESYS_FILEHDR__HH
+#ifndef NACHOS_FILESYS_FILEHEADER__HH
+#define NACHOS_FILESYS_FILEHEADER__HH
 
 
-#include "machine/disk.hh"
+#include "raw_file_header.hh"
 #include "lib/bitmap.hh"
 
-
-#define NUM_DIRECT     ((SECTOR_SIZE - 2 * sizeof (int)) / sizeof (int))
-#define MAX_FILE_SIZE  (NUM_DIRECT * SECTOR_SIZE)
 
 /// The following class defines the Nachos "file header" (in UNIX terms, the
 /// “i-node”), describing where on disk to find all of the data in the file.
@@ -60,11 +57,14 @@ public:
     /// Print the contents of the file.
     void Print();
 
-  private:
-    unsigned numBytes;  ///< Number of bytes in the file
-    unsigned numSectors;  ///< Number of data sectors in the file
-    unsigned dataSectors[NUM_DIRECT];  ///< Disk sector numbers for each data
-                                       ///< block in the file.
+    /// Get the raw file header structure.
+    ///
+    /// NOTE: this should only be used by routines that operating on the file
+    /// system at a low level.
+    const RawFileHeader *GetRaw() const;
+
+private:
+    RawFileHeader raw;
 };
 
 

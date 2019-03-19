@@ -22,89 +22,100 @@
 /// `OP_RES`
 ///     Means that this is a reserved opcode (it is not supported by the
 ///     architecture).
+enum {
+    OP_ADD      =  1,
+    OP_ADDI     =  2,
+    OP_ADDIU    =  3,
+    OP_ADDU     =  4,
+    OP_AND      =  5,
+    OP_ANDI     =  6,
+    OP_BEQ      =  7,
+    OP_BGEZ     =  8,
+    OP_BGEZAL   =  9,
+    OP_BGTZ     = 10,
+    OP_BLEZ     = 11,
+    OP_BLTZ     = 12,
+    OP_BLTZAL   = 13,
+    OP_BNE      = 14,
 
-#define OP_ADD       1
-#define OP_ADDI      2
-#define OP_ADDIU     3
-#define OP_ADDU      4
-#define OP_AND       5
-#define OP_ANDI      6
-#define OP_BEQ       7
-#define OP_BGEZ      8
-#define OP_BGEZAL    9
-#define OP_BGTZ     10
-#define OP_BLEZ     11
-#define OP_BLTZ     12
-#define OP_BLTZAL   13
-#define OP_BNE      14
+    OP_DIV      = 16,
+    OP_DIVU     = 17,
+    OP_J        = 18,
+    OP_JAL      = 19,
+    OP_JALR     = 20,
+    OP_JR       = 21,
+    OP_LB       = 22,
+    OP_LBU      = 23,
+    OP_LH       = 24,
+    OP_LHU      = 25,
+    OP_LUI      = 26,
+    OP_LW       = 27,
+    OP_LWL      = 28,
+    OP_LWR      = 29,
 
-#define OP_DIV      16
-#define OP_DIVU     17
-#define OP_J        18
-#define OP_JAL      19
-#define OP_JALR     20
-#define OP_JR       21
-#define OP_LB       22
-#define OP_LBU      23
-#define OP_LH       24
-#define OP_LHU      25
-#define OP_LUI      26
-#define OP_LW       27
-#define OP_LWL      28
-#define OP_LWR      29
+    OP_MFHI     = 31,
+    OP_MFLO     = 32,
 
-#define OP_MFHI     31
-#define OP_MFLO     32
+    OP_MTHI     = 34,
+    OP_MTLO     = 35,
+    OP_MULT     = 36,
+    OP_MULTU    = 37,
+    OP_NOR      = 38,
+    OP_OR       = 39,
+    OP_ORI      = 40,
+    OP_RFE      = 41,
+    OP_SB       = 42,
+    OP_SH       = 43,
+    OP_SLL      = 44,
+    OP_SLLV     = 45,
+    OP_SLT      = 46,
+    OP_SLTI     = 47,
+    OP_SLTIU    = 48,
+    OP_SLTU     = 49,
+    OP_SRA      = 50,
+    OP_SRAV     = 51,
+    OP_SRL      = 52,
+    OP_SRLV     = 53,
+    OP_SUB      = 54,
+    OP_SUBU     = 55,
+    OP_SW       = 56,
+    OP_SWL      = 57,
+    OP_SWR      = 58,
+    OP_XOR      = 59,
+    OP_XORI     = 60,
+    OP_SYSCALL  = 61,
 
-#define OP_MTHI     34
-#define OP_MTLO     35
-#define OP_MULT     36
-#define OP_MULTU    37
-#define OP_NOR      38
-#define OP_OR       39
-#define OP_ORI      40
-#define OP_RFE      41
-#define OP_SB       42
-#define OP_SH       43
-#define OP_SLL      44
-#define OP_SLLV     45
-#define OP_SLT      46
-#define OP_SLTI     47
-#define OP_SLTIU    48
-#define OP_SLTU     49
-#define OP_SRA      50
-#define OP_SRAV     51
-#define OP_SRL      52
-#define OP_SRLV     53
-#define OP_SUB      54
-#define OP_SUBU     55
-#define OP_SW       56
-#define OP_SWL      57
-#define OP_SWR      58
-#define OP_XOR      59
-#define OP_XORI     60
-#define OP_SYSCALL  61
-#define OP_UNIMP    62
-#define OP_RES      63
-#define MAX_OPCODE  63
+    OP_UNIMP    = 62,
+    OP_RES      = 63,
+
+    MAX_OPCODE  = 63
+};
 
 /// Miscellaneous definitions.
 
-#define IndexToAddr(x)  ((x) << 2)
+template<typename T>
+inline T
+IndexToAddr(T x)
+{
+    return x << 2;
+}
 
-#define SIGN_BIT  0x80000000
-#define R31       31
+static const unsigned SIGN_BIT = 0x80000000;
 
 /// The table below is used to translate bits 31:26 of the instruction into a
 /// value suitable for the `opCode` field of a `MemWord` structure, or into a
 /// special value for further decoding.
 
-#define SPECIAL  100
-#define BCOND    101
+enum {
+    SPECIAL = 100,
+    BCOND   = 101
+};
 
-#define IFMT  1
-#define JFMT  2
-#define RFMT  3
+enum {
+    IFMT = 1,
+    JFMT = 2,
+    RFMT = 3
+};
 
 struct OpInfo {
     int opCode;  ///< Translated op code.

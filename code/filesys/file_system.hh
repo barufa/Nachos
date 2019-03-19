@@ -32,8 +32,8 @@
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
-#ifndef NACHOS_FILESYS_FILESYS__HH
-#define NACHOS_FILESYS_FILESYS__HH
+#ifndef NACHOS_FILESYS_FILESYSTEM__HH
+#define NACHOS_FILESYS_FILESYSTEM__HH
 
 
 #include "open_file.hh"
@@ -46,6 +46,8 @@ class FileSystem {
 public:
 
     FileSystem(bool format) {}
+
+    ~FileSystem() {}
 
     bool Create(const char *name, unsigned initialSize)
     {
@@ -87,6 +89,8 @@ public:
     /// directory and the bitmap of free blocks.
     FileSystem(bool format);
 
+    ~FileSystem();
+
     /// Create a file (UNIX `creat`).
     bool Create(const char *name, unsigned initialSize);
 
@@ -98,6 +102,9 @@ public:
 
     /// List all the files in the file system.
     void List();
+
+    /// Check the filesystem.
+    bool Check();
 
     /// List all the files and their contents.
     void Print();

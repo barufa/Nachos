@@ -15,27 +15,9 @@
 #define NACHOS_FILESYS_DIRECTORY__HH
 
 
+#include "raw_directory.hh"
 #include "open_file.hh"
 
-
-/// For simplicity, we assume file names are <= 9 characters long.
-const unsigned FILE_NAME_MAX_LEN = 9;
-
-/// The following class defines a "directory entry", representing a file in
-/// the directory.  Each entry gives the name of the file, and where the
-/// file's header is to be found on disk.
-///
-/// Internal data structures kept public so that Directory operations can
-/// access them directly.
-class DirectoryEntry {
-public:
-    /// Is this directory entry in use?
-    bool inUse;
-    /// Location on disk to find the `FileHeader` for this file.
-    unsigned sector;
-    /// Text name for file, with +1 for the trailing `'\0'`.
-    char name[FILE_NAME_MAX_LEN + 1];
-};
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
 /// directory describes a file, and where to find it on disk.
@@ -50,12 +32,12 @@ class Directory {
 public:
 
     /// Initialize an empty directory with space for `size` files.
-    Directory(int size);
+    Directory(unsigned size);
 
     /// De-allocate the directory.
     ~Directory();
 
-    /// Init directory contents from disk.
+    /// Initialize directory contents from disk.
     void FetchFrom(OpenFile *file);
 
     /// Write modifications to directory contents back to disk.
@@ -77,10 +59,14 @@ public:
     /// and their contents.
     void Print() const;
 
+    /// Get the raw directory structure.
+    ///
+    /// NOTE: this should only be used by routines that operating on the file
+    /// system at a low level.
+    const RawDirectory *GetRaw() const;
+
 private:
-    int tableSize;  ///< Number of directory entries.
-    DirectoryEntry *table;  ///< Table of pairs:
-                            ///< *<file name, file header location>*.
+    RawDirectory raw;
 
     /// Find the index into the directory table corresponding to `name`.
     int FindIndex(const char *name);

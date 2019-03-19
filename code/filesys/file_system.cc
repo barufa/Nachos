@@ -44,6 +44,7 @@
 
 #include "file_system.hh"
 #include "directory.hh"
+#include "directory_entry.hh"
 #include "file_header.hh"
 #include "lib/bitmap.hh"
 #include "machine/disk.hh"
@@ -136,6 +137,12 @@ FileSystem::FileSystem(bool format)
         freeMapFile   = new OpenFile(FREE_MAP_SECTOR);
         directoryFile = new OpenFile(DIRECTORY_SECTOR);
     }
+}
+
+FileSystem::~FileSystem()
+{
+    delete freeMapFile;
+    delete directoryFile;
 }
 
 /// Create a file in the Nachos file system (similar to UNIX `create`).
@@ -289,6 +296,180 @@ FileSystem::List()
     directory->FetchFrom(directoryFile);
     directory->List();
     delete directory;
+}
+
+static bool
+AddToShadowBitmap(unsigned sector, Bitmap *map)
+{
+    ASSERT(map != nullptr);
+
+    if (map->Test(sector)) {
+        DEBUG('f', "Sector %u was already marked.\n", sector);
+        return false;
+    }
+    map->Mark(sector);
+    DEBUG('f', "Marked sector %u.\n", sector);
+    return true;
+}
+
+static bool
+CheckForError(bool value, const char *message)
+{
+    if (!value)
+        DEBUG('f', message);
+    return !value;
+}
+
+static bool
+CheckSector(unsigned sector, Bitmap *shadowMap)
+{
+    bool error = false;
+
+    error |= CheckForError(sector < NUM_SECTORS, "Sector number too big.\n");
+    error |= CheckForError(AddToShadowBitmap(sector, shadowMap),
+                           "Sector number already used.\n");
+    return error;
+}
+
+static bool
+CheckFileHeader(const RawFileHeader *rh, unsigned num, Bitmap *shadowMap)
+{
+    ASSERT(rh != nullptr);
+
+    bool error = false;
+
+    DEBUG('f', "Checking file header %u.  File size: %u bytes, number of sectors: %u.\n",
+          num, rh->numBytes, rh->numSectors);
+    error |= CheckForError(rh->numSectors >= DivRoundUp(rh->numBytes,
+                                                        SECTOR_SIZE),
+                           "Sector count not compatible with file size.\n");
+    error |= CheckForError(rh->numSectors < NUM_DIRECT,
+		           "Too many blocks.\n");
+    for (unsigned i = 0; i < rh->numSectors; i++) {
+        unsigned s = rh->dataSectors[i];
+        error |= CheckSector(s, shadowMap);
+    }
+    return error;
+}
+
+static bool
+CheckBitmaps(const Bitmap *freeMap, const Bitmap *shadowMap)
+{
+    bool error = false;
+    for (unsigned i = 0; i < NUM_SECTORS; i++) {
+        DEBUG('f', "Checking sector %u. Original: %u, shadow: %u.\n",
+              i, freeMap->Test(i), shadowMap->Test(i));
+        error |= CheckForError(freeMap->Test(i) == shadowMap->Test(i),
+                               "Inconsistent bitmap.");
+    }
+    return error;
+}
+
+static bool
+CheckDirectory(const RawDirectory *rd, Bitmap *shadowMap)
+{
+    ASSERT(rd != nullptr);
+    ASSERT(shadowMap != nullptr);
+
+    bool error = false;
+    unsigned nameCount = 0;
+    const char *knownNames[NUM_DIR_ENTRIES];
+
+    for (unsigned i = 0; i < NUM_DIR_ENTRIES; i++) {
+        DEBUG('f', "Checking direntry: %u.\n", i);
+        const DirectoryEntry *e = &rd->table[i];
+
+        if (e->inUse) {
+            if (strlen(e->name) > FILE_NAME_MAX_LEN) {
+                DEBUG('f', "Filename too long.\n");
+                error = true;
+            }
+
+            // Check for repeated filenames.
+            DEBUG('f', "Checking for repeated names.  Name count: %u.\n",
+                  nameCount);
+            bool repeated = false;
+            for (unsigned j = 0; j < nameCount; j++) {
+                DEBUG('f', "Comparing \"%s\" and \"%s\".\n",
+                      knownNames[j], e->name);
+                if (strcmp(knownNames[j], e->name) == 0) {
+                    DEBUG('f', "Repeated filename.\n");
+                    repeated = true;
+                    error = true;
+                }
+            }
+            if (!repeated) {
+                knownNames[nameCount] = e->name;
+                DEBUG('f', "Added \"%s\" at %u.\n", e->name, nameCount);
+                nameCount++;
+            }
+
+            // Check sector.
+            error |= CheckSector(e->sector, shadowMap);
+
+            // Check file header.
+            FileHeader *h = new FileHeader;
+            const RawFileHeader *rh = h->GetRaw();
+            h->FetchFrom(e->sector);
+            error |= CheckFileHeader(rh, e->sector, shadowMap);
+            delete h;
+        }
+    }
+    return error;
+}
+
+bool
+FileSystem::Check()
+{
+    DEBUG('f', "Performing filesystem check\n");
+    bool error = false;
+
+    Bitmap *shadowMap = new Bitmap(NUM_SECTORS);
+    shadowMap->Mark(FREE_MAP_SECTOR);
+    shadowMap->Mark(DIRECTORY_SECTOR);
+
+    DEBUG('f', "Checking bitmap's file header.\n");
+
+    FileHeader *bitH = new FileHeader;
+    const RawFileHeader *bitRH = bitH->GetRaw();
+    bitH->FetchFrom(FREE_MAP_SECTOR);
+    DEBUG('f', "  File size: %u bytes, expected %u bytes.\n"
+               "  Number of sectors: %u, expected %u.\n",
+          bitRH->numBytes, FREE_MAP_FILE_SIZE,
+          bitRH->numSectors, FREE_MAP_FILE_SIZE / SECTOR_SIZE);
+    error |= CheckForError(bitRH->numBytes == FREE_MAP_FILE_SIZE,
+                           "Bad bitmap header: wrong file size.\n");
+    error |= CheckForError(bitRH->numSectors == FREE_MAP_FILE_SIZE / SECTOR_SIZE,
+                           "Bad bitmap header: wrong number of sectors.\n");
+    error |= CheckFileHeader(bitRH, FREE_MAP_SECTOR, shadowMap);
+    delete bitH;
+
+    DEBUG('f', "Checking directory.\n");
+
+    FileHeader *dirH = new FileHeader;
+    const RawFileHeader *dirRH = dirH->GetRaw();
+    dirH->FetchFrom(DIRECTORY_SECTOR);
+    error |= CheckFileHeader(dirRH, DIRECTORY_SECTOR, shadowMap);
+    delete dirH;
+
+    Bitmap *freeMap = new Bitmap(NUM_SECTORS);
+    freeMap->FetchFrom(freeMapFile);
+    Directory *dir = new Directory(NUM_DIR_ENTRIES);
+    const RawDirectory *rdir = dir->GetRaw();
+    dir->FetchFrom(directoryFile);
+    error |= CheckDirectory(rdir, shadowMap);
+    delete dir;
+
+    // The two bitmaps should match.
+    DEBUG('f', "Checking bitmap consistency.\n");
+    error |= CheckBitmaps(freeMap, shadowMap);
+    delete shadowMap;
+    delete freeMap;
+
+    DEBUG('f', error ? "Filesystem check succeeded.\n"
+                     : "Filesystem check failed.\n");
+
+    return !error;
 }
 
 /// Print everything about the file system:

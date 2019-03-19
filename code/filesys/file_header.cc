@@ -38,13 +38,13 @@ FileHeader::Allocate(Bitmap *freeMap, unsigned fileSize)
 {
     ASSERT(freeMap != nullptr);
 
-    numBytes = fileSize;
-    numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
-    if (freeMap->CountClear() < numSectors)
+    raw.numBytes = fileSize;
+    raw.numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
+    if (freeMap->CountClear() < raw.numSectors)
         return false;  // Not enough space.
 
-    for (unsigned i = 0; i < numSectors; i++)
-        dataSectors[i] = freeMap->Find();
+    for (unsigned i = 0; i < raw.numSectors; i++)
+        raw.dataSectors[i] = freeMap->Find();
     return true;
 }
 
@@ -56,9 +56,9 @@ FileHeader::Deallocate(Bitmap *freeMap)
 {
     ASSERT(freeMap != nullptr);
 
-    for (unsigned i = 0; i < numSectors; i++) {
-        ASSERT(freeMap->Test(dataSectors[i]));  // ought to be marked!
-        freeMap->Clear(dataSectors[i]);
+    for (unsigned i = 0; i < raw.numSectors; i++) {
+        ASSERT(freeMap->Test(raw.dataSectors[i]));  // ought to be marked!
+        freeMap->Clear(raw.dataSectors[i]);
     }
 }
 
@@ -89,14 +89,14 @@ FileHeader::WriteBack(unsigned sector)
 unsigned
 FileHeader::ByteToSector(unsigned offset)
 {
-    return dataSectors[offset / SECTOR_SIZE];
+    return raw.dataSectors[offset / SECTOR_SIZE];
 }
 
 /// Return the number of bytes in the file.
 unsigned
 FileHeader::FileLength() const
 {
-    return numBytes;
+    return raw.numBytes;
 }
 
 /// Print the contents of the file header, and the contents of all the data
@@ -109,13 +109,13 @@ FileHeader::Print()
     printf("FileHeader contents.\n"
            "    Size: %u bytes\n"
            "    Block numbers: ",
-           numBytes);
-    for (unsigned i = 0; i < numSectors; i++)
-        printf("%u ", dataSectors[i]);
+           raw.numBytes);
+    for (unsigned i = 0; i < raw.numSectors; i++)
+        printf("%u ", raw.dataSectors[i]);
     printf("\n    Contents:\n");
-    for (unsigned i = 0, k = 0; i < numSectors; i++) {
-        synchDisk->ReadSector(dataSectors[i], data);
-        for (unsigned j = 0; j < SECTOR_SIZE && k < numBytes; j++, k++) {
+    for (unsigned i = 0, k = 0; i < raw.numSectors; i++) {
+        synchDisk->ReadSector(raw.dataSectors[i], data);
+        for (unsigned j = 0; j < SECTOR_SIZE && k < raw.numBytes; j++, k++) {
             if ('\040' <= data[j] && data[j] <= '\176')  // isprint(data[j])
                 printf("%c", data[j]);
             else
@@ -124,4 +124,10 @@ FileHeader::Print()
         printf("\n");
     }
     delete [] data;
+}
+
+const RawFileHeader *
+FileHeader::GetRaw() const
+{
+    return &raw;
 }

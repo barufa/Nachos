@@ -20,8 +20,9 @@
 /// limitation of liability and disclaimer of warranty provisions.
 
 
-#include "file_header.hh"
 #include "directory.hh"
+#include "directory_entry.hh"
+#include "file_header.hh"
 #include "lib/utility.hh"
 
 
@@ -30,19 +31,19 @@
 /// otherwise, we need to call FetchFrom in order to initialize it from disk.
 ///
 /// * `size` is the number of entries in the directory.
-Directory::Directory(int size)
+Directory::Directory(unsigned size)
 {
     ASSERT(size > 0);
-    table = new DirectoryEntry [size];
-    tableSize = size;
-    for (int i = 0; i < tableSize; i++)
-        table[i].inUse = false;
+    raw.table = new DirectoryEntry [size];
+    raw.tableSize = size;
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        raw.table[i].inUse = false;
 }
 
 /// De-allocate directory data structure.
 Directory::~Directory()
 {
-    delete [] table;
+    delete [] raw.table;
 }
 
 /// Read the contents of the directory from disk.
@@ -52,7 +53,8 @@ void
 Directory::FetchFrom(OpenFile *file)
 {
     ASSERT(file != nullptr);
-    file->ReadAt((char *) table, tableSize * sizeof (DirectoryEntry), 0);
+    file->ReadAt((char *) raw.table,
+                 raw.tableSize * sizeof (DirectoryEntry), 0);
 }
 
 /// Write any modifications to the directory back to disk.
@@ -62,7 +64,8 @@ void
 Directory::WriteBack(OpenFile *file)
 {
     ASSERT(file != nullptr);
-    file->WriteAt((char *) table, tableSize * sizeof (DirectoryEntry), 0);
+    file->WriteAt((char *) raw.table,
+                  raw.tableSize * sizeof (DirectoryEntry), 0);
 }
 
 /// Look up file name in directory, and return its location in the table of
@@ -74,9 +77,9 @@ Directory::FindIndex(const char *name)
 {
     ASSERT(name != nullptr);
 
-    for (int i = 0; i < tableSize; i++)
-        if (table[i].inUse
-              && !strncmp(table[i].name, name, FILE_NAME_MAX_LEN))
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse
+              && !strncmp(raw.table[i].name, name, FILE_NAME_MAX_LEN))
             return i;
     return -1;  // name not in directory
 }
@@ -93,7 +96,7 @@ Directory::Find(const char *name)
 
     int i = FindIndex(name);
     if (i != -1)
-        return table[i].sector;
+        return raw.table[i].sector;
     return -1;
 }
 
@@ -111,11 +114,11 @@ Directory::Add(const char *name, int newSector)
     if (FindIndex(name) != -1)
         return false;
 
-    for (int i = 0; i < tableSize; i++)
-        if (!table[i].inUse) {
-            table[i].inUse = true;
-            strncpy(table[i].name, name, FILE_NAME_MAX_LEN);
-            table[i].sector = newSector;
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (!raw.table[i].inUse) {
+            raw.table[i].inUse = true;
+            strncpy(raw.table[i].name, name, FILE_NAME_MAX_LEN);
+            raw.table[i].sector = newSector;
             return true;
         }
     return false;  // no space.  Fix when we have extensible files.
@@ -133,7 +136,7 @@ Directory::Remove(const char *name)
     int i = FindIndex(name);
     if (i == -1)
         return false;  // name not in directory
-    table[i].inUse = false;
+    raw.table[i].inUse = false;
     return true;
 }
 
@@ -141,9 +144,9 @@ Directory::Remove(const char *name)
 void
 Directory::List() const
 {
-    for (int i = 0; i < tableSize; i++)
-        if (table[i].inUse)
-            printf("%s\n", table[i].name);
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse)
+            printf("%s\n", raw.table[i].name);
 }
 
 /// List all the file names in the directory, their `FileHeader` locations,
@@ -154,15 +157,21 @@ Directory::Print() const
     FileHeader *hdr = new FileHeader;
 
     printf("Directory contents:\n");
-    for (int i = 0; i < tableSize; i++)
-        if (table[i].inUse) {
+    for (unsigned i = 0; i < raw.tableSize; i++)
+        if (raw.table[i].inUse) {
             printf("\nDirectory entry.\n"
                    "    Name: %s\n"
                    "    Sector: %u\n",
-                   table[i].name, table[i].sector);
-            hdr->FetchFrom(table[i].sector);
+                   raw.table[i].name, raw.table[i].sector);
+            hdr->FetchFrom(raw.table[i].sector);
             hdr->Print();
         }
     printf("\n");
     delete hdr;
+}
+
+const RawDirectory *
+Directory::GetRaw() const
+{
+    return &raw;
 }

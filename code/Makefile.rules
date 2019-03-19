@@ -8,8 +8,7 @@ clean:
 depend: $(SRC_FILES) $(HDR_FILES)
     # WARNING: this may break if the preprocessor outputs something, because
     # that would get mixed with the dependency output.
-	$(CC) $(INCLUDE_DIRS) $(DEFINES) $(HOST) -DCHANGED -MM $^ \
-      >Makefile.depends
+	$(CC) $(INCLUDE_DIRS) $(DEFINES) $(HOST) -MM $^ >Makefile.depends
 
 $(PROGRAM): $(OBJ_FILES)
 	$(LD) $^ $(LDFLAGS) -o $@
