@@ -8,29 +8,29 @@ Practica 1:
 6)
     - ThreadTest:       - se define en /threads/thread_test.cc
                         - utiliza el macro DEBUG definido en /lib/utility.hh
-                        - utiliza el método Fork del objeto Thread definido en /threads/thread.cc
+                        - utiliza el método Fork de la clase Thread definido en /threads/thread.cc
                         - luego llama a la función SimpleThread definida en threads/thread_test.cc
     
     - Copy:             - se define en /filesys/fs_test.cc
                         - utiliza el macro ASSERT definido en /lib/utility.hh  
                         - utiliza las funciones fopen, fseek, ftell, fclose, fread definidas en stdio.h
                         - utiliza el macro DEBUG definido en /lib/utility.hh
-                        - utiliza los métodos Create, Open y Write del objeto FileSystem definido en /filesys/file_system.cc
+                        - utiliza los métodos Create, Open y Write de la clase FileSystem definidos en /filesys/file_system.cc
     
     - Print:            - se define en /filesys/fs_test.cc
                         - utiliza el macro ASSERT definido en /lib/utility.hh  
-                        - utiliza los métodos Open y Read del objeto FileSystem definido en /filesys/file_system.cc                            
+                        - utiliza los métodos Open y Read de la clase FileSystem definidos en /filesys/file_system.cc                            
 
     - PerformanceTest:  - se define en /filesys/fs_test.cc
-                        - utiliza el método Print del objeto Statistics definido en /machine/statistics.cc
+                        - utiliza el método Print de la clase Statistics definido en /machine/statistics.cc
                         - utiliza las funciones FileWrite y FileRead definidas en /filesys/fs_test.cc
-                        - utiliza el método Remove del objeto FileSystem definido en /filesys/file_system.cc
+                        - utiliza el método Remove de la clase FileSystem definido en /filesys/file_system.cc
     
     - StartProcess:     - se define en /userprog/prog_test.cc
                         - utiliza el macro ASSERT definido en /lib/utility.hh  
-                        - utiliza el método Open del objeto FileSystem definido en /filesys/file_system.cc                            
-                        - utiliza los métodos InitRegisters y RestoreState del objeto AddressSpace definido en /userprog/address_space.cc
-                        - utiliza el método Run del objeto Machine definido en /machine/mips_sim.cc
+                        - utiliza el método Open de la clase FileSystem definido en /filesys/file_system.cc                            
+                        - utiliza los métodos InitRegisters y RestoreState de la clase AddressSpace definidos en /userprog/address_space.cc
+                        - utiliza el método Run de la clase Machine definido en /machine/mips_sim.cc
     
     - ConsoleTest:      - se define en /userprog/prog_test.cc
                         - utiliza el método P de la clase Semaphore definido en /threads/synch.cc
