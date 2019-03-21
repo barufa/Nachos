@@ -74,7 +74,9 @@ Practica 1:
                         - utiliza los macros ASSERT y DEBUG definidos en /lib/utility.hh 
                         - utiliza el método Sleep de la clase Thread definida en /threads/thread.cc       
 
-7) Porque nos evitamos los problemas y riesgos que implican trabajar sobre un CPU real, nos abstraemos de la arquitectura de la máquina en la cual lo estamos ejecutando y es muy simple la implementació de señales, interrupciones, manejo de recursos, etc.
+7)  Porque nos evitamos los problemas y riesgos que implican trabajar sobre un CPU real, 
+    nos abstraemos de la arquitectura de la máquina en la cual lo estamos ejecutando 
+    y es muy simple la implementación de señales, interrupciones, el manejo de recursos, etc.
 8)Las distintas banderas son:
 * `+` -- Activa todos los mensajes de depuracion
 * `t` -- Activa los mensajes de depuracion correspondientes a los hilos de ejecucion
