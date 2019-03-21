@@ -106,6 +106,6 @@ Practica 1:
                [-n <network reliability>] [-id <machine id>]
                [-tn <other machine id>]
 La opcion rs toma una semilla para generar Yields en punstos aleatorios??
-14)
+14)Done
 15)
 16)
