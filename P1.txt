@@ -1,8 +1,8 @@
 Practica 1:
 
-1) Posee 31 paginas de 128 bytes cada una.
+1) Posee 31 paginas de 128 bytes cada una
 2) A traves de NumPhysPages en machine.h
-3) Posee 132kb.
+3) Posee 131kb
 4) Simula 60 instrucciones
 5) En el archivo mips_sim.cc se encuentra el codigo de las operaciones simuladas. En el caso de OP_ADD simplemente se calcula la suma de los valores almacenados en los registros rs y rt y se almacena el resultado en el registro rd. En caso de que se produzca overflow se lanza una excepcion.
 6)
@@ -74,7 +74,7 @@ Practica 1:
                         - utiliza los macros ASSERT y DEBUG definidos en /lib/utility.hh 
                         - utiliza el método Sleep de la clase Thread definida en /threads/thread.cc       
 
-7)
+7) Porque nos evitamos los problemas y riesgos que implican trabajar sobre un CPU real, nos abstraemos de la arquitectura de la máquina en la cual lo estamos ejecutando y es muy simple la implementació de señales, interrupciones, manejo de recursos, etc.
 8)Las distintas banderas son:
 * `+` -- Activa todos los mensajes de depuracion
 * `t` -- Activa los mensajes de depuracion correspondientes a los hilos de ejecucion
