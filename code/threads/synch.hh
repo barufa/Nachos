@@ -1,3 +1,4 @@
+
 /// Synchronization primitives
 ///
 /// Data structures for synchronizing threads.
@@ -106,7 +107,8 @@ private:
 
     /// For debugging.
     const char *name;
-
+    Semaphore * lock;
+    char * thread;
     // Add other needed fields here.
 };
 

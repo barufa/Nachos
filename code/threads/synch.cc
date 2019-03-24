@@ -98,10 +98,18 @@ Semaphore::V()
 /// case in the network assignment will not work!
 
 Lock::Lock(const char *debugName)
-{}
+{
+    name = debugName;
+    lock = new Semaphore(name,1);
+    thread = new char[64];
+}
 
 Lock::~Lock()
-{}
+{
+    delete name;
+    delete lock;
+    delete thread;
+}
 
 const char *
 Lock::GetName() const
@@ -111,15 +119,23 @@ Lock::GetName() const
 
 void
 Lock::Acquire()
-{}
+{
+    lock->P();
+    strncpy(thread,currentThread->GetName(),64);
+}
 
 void
 Lock::Release()
-{}
+{
+    ASSERT(IsHeldByCurrentThread());
+    lock->V();
+}
 
 bool
 Lock::IsHeldByCurrentThread() const
-{}
+{
+    return strcmp(thread,currentThread->GetName())==0;    
+}
 
 Condition::Condition(const char *debugName, Lock *conditionLock)
 {}
