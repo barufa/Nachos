@@ -1,9 +1,9 @@
 Practica 1:
 
-1) Posee 31 paginas de 128 bytes cada una
-2) A traves de NumPhysPages en machine.h
-3) Posee 131kb
-4) Simula 60 instrucciones
+1) Posee 31 paginas de 128 bytes cada una.
+2) A traves de NumPhysPages en machine.h.
+3) El disco de Nachos posee 131kb de almacenamiento.
+4) Simula 60 instrucciones MIPS.
 5) En el archivo mips_sim.cc se encuentra el codigo de las operaciones simuladas. En el caso de OP_ADD simplemente se calcula la suma de los valores almacenados en los registros rs y rt y se almacena el resultado en el registro rd. En caso de que se produzca overflow se lanza una excepcion.
 6)
     - ThreadTest:       - se define en /threads/thread_test.cc
@@ -80,7 +80,7 @@ Practica 1:
 8)Las distintas banderas son:
 * `+` -- Activa todos los mensajes de depuracion
 * `t` -- Activa los mensajes de depuracion correspondientes a los hilos de ejecucion
-* `s` -- Activa los mensajes de depuracion correspondientes a semaforos, locks, and variables de condicion.
+* `s` -- Activa los mensajes de depuracion correspondientes a semaforos, locks, y variables de condicion.
 * `i` -- Activa los mensajes de depuracion correspondientes a las interrupciones simuladas.
 * `m` -- Activa los mensajes de depuracion correspondientes a la emulacion de la maquina (requiere *USER_PROGRAM*).
 * `d` -- Activa los mensajes de depuracion correspondientes a la emulacion del disco (requiere *FILESYS*).
@@ -91,13 +91,22 @@ Practica 1:
 	En caso de false, imprime que condicion no se cumple y en que archivo y depues aborta la ejecucion
 	En caso de true, no se realiza ningun cambio
    DEBUG: Recibe una bandera, una cadena de formato y argumentos variables
-	En caso de que la bandara este abilitada y la cadena no sea nula, se imprime un mensaje de depuracion con su bandera correspondiente usando la cadena de formato y consumiendo los argumentos con va_list.?
+	En caso de que la bandera este habilitada y la cadena no sea nula, se imprime un mensaje de depuracion con su bandera correspondiente usando la cadena de formato y consumiendo los argumentos con va_list.?
 10) USER_PROGRAM se define en los archivos Makefile de los directorios network/, vmem/, userprog/ y filesys/
     FILESYS_NEEDED se define en los archivos Makefile de network/, vmem/, userprog/ y filesys/
     FILESYS_STUB se define en los archivos Makefile de userprog/ y vmem/
     NETWORK se define en los archivos Makefile de network/
-11)
-12) La funcion main() del programa nachos se encuentra en code/threads/main.cc ???
+11)   Ambas clases (List y SynchList) definen listas enlazadas, con la diferencia que
+      SynchList tiene dos restricciones:
+
+      1. Los threads que traten remover un elemento de la lista deberan esperar 
+         hasta que la lista tenga al menos un elemento.
+      2. La estructura de datos puede ser accedida por un thread a la vez.
+
+12) La funcion main del ejecutable Nachos se encuentra definida en el archivo
+	/code/threads/main.cc.
+   ???????
+
 13) La linea de comandos soporta:
 	nachos [-d <debugflags>] [-p] [-rs <random seed #>] [-z]
                [-s] [-x <nachos file>] [-tc <consoleIn> <consoleOut>]
@@ -106,6 +115,6 @@ Practica 1:
                [-n <network reliability>] [-id <machine id>]
                [-tn <other machine id>]
 La opcion rs toma una semilla para generar Yields en punstos aleatorios??
-14)Done
-15)
-16)
+14)Done(archivo threads/thread_test.cc)
+15)Done(archivo threads/thread_test.cc)
+16)Done(archivo threads/thread_test.cc). Se ejecuta con ./threads/nachos -d s
