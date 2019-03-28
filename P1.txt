@@ -10,28 +10,28 @@ Practica 1:
                         - utiliza el macro DEBUG definido en /lib/utility.hh
                         - utiliza el método Fork de la clase Thread definido en /threads/thread.cc
                         - luego llama a la función SimpleThread definida en threads/thread_test.cc
-    
+
     - Copy:             - se define en /filesys/fs_test.cc
-                        - utiliza el macro ASSERT definido en /lib/utility.hh  
+                        - utiliza el macro ASSERT definido en /lib/utility.hh
                         - utiliza las funciones fopen, fseek, ftell, fclose, fread definidas en stdio.h
                         - utiliza el macro DEBUG definido en /lib/utility.hh
                         - utiliza los métodos Create, Open y Write de la clase FileSystem definidos en /filesys/file_system.cc
-    
+
     - Print:            - se define en /filesys/fs_test.cc
-                        - utiliza el macro ASSERT definido en /lib/utility.hh  
-                        - utiliza los métodos Open y Read de la clase FileSystem definidos en /filesys/file_system.cc                            
+                        - utiliza el macro ASSERT definido en /lib/utility.hh
+                        - utiliza los métodos Open y Read de la clase FileSystem definidos en /filesys/file_system.cc
 
     - PerformanceTest:  - se define en /filesys/fs_test.cc
                         - utiliza el método Print de la clase Statistics definido en /machine/statistics.cc
                         - utiliza las funciones FileWrite y FileRead definidas en /filesys/fs_test.cc
                         - utiliza el método Remove de la clase FileSystem definido en /filesys/file_system.cc
-    
+
     - StartProcess:     - se define en /userprog/prog_test.cc
-                        - utiliza el macro ASSERT definido en /lib/utility.hh  
-                        - utiliza el método Open de la clase FileSystem definido en /filesys/file_system.cc                            
+                        - utiliza el macro ASSERT definido en /lib/utility.hh
+                        - utiliza el método Open de la clase FileSystem definido en /filesys/file_system.cc
                         - utiliza los métodos InitRegisters y RestoreState de la clase AddressSpace definidos en /userprog/address_space.cc
                         - utiliza el método Run de la clase Machine definido en /machine/mips_sim.cc
-    
+
     - ConsoleTest:      - se define en /userprog/prog_test.cc
                         - utiliza el método P de la clase Semaphore definido en /threads/synch.cc
                         - utiliza los métodos GetChar y PutChar de la clase Console definidos en /machine/console.cc
@@ -39,43 +39,43 @@ Practica 1:
     - MailTest:         - se define en /network/net_test.cc
                         - utiliza el método Send, Receive de la clase Mail definidos en /network/post.cc
                         - utiliza el método Halt de la clase Interrupt definido en /machine/interrupt.cc
-    
+
     - PrintVersion:     - se define en /threads/main.cc
 
     - Initialize:       - se define en /threads/system.cc
-                        - utiliza el macro ASSERT definido en /lib/utility.hh 
+                        - utiliza el macro ASSERT definido en /lib/utility.hh
                         - utiliza la función RandomInit definida en /threads/system_dep.cc
                         - utiliza el método SetFlags de la clase Debug definido en /lib/debug.cc
                         - utiliza el método SetStatus de la clase Thread definido en /threads/thread.cc
                         - utiliza el método Enable de la clase Interrupt definido en /machine/interrupt.cc
                         - utiliza la función CallOnUserAbort definida en /threads/system_dep.cc
                         - utiliza el método SetUp de la clase PreemptiveScheduler definido en /threads/preemptive.cc
-    
-    - Halt:             - se define en /machine/interrupt.cc 
+
+    - Halt:             - se define en /machine/interrupt.cc
                         - utiliza el método Print de la clase Statistics definido en /machine/statistics.cc
                         - utiliza la función Cleanup definida en /threads/system.cc
 
     - Remove:           - se define en /filesys/file_system.cc
-                        - utiliza el macro ASSERT definido en /lib/utility.hh 
+                        - utiliza el macro ASSERT definido en /lib/utility.hh
                         - utiliza los métodos FetchFrom, Find, Remove y WriteBack de la clase Directory definidos en /filesys/directory.cc
                         - utiliza los métodos FetchFrom y Deallocate de la clase FileHeader definido en /filesys/file_header.cc
                         - utiliza los métodos FetchFrom, Clear y WriteBack de la clase Bitmap definido en /lib/bitmap.cc
-    
+
     - List:             - se define en /filesys/file_system.cc
-                        - utiliza los métodos FetchFrom y List de la clase Directory definidos en /filesys/directory.cc                
-    
+                        - utiliza los métodos FetchFrom y List de la clase Directory definidos en /filesys/directory.cc
+
     - Print (método):   - se define en /filesys/file_system.cc
                         - utiliza los métodos FetchFrom y Print de la clase FileHeader definido en /filesys/file_header.cc
                         - utiliza los métodos FetchFrom y Print de la clase Bitmap definido en /lib/bitmap.cc
                         - utiliza los métodos FetchFrom y Print de la clase Directory definidos en /filesys/directory.cc
-    
+
     - Finish:           - se define en /threads/thread.cc
                         - utiliza el método SetLevel de la clase Interrupt definido en /machine/interrupt.cc
-                        - utiliza los macros ASSERT y DEBUG definidos en /lib/utility.hh 
-                        - utiliza el método Sleep de la clase Thread definida en /threads/thread.cc       
+                        - utiliza los macros ASSERT y DEBUG definidos en /lib/utility.hh
+                        - utiliza el método Sleep de la clase Thread definida en /threads/thread.cc
 
-7)  Porque nos evitamos los problemas y riesgos que implican trabajar sobre un CPU real, 
-    nos abstraemos de la arquitectura de la máquina en la cual lo estamos ejecutando 
+7)  Porque nos evitamos los problemas y riesgos que implican trabajar sobre un CPU real,
+    nos abstraemos de la arquitectura de la máquina en la cual lo estamos ejecutando
     y es muy simple la implementación de señales, interrupciones, el manejo de recursos, etc.
 8)Las distintas banderas son:
 * `+` -- Activa todos los mensajes de depuracion
@@ -99,13 +99,27 @@ Practica 1:
 11)   Ambas clases (List y SynchList) definen listas enlazadas, con la diferencia que
       SynchList tiene dos restricciones:
 
-      1. Los threads que traten remover un elemento de la lista deberan esperar 
+      1. Los threads que traten remover un elemento de la lista deberan esperar
          hasta que la lista tenga al menos un elemento.
       2. La estructura de datos puede ser accedida por un thread a la vez.
 
-12) La funcion main del ejecutable Nachos se encuentra definida en el archivo
-	/code/threads/main.cc.
-   ???????
+12)  A). Se encuentra definido en:
+          code/userland/sort.c
+          code/userland/halt.c:main(void)
+          code/userland/tiny_shell.c:main(void)
+          code/userland/shell.c:main(void)
+          code/userland/matmult.c:main(void)
+          code/userland/filetest.c:main(void)
+          code/bin/disasm.c:main(int argc, char *argv[])
+          code/bin/out.c:main(int argc, char *argv[])
+          code/bin/fuse/nachosfuse.c:main(int argc, char *argv[])
+          code/bin/readnoff.c:main(int argc, char *argv[])
+          code/bin/coff2flat.c:main(int argc, char *argv[])
+          code/bin/coff2noff.c:main(int argc, char *argv[])
+          code/bin/main.c:main(int argc, char *argv[])
+          code/threads/main.cc:main(int argc, char **argv)
+     B). La funcion main del ejecutable Nachos de userprog se encuentra definida en el archivo
+	   /code/threads/main.cc.
 
 13) La linea de comandos soporta:
 	nachos [-d <debugflags>] [-p] [-rs <random seed #>] [-z]
