@@ -22,13 +22,7 @@
 
 enum TEST_TYPE{SIMPLE, SEMAPHORE, LOCK, CODITION};
 
-typedef struct arg_sem{
-    char * name;
-    Semaphore * f;
-}arg_sem;
-
 typedef struct arg_lock{
-    char * name;
     Lock * l;
     int  * sum;
 }arg_lock;
@@ -56,26 +50,26 @@ SimpleThread(void *name_)
 void
 SimpleThreadSem(void *_args)
 {
-    char * name   = ((arg_sem *)_args)->name;
-    Semaphore * f = ((arg_sem *)_args)->f;
+    const char * name   = currentThread->GetName();
+    Semaphore * f = (Semaphore *)_args;
     f->P();
-    DEBUG('s',"Thread `%s` has entered in the critical zone\n",currentThread->GetName());
-    for (unsigned num = 0; num <= 100; num++) {
+    DEBUG('s',"Thread `%s` has entered in the critical zone\n",name);
+    for (unsigned num = 0; num <= 10; num++) {
         if(num==10){
-            printf("!!! Thread `%s` has finished\n", currentThread->GetName());
+            printf("!!! Thread `%s` has finished\n", name);
         }else{
-            printf("*** Thread `%s` is running: iteration %u\n", currentThread->GetName(), num);
+            printf("*** Thread `%s` is running: iteration %u\n", name, num);
             currentThread->Yield();
         }
     }
-    DEBUG('s',"Thread `%s` is leaving the critical zone\n",currentThread->GetName());
+    DEBUG('s',"Thread `%s` is leaving the critical zone\n",name);
     f->V();
 }
 
 void
 SimpleThreadLock(void * args_)
 {
-    char * name   = ((arg_lock *)args_)->name;
+    const char * name   = currentThread->GetName();
     Lock * l      = ((arg_lock *)args_)->l;
     int  * s      = ((arg_lock *)args_)->sum;
 
@@ -108,44 +102,36 @@ ThreadTest()
                 DEBUG('t', "THREAD_TEST_TYPE=SEMAPHORE\n");
                 Semaphore *f = new Semaphore("SEMAPHORE_TEST",3);
                 for(char i = '1';i<='9';i++){
-                  arg_sem * a_sem = new arg_sem;
-                  a_sem->f = f;
-                  a_sem->name = new char [64];
-                  strncpy(a_sem->name, "_nd", 64);
-                  a_sem->name[0]=i;
-                  Thread *newThread = new Thread(a_sem->name);
-                  newThread->Fork(SimpleThreadSem, (void *) a_sem);
+                  char * name = new char [64];
+                  strncpy(name, "_nd", 64);
+                  name[0]=i;
+                  Thread *newThread = new Thread(name);
+                  newThread->Fork(SimpleThreadSem, (void *) f);
                 }
-
-                arg_sem * a_sem = new arg_sem;
-                a_sem->f = f;
-                a_sem->name = new char [64];
-                strncpy(a_sem->name, "0st", 64);
-                SimpleThreadSem((void *) a_sem);
+                SimpleThreadSem((void *) f);
             }
             break;
         case LOCK:
             {
                 DEBUG('t', "THREAD_TEST_TYPE=LOCK\n");
                 Lock * l = new Lock("LOCK_TEST");
-                // int * sum = new int;
-                // *sum = 0;
-                int sum = 0;
+                int * sum = new int;
+                *sum = 0;
                 for(char i = '1';i<='9';i++){
                   arg_lock * a_lock = new arg_lock;
                   a_lock->l = l;
-                  a_lock->name = new char [64];
-                  a_lock->sum  = &sum;
-                  strncpy(a_lock->name, "_nd", 64);
-                  a_lock->name[0]=i;
-                  Thread *newThread = new Thread(a_lock->name);
+                  a_lock->sum  = sum;
+                  char * name = new char [64];
+                  strncpy(name, "_nd", 64);
+                  name[0]=i;
+                  Thread *newThread = new Thread(name);
                   newThread->Fork(SimpleThreadLock, (void *) a_lock);
                 }
                 arg_lock * a_lock = new arg_lock;
                 a_lock->l = l;
-                a_lock->name = new char [64];
-                a_lock->sum  = &sum;
-                strncpy(a_lock->name, "0st", 64);
+                char * name = new char [64];
+                a_lock->sum  = sum;
+                strncpy(name, "0st", 64);
                 SimpleThreadLock((void *) a_lock);
             }
             break;
