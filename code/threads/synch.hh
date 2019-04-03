@@ -23,7 +23,10 @@
 
 #include "thread.hh"
 #include "lib/list.hh"
+#include <queue>
+#include <string>
 
+using namespace std;
 
 /// This class defines a “semaphore”, which has a positive integer as its
 /// value.
@@ -160,13 +163,19 @@ public:
     /// corresponding lock; otherwise an error must occur.
 
     void Wait();
+        //Libera el conditionLock
+        //Se pone a dormir con un lock que agregado a la cola
     void Signal();
+        //Despierta el primer hilo de la cola
     void Broadcast();
+        //Despirta todos los hilos de la cola
 
 private:
 
     const char *name;
-
+    queue<Semaphore *> q_threads;
+    Lock * condition;
+    Lock * internal;
     // Other needed fields are to be added here.
 };
 

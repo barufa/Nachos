@@ -25,7 +25,6 @@
 #include "synch.hh"
 #include "system.hh"
 
-
 /// Initialize a semaphore, so that it can be used for synchronization.
 ///
 /// * `debugName` is an arbitrary name, useful for debugging.
@@ -102,6 +101,7 @@ Lock::Lock(const char *debugName)
     name = debugName;
     lock = new Semaphore(name,1);
     thread = new char[64];
+    thread[0] = '\0';
 }
 
 Lock::~Lock()
@@ -120,28 +120,46 @@ Lock::GetName() const
 void
 Lock::Acquire()
 {
+    ASSERT(!IsHeldByCurrentThread());
     lock->P();
     strncpy(thread,currentThread->GetName(),64);
+    DEBUG('t',"%s acquires the lock %s\n",thread,name);
 }
 
 void
 Lock::Release()
 {
     ASSERT(IsHeldByCurrentThread());
+    DEBUG('t',"%s releases the lock %s\n",thread,name);
+    thread[0] = '\0';
     lock->V();
 }
 
 bool
 Lock::IsHeldByCurrentThread() const
 {
-    return strcmp(thread,currentThread->GetName())==0;    
+    DEBUG('t',"%s comparing %s %s\n",name,thread,currentThread->GetName());
+    return strcmp(thread,currentThread->GetName())==0;
 }
 
+
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 Condition::Condition(const char *debugName, Lock *conditionLock)
-{}
+{
+    name = debugName;
+    condition = conditionLock;
+    internal = new Lock("Internal");
+    // while(!q_threads.empty())q_threads.pop();
+}
 
 Condition::~Condition()
-{}
+{
+    delete name;
+    delete internal;
+    // delete q_threads;//No se
+}
 
 const char *
 Condition::GetName() const
@@ -151,12 +169,35 @@ Condition::GetName() const
 
 void
 Condition::Wait()
-{}
+{
+    ASSERT(condition->IsHeldByCurrentThread());
+    Semaphore  *f = new Semaphore("Semaforo de cond",0);
+    q_threads.push(f);
+    condition->Release();
+    f->P();
+    condition->Acquire();
+}
 
 void
 Condition::Signal()
-{}
+{
+    internal->Acquire();
+    if(!q_threads.empty()){
+        Semaphore * f = q_threads.front();
+        q_threads.pop();
+        f->V();
+    }
+    internal->Release();
+}
 
 void
 Condition::Broadcast()
-{}
+{
+    internal->Acquire();
+    while(!q_threads.empty()){
+        Semaphore * f = q_threads.front();
+        q_threads.pop();
+        f->V();
+    }
+    internal->Release();
+}
