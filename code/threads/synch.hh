@@ -20,10 +20,8 @@
 #ifndef NACHOS_THREADS_SYNCH__HH
 #define NACHOS_THREADS_SYNCH__HH
 
-
 #include "thread.hh"
 #include "lib/list.hh"
-#include <queue>
 #include <string>
 
 using namespace std;
@@ -173,7 +171,7 @@ public:
 private:
 
     const char *name;
-    queue<Semaphore *> q_threads;
+    List<Semaphore *> * q_threads;
     Lock * condition;
     Lock * internal;
     // Other needed fields are to be added here.

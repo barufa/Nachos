@@ -16,6 +16,8 @@
 
 #include <unistd.h>
 
+#define ATOM(l,p) {l->Acquire();p;l->Release();}
+
 #ifndef THREAD_TEST_TYPE
     #define THREAD_TEST_TYPE SIMPLE
 #endif
@@ -26,6 +28,12 @@ typedef struct arg_lock{
     Lock * l;
     int  * sum;
 }arg_lock;
+
+typedef struct arg_cond{
+    Lock * l;
+    Condition * c;
+    int * n;
+}arg_cond;
 
 /// Loop 10 times, yielding the CPU to another ready thread each iteration.
 ///
@@ -87,6 +95,37 @@ SimpleThreadLock(void * args_)
     return;
 }
 
+void
+SimpleThreadCond(void * args_){
+
+    const char * name = currentThread->GetName();
+    arg_cond * ar = (arg_cond *)args_;
+    Condition * c = ar->c;
+    Lock *      l = ar->l;
+    int *       n = ar->n;
+
+    for (unsigned num = 0; num <= 20; num++){
+        if((name[0]-'0')%2){//Consumo 1
+            l->Acquire();
+            while(*n<=0){
+                c->Wait();
+            }
+            (*n)--;
+            printf("Thread `%s` eates 1 %d\n",name,*n);
+            l->Release();
+        }else if(num%5!=0){//Creo 1
+            ATOM(l,(*n)++);
+            printf("Thread `%s` creates 1 %d\n",name,*n);//*n volatil, solo para ver
+            c->Signal();
+        }else{//Creo 5
+            ATOM(l,(*n)+=5);
+            printf("Thread `%s` creates 5 %d\n",name,*n);
+            c->Broadcast();
+        }
+    }
+    printf("Finalizo %s con N=%d\n",name,*n);
+}
+
 /// Set up a ping-pong between several threads.
 ///
 /// Do it by launching ten threads which call `SimpleThread`, and finally
@@ -100,41 +139,66 @@ ThreadTest()
         case SEMAPHORE:
             {
                 DEBUG('t', "THREAD_TEST_TYPE=SEMAPHORE\n");
-                Semaphore *f = new Semaphore("SEMAPHORE_TEST",3);
                 for(char i = '1';i<='9';i++){
                   char * name = new char [64];
                   strncpy(name, "_nd", 64);
                   name[0]=i;
                   Thread *newThread = new Thread(name);
                   newThread->Fork(SimpleThreadSem, (void *) f);
+                  Semaphore *f = new Semaphore("SEMAPHORE_TEST",1);
                 }
                 SimpleThreadSem((void *) f);
             }
             break;
-        case LOCK:
-            {
-                DEBUG('t', "THREAD_TEST_TYPE=LOCK\n");
+            case LOCK:
+                {
+                    DEBUG('t', "THREAD_TEST_TYPE=LOCK\n");
+                    Lock * l = new Lock("LOCK_TEST");
+                    int * sum = new int;
+                    *sum = 0;
+                    for(char i = '1';i<='9';i++){
+                      arg_lock * a_lock = new arg_lock;
+                      a_lock->l = l;
+                      a_lock->sum  = sum;
+                      char * name = new char [64];
+                      strncpy(name, "_nd", 64);
+                      name[0]=i;
+                      Thread *newThread = new Thread(name);
+                      newThread->Fork(SimpleThreadLock, (void *) a_lock);
+                    }
+                    arg_lock * a_lock = new arg_lock;
+                    a_lock->l = l;
+                    char * name = new char [64];
+                    a_lock->sum  = sum;
+                    strncpy(name, "0st", 64);
+                    SimpleThreadLock((void *) a_lock);
+                }
+                break;
+        case CODITION:
+                {
+                DEBUG('t', "THREAD_TEST_TYPE=CONDITION\n");
                 Lock * l = new Lock("LOCK_TEST");
-                int * sum = new int;
-                *sum = 0;
-                for(char i = '1';i<='9';i++){
-                  arg_lock * a_lock = new arg_lock;
-                  a_lock->l = l;
-                  a_lock->sum  = sum;
-                  char * name = new char [64];
+                Condition * c = new Condition("COND_TEST",l);
+                int * n = new int;
+                *n=0;
+                for(char i = '1';i<='4';i++){
+                  char *name = new char [64];
                   strncpy(name, "_nd", 64);
                   name[0]=i;
                   Thread *newThread = new Thread(name);
-                  newThread->Fork(SimpleThreadLock, (void *) a_lock);
+                  arg_cond * a_cond = new arg_cond;
+                  a_cond->l = l;
+                  a_cond->c = c;
+                  a_cond->n = n;
+                  newThread->Fork(SimpleThreadCond, (void *) a_cond);
                 }
-                arg_lock * a_lock = new arg_lock;
-                a_lock->l = l;
-                char * name = new char [64];
-                a_lock->sum  = sum;
-                strncpy(name, "0st", 64);
-                SimpleThreadLock((void *) a_lock);
-            }
-            break;
+                arg_cond * a_cond = new arg_cond;
+                a_cond->l = l;
+                a_cond->c = c;
+                a_cond->n = n;
+                SimpleThreadCond((void *)a_cond);
+                }
+                break;
         default:
             {
                 DEBUG('t', "THREAD_TEST_TYPE=SIMPLE\n");

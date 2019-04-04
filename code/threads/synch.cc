@@ -25,6 +25,8 @@
 #include "synch.hh"
 #include "system.hh"
 
+
+
 /// Initialize a semaphore, so that it can be used for synchronization.
 ///
 /// * `debugName` is an arbitrary name, useful for debugging.
@@ -106,9 +108,9 @@ Lock::Lock(const char *debugName)
 
 Lock::~Lock()
 {
-    delete name;
     delete lock;
     delete thread;
+    delete name;
 }
 
 const char *
@@ -151,14 +153,14 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
     name = debugName;
     condition = conditionLock;
     internal = new Lock("Internal");
-    // while(!q_threads.empty())q_threads.pop();
+    q_threads = new List<Semaphore *>;
 }
 
 Condition::~Condition()
 {
     delete name;
     delete internal;
-    // delete q_threads;//No se
+    delete q_threads;
 }
 
 const char *
@@ -172,7 +174,7 @@ Condition::Wait()
 {
     ASSERT(condition->IsHeldByCurrentThread());
     Semaphore  *f = new Semaphore("Semaforo de cond",0);
-    q_threads.push(f);
+    q_threads->Append(f);
     condition->Release();
     f->P();
     condition->Acquire();
@@ -182,9 +184,8 @@ void
 Condition::Signal()
 {
     internal->Acquire();
-    if(!q_threads.empty()){
-        Semaphore * f = q_threads.front();
-        q_threads.pop();
+    if(!q_threads->IsEmpty()){
+        Semaphore * f = q_threads->Pop();//Borrar elemento
         f->V();
     }
     internal->Release();
@@ -194,9 +195,8 @@ void
 Condition::Broadcast()
 {
     internal->Acquire();
-    while(!q_threads.empty()){
-        Semaphore * f = q_threads.front();
-        q_threads.pop();
+    while(!q_threads->IsEmpty()){
+        Semaphore * f = q_threads->Pop();//Borrar elemento
         f->V();
     }
     internal->Release();
