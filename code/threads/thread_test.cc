@@ -104,7 +104,7 @@ SimpleThreadCond(void * args_){
     Lock *      l = ar->l;
     int *       n = ar->n;
 
-    for (unsigned num = 0; num <= 20; num++){
+    for (unsigned num = 1; num <= 20; num++){
         if((name[0]-'0')%2){//Consumo 1
             l->Acquire();
             while(*n<=0){
@@ -139,13 +139,13 @@ ThreadTest()
         case SEMAPHORE:
             {
                 DEBUG('t', "THREAD_TEST_TYPE=SEMAPHORE\n");
+                Semaphore *f = new Semaphore("SEMAPHORE_TEST",1);
                 for(char i = '1';i<='9';i++){
                   char * name = new char [64];
                   strncpy(name, "_nd", 64);
                   name[0]=i;
                   Thread *newThread = new Thread(name);
                   newThread->Fork(SimpleThreadSem, (void *) f);
-                  Semaphore *f = new Semaphore("SEMAPHORE_TEST",1);
                 }
                 SimpleThreadSem((void *) f);
             }
