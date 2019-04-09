@@ -212,7 +212,7 @@ Port::Port(const char *debugName)
     cond_receive = new Condition("Receive condition", internal_lock);
     cond_send = new Condition("Send condition", internal_lock);
     internal_flag = false; //let messages to come
-    buffer = NULL;
+    buffer = 0;
 }
 
 Port::~Port()
@@ -232,20 +232,20 @@ Port::GetName() const
 void
 Port::Send(int msg)
 {
-    DEBUG('s', 'The thread %s wants to send: %d', currentThread->GetName(), msg);
-    
+    DEBUG('s', "The thread %s wants to send: %d", currentThread->GetName(), msg);
+
     internal_lock->Acquire();
 
     //si el buffer esta null, espero a que se llame un receive
-    while(buffer==NULL || internal_flag)
+    while(buffer==0 || internal_flag)
     {
         cond_send->Wait();
     }
-    
+
     buffer = msg;
     internal_flag = true;
     cond_receive->Signal();
-    DEBUG('s', 'The thread %s sent: %d', currentThread->GetName(), msg);
+    DEBUG('s', "The thread %s sent: %d", currentThread->GetName(), msg);
 
     internal_lock->Release();
 }
@@ -253,12 +253,12 @@ Port::Send(int msg)
 void
 Port::Receive(int *msg)
 {
-    DEBUG('s', 'The thread %s wants to receive a message', currentThread->GetName());
+    DEBUG('s', "The thread %s wants to receive a message", currentThread->GetName());
     internal_lock->Acquire();
 
     while(!internal_flag)
     {
-        if(buffer==NULL)
+        if(buffer==0)
         {
             buffer=1;//aviso a send que se llamo el receive
         }
@@ -266,10 +266,10 @@ Port::Receive(int *msg)
     }
 
     *msg = buffer;
-    buffer = NULL;
+    buffer = 0;
     internal_flag = false;
     cond_send->Signal();
-    DEBUG('s', 'The thread %s received: %d', currentThread->GetName(), *msg);
+    DEBUG('s', "The thread %s received: %d", currentThread->GetName(), *msg);
 
     internal_lock->Release();
 }

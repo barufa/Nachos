@@ -187,7 +187,7 @@ public:
     ~Port();
     const char *GetName() const;
 
-    //Waits until Receive is called 
+    //Waits until Receive is called
     //and copies the message into the buffer of Receive
     void Send(int message);
 
@@ -203,6 +203,6 @@ private:
     Condition *cond_receive;
     Condition *cond_send;
 
-}
+};
 
 #endif
