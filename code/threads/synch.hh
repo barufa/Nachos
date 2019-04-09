@@ -178,4 +178,31 @@ private:
 };
 
 
+//Definition of Port class
+class Port {
+
+public:
+
+    Port(const char *debugName);
+    ~Port();
+    const char *GetName() const;
+
+    //Waits until Receive is called 
+    //and copies the message into the buffer of Receive
+    void Send(int message);
+
+    //Waits until a message is sent to its buffer and returns it
+    void Receive(int *message);
+
+private:
+
+    const char *name;
+    int buffer;
+    bool internal_flag;
+    Lock *internal_lock;
+    Condition *cond_receive;
+    Condition *cond_send;
+
+}
+
 #endif

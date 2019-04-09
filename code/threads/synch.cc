@@ -201,3 +201,75 @@ Condition::Broadcast()
     }
     internal->Release();
 }
+
+
+/////////////////////////////////////////////////
+/////////////////////////////////////////////////
+Port::Port(const char *debugName)
+{
+    name=debugName;
+    internal_lock = new Lock("Internal port lock");
+    cond_receive = new Condition("Receive condition", internal_lock);
+    cond_send = new Condition("Send condition", internal_lock);
+    internal_flag = false; //let messages to come
+    buffer = NULL;
+}
+
+Port::~Port()
+{
+    delete name;
+    delete cond_receive;
+    delete cond_send;
+    delete internal_lock;
+}
+
+const char *
+Port::GetName() const
+{
+    return name;
+}
+
+void
+Port::Send(int msg)
+{
+    DEBUG('s', 'The thread %s wants to send: %d', currentThread->GetName(), msg);
+    
+    internal_lock->Acquire();
+
+    //si el buffer esta null, espero a que se llame un receive
+    while(buffer==NULL || internal_flag)
+    {
+        cond_send->Wait();
+    }
+    
+    buffer = msg;
+    internal_flag = true;
+    cond_receive->Signal();
+    DEBUG('s', 'The thread %s sent: %d', currentThread->GetName(), msg);
+
+    internal_lock->Release();
+}
+
+void
+Port::Receive(int *msg)
+{
+    DEBUG('s', 'The thread %s wants to receive a message', currentThread->GetName());
+    internal_lock->Acquire();
+
+    while(!internal_flag)
+    {
+        if(buffer==NULL)
+        {
+            buffer=1;//aviso a send que se llamo el receive
+        }
+        cond_receive->Wait();
+    }
+
+    *msg = buffer;
+    buffer = NULL;
+    internal_flag = false;
+    cond_send->Signal();
+    DEBUG('s', 'The thread %s received: %d', currentThread->GetName(), *msg);
+
+    internal_lock->Release();
+}
