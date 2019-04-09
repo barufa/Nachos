@@ -22,7 +22,7 @@
     #define THREAD_TEST_TYPE SIMPLE
 #endif
 
-enum TEST_TYPE{SIMPLE, SEMAPHORE, LOCK, CODITION};
+enum TEST_TYPE{SIMPLE, SEMAPHORE, LOCK, CONDITION,PORT};
 
 typedef struct arg_lock{
     Lock * l;
@@ -126,6 +126,25 @@ SimpleThreadCond(void * args_){
     printf("Finalizo %s con N=%d\n",name,*n);
 }
 
+void SimpleThreadPort(void * args_){
+
+  const char * name = currentThread->GetName();
+  Port * p = (Port *)args_;
+
+  for(int num=0;num<5;num++){
+    if((name[0]-'0')%2){//Receptor
+      int m = 0;
+      p->Receive(&m);
+      // printf("Thread `%s` recieves %d\n",name,m);
+    }else{//Emisor
+      p->Send(num+1000);
+      // printf("Thread `%s` sends %d\n",name,num+1000);
+    }
+  }
+
+  return;
+}
+
 /// Set up a ping-pong between several threads.
 ///
 /// Do it by launching ten threads which call `SimpleThread`, and finally
@@ -174,7 +193,7 @@ ThreadTest()
                     SimpleThreadLock((void *) a_lock);
                 }
                 break;
-        case CODITION:
+        case CONDITION:
                 {
                 DEBUG('t', "THREAD_TEST_TYPE=CONDITION\n");
                 Lock * l = new Lock("LOCK_TEST");
@@ -197,6 +216,20 @@ ThreadTest()
                 a_cond->c = c;
                 a_cond->n = n;
                 SimpleThreadCond((void *)a_cond);
+                }
+                break;
+        case PORT:
+                {
+                DEBUG('t', "THREAD_TEST_TYPE=PORT\n");
+                Port * p = new Port("Port Test");
+              for(char i = '1';i<='4';i++){
+                  char *name = new char [64];
+                  strncpy(name, "_nd", 64);
+                  name[0]=i;
+                  Thread *newThread = new Thread(name);
+                  newThread->Fork(SimpleThreadPort, (void *)p);
+                }
+                SimpleThreadPort((void *)p);
                 }
                 break;
         default:
