@@ -96,7 +96,7 @@ private:
 public:
 
     /// Initialize a `Thread`.
-    Thread(const char *debugName,bool join_flag=false);
+    Thread(const char *debugName,int _priority = 20,bool join_flag=false);
 
     /// Deallocate a Thread.
     ///
@@ -127,6 +127,10 @@ public:
 
     const char *GetName() const;
 
+    int GetPriority();
+
+    void SetPriority(int _priority);
+
     void Print() const;
 
 private:
@@ -143,7 +147,7 @@ private:
     const char *name;
     Port * dead;
     bool join_flag;
-
+    int priority;
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);
 

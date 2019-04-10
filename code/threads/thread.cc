@@ -38,13 +38,14 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName,bool j_flag)
+Thread::Thread(const char *threadName,int _priority,bool j_flag)
 {
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
     status   = JUST_CREATED;
     join_flag = j_flag;
+    priority = _priority;
     dead = NULL;
     if(join_flag){
         dead = new Port("Join_Port");
@@ -143,6 +144,18 @@ const char *
 Thread::GetName() const
 {
     return name;
+}
+
+int
+Thread::GetPriority()
+{
+    return priority;
+}
+
+void
+Thread::SetPriority(int _priority)
+{
+    priority = _priority;
 }
 
 void
