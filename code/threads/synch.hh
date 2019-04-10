@@ -197,11 +197,10 @@ private:
 
     const char *name;
     int buffer,num_receive;
-    bool buffer_flag;
+    bool buffer_flag,get_out_flag;
     Lock *internal_lock;
     Condition *cond_new_receiver;
     Condition *cond_message;
-
 };
 
 #endif

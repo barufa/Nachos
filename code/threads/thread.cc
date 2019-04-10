@@ -72,8 +72,7 @@ Thread::~Thread()
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
     if(join_flag){
-        puts("Eliminando puerto");
-        // delete dead;//EXPLOTA
+        delete dead;
     }
 }
 

@@ -155,8 +155,9 @@ Condition::Condition(const char *debugName, Lock *conditionLock)
 
 Condition::~Condition()
 {
-    delete internal;
+    Broadcast();
     delete q_threads;
+    delete internal;
 }
 
 const char *
@@ -208,16 +209,18 @@ Port::Port(const char *debugName)
     internal_lock = new Lock("Internal_port_lock");
     cond_new_receiver = new Condition("Receiver_condition", internal_lock);
     cond_message = new Condition("Message_condition", internal_lock);
-    buffer_flag = false; //true=>buffer not empty
+    buffer_flag = get_out_flag = false; //true=>buffer not empty
     buffer = 0;
     num_receive = 0;
 }
 
 Port::~Port()
 {
+    get_out_flag = true;
     delete cond_new_receiver;
     delete cond_message;
     delete internal_lock;
+    internal_lock = NULL;
 }
 
 const char *
@@ -238,6 +241,12 @@ Port::Send(int msg)
     {
         DEBUG('t', "%s: The thread %s is waiting for a receiver\n",name,currentThread->GetName());
         cond_new_receiver->Wait();
+        if(get_out_flag){
+            DEBUG('t',"%s: The thread %s is aborting\n",name,currentThread->GetName());
+            //Si internal_lock fue eliminado, no hacer nada
+            if(internal_lock)internal_lock->Release();
+            return;
+        }
     }
 
     buffer = msg;
@@ -251,6 +260,7 @@ Port::Send(int msg)
 void
 Port::Receive(int *msg)
 {
+    ASSERT(msg!=NULL);
     internal_lock->Acquire();
     DEBUG('t', "%s: The thread %s wants to receive a message\n",name, currentThread->GetName());
 
@@ -261,6 +271,13 @@ Port::Receive(int *msg)
     {
         DEBUG('t', "%s: The thread %s is waiting for a message\n",name,currentThread->GetName());
         cond_message->Wait();
+        if(get_out_flag){
+            DEBUG('t',"%s: The thread %s is aborting\n",name,currentThread->GetName());
+            *msg=-1;
+            //Si internal_lock fue eliminado, no hacer nada
+            if(internal_lock)internal_lock->Release();
+            return;
+        }
     }
 
     *msg = buffer;

@@ -110,7 +110,7 @@ public:
     void Fork(VoidFunctionPtr func, void *arg);
 
     void Join();
-    
+
     /// Relinquish the CPU if any other thread is runnable.
     void Yield();
 
