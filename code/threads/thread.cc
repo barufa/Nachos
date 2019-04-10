@@ -72,7 +72,8 @@ Thread::~Thread()
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
     if(join_flag){
-        delete dead;
+        puts("Eliminando puerto");
+        // delete dead;//EXPLOTA
     }
 }
 
@@ -168,11 +169,12 @@ Thread::Finish()
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 
+    DEBUG('t',"Finishing thread \"%s\"\n", GetName());
 
     if(join_flag){
         dead->Send(0);
     }
-    DEBUG('t',"Finishing thread \"%s\"\n", GetName());
+
     threadToBeDestroyed = currentThread;
     Sleep();  // Invokes `SWITCH`.
     // Not reached.

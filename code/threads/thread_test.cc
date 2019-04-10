@@ -52,7 +52,7 @@ SimpleThread(void *name_)
         printf("*** Thread `%s` is running: iteration %u\n", currentThread->GetName(), num);
         currentThread->Yield();
     }
-    printf("!!! Thread `%s` has finished\n", name);
+    printf("!!! Thread `%s` stops\n", name);
 }
 
 void
@@ -110,23 +110,21 @@ SimpleThreadCond(void * args_){
             while(*n<=0){
                 c->Wait();
             }
-            (*n)--;
             printf("Thread `%s` eates 1 %d\n",name,*n);
+            (*n)--;
             l->Release();
         }else if(num%5!=0){//Creo 1
-            // ATOM(l,(*n)++);
             l->Acquire();
             (*n)++;
             printf("Thread `%s` creates 1 %d\n",name,*n);//*n volatil, solo para ver
-            c->Signal();
             l->Release();
+            c->Signal();
         }else{//Creo 5
-            // ATOM(l,(*n)+=5);
             l->Acquire();
             (*n)+=5;
             printf("Thread `%s` creates 5 %d\n",name,*n);
-            c->Broadcast();
             l->Release();
+            c->Broadcast();
         }
     }
     printf("Finalizo %s con N=%d\n",name,*n);
@@ -141,10 +139,10 @@ void SimpleThreadPort(void * args_){
     if((name[0]-'0')%2){//Receptor
       int m = 0;
       p->Receive(&m);
-      // printf("Thread `%s` recieves %d\n",name,m);
+      printf("**Thread `%s` recieves %d\n",name,m);
     }else{//Emisor
       p->Send(num+1000);
-      // printf("Thread `%s` sends %d\n",name,num+1000);
+      printf("**Thread `%s` sends %d\n",name,num+1000);
     }
   }
 
@@ -228,7 +226,7 @@ ThreadTest()
                 {
                 DEBUG('t', "THREAD_TEST_TYPE=PORT\n");
                 Port * p = new Port("Port Test");
-                for(char i = '1';i<='4';i++){
+                for(char i = '1';i<='9';i++){
                     char *name = new char [64];
                     strncpy(name, "_nd", 64);
                     name[0]=i;
@@ -253,10 +251,12 @@ ThreadTest()
                 }
 
                 for(int i=1;i<=2;i++){
+                    printf("Esperando a %d\n",i);
                     threads_arr[i]->Join();
+                    printf("Finalizo %d\n",i);
                 }
 
-                printf("\t\t===Finalizo %s===\n",currentThread->GetName());
+                printf("=====%s puede terminar=====\n",currentThread->GetName());
 
                 }
                 break;
