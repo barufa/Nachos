@@ -22,7 +22,6 @@
 
 #include "thread.hh"
 #include "lib/list.hh"
-#include <string>
 
 using namespace std;
 
@@ -109,7 +108,7 @@ private:
     /// For debugging.
     const char *name;
     Semaphore * lock;
-    char * thread;
+    Thread * thread;
     // Add other needed fields here.
 };
 
@@ -198,10 +197,10 @@ private:
 
     const char *name;
     int buffer,num_receive;
-    bool internal_flag;
+    bool buffer_flag;
     Lock *internal_lock;
-    Condition *cond_receive;
-    Condition *cond_send;
+    Condition *cond_new_receiver;
+    Condition *cond_message;
 
 };
 

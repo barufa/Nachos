@@ -12,6 +12,7 @@
 #include "debug.hh"
 #include "utility.hh"
 
+#include <unistd.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -52,15 +53,16 @@ Debug::Print(char flag, const char *format, ...) const
     if (!IsEnabled(flag))
         return;
 
-    fprintf(stderr, "[%c] ", flag);
+    //CAMBIO STDERR por STDOUT    
+    fprintf(stdout, "[%c] ", flag);
 
     va_list ap;
     // You will get an unused variable message here -- ignore it.
     va_start(ap, format);
-    vfprintf(stderr, format, ap);
+    vfprintf(stdout, format, ap);
     va_end(ap);
 
-    fflush(stderr);
+    fflush(stdout);
 }
 
 void

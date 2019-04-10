@@ -46,6 +46,7 @@
 #include "userprog/address_space.hh"
 #endif
 
+class Port;
 
 /// CPU register state to be saved on context switch.
 ///
@@ -95,7 +96,7 @@ private:
 public:
 
     /// Initialize a `Thread`.
-    Thread(const char *debugName);
+    Thread(const char *debugName,bool join_flag=false);
 
     /// Deallocate a Thread.
     ///
@@ -108,6 +109,8 @@ public:
     /// Make thread run `(*func)(arg)`.
     void Fork(VoidFunctionPtr func, void *arg);
 
+    void Join();
+    
     /// Relinquish the CPU if any other thread is runnable.
     void Yield();
 
@@ -138,6 +141,8 @@ private:
     ThreadStatus status;
 
     const char *name;
+    Port * dead;
+    bool join_flag;
 
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);

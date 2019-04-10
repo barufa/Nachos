@@ -21,7 +21,7 @@
 #include "switch.h"
 #include "synch.hh"
 #include "system.hh"
-
+#include <string.h>
 
 /// This is put at the top of the execution stack, for detecting stack
 /// overflows.
@@ -38,12 +38,18 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName)
+Thread::Thread(const char *threadName,bool j_flag)
 {
     name     = threadName;
     stackTop = nullptr;
     stack    = nullptr;
     status   = JUST_CREATED;
+    join_flag = j_flag;
+    dead = NULL;
+    if(join_flag){
+        dead = new Port("Join_Port");
+    }
+
 #ifdef USER_PROGRAM
     space    = nullptr;
 #endif
@@ -60,10 +66,14 @@ Thread::Thread(const char *threadName)
 Thread::~Thread()
 {
     DEBUG('t', "Deleting thread \"%s\"\n", name);
-
     ASSERT(this != currentThread);
+
     if (stack != nullptr)
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
+
+    if(join_flag){
+        delete dead;
+    }
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -158,13 +168,26 @@ Thread::Finish()
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 
-    DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
+    if(join_flag){
+        dead->Send(0);
+    }
+    DEBUG('t',"Finishing thread \"%s\"\n", GetName());
     threadToBeDestroyed = currentThread;
     Sleep();  // Invokes `SWITCH`.
     // Not reached.
 }
 
+void
+Thread::Join()
+{
+    if(join_flag)
+    {
+        DEBUG('t', "%s is waiting \"%s\" to finishes\n", currentThread->GetName(),GetName());
+        int msm;
+        dead->Receive(&msm);
+    }
+}
 /// Relinquish the CPU if any other thread is ready to run.
 ///
 /// If so, put the thread on the end of the ready list, so that it will
