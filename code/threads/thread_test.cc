@@ -22,7 +22,7 @@
     #define THREAD_TEST_TYPE SIMPLE
 #endif
 
-enum TEST_TYPE{SIMPLE, SEMAPHORE, LOCK, CONDITION,PORT,JOIN};
+enum TEST_TYPE{SIMPLE, SEMAPHORE, LOCK, CONDITION, PORT, JOIN};
 
 typedef struct arg_lock{
     Lock * l;
@@ -242,7 +242,7 @@ ThreadTest()
 
                 Thread * threads_arr[20];
 
-                for(int i=1;i<=2;i++){
+                for(int i=1;i<=9;i++){
                   char *name = new char [64];
                   strncpy(name, "_nd", 64);
                   name[0]='0'+i;
@@ -250,7 +250,7 @@ ThreadTest()
                   threads_arr[i]->Fork(SimpleThread, (void *) name);
                 }
 
-                for(int i=1;i<=2;i++){
+                for(int i=1;i<=9;i++){
                     printf("Esperando a %d\n",i);
                     threads_arr[i]->Join();
                     printf("Finalizo %d\n",i);

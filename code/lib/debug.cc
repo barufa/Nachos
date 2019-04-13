@@ -53,7 +53,7 @@ Debug::Print(char flag, const char *format, ...) const
     if (!IsEnabled(flag))
         return;
 
-    //CAMBIO STDERR por STDOUT    
+    //CAMBIO STDERR por STDOUT
     fprintf(stdout, "[%c] ", flag);
 
     va_list ap;

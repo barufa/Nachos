@@ -1,7 +1,12 @@
 #!/bin/bash
 
-rango=$(seq 500)
+rango=$(seq 1000)
 pass=1
+
+echo "Compilando.."
+make polish > /dev/null
+make > /dev/null
+echo "Ejecutando.."
 
 for i in $rango
 do

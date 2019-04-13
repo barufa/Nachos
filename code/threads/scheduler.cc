@@ -25,13 +25,16 @@
 /// Initialize the list of ready but not running threads to empty.
 Scheduler::Scheduler()
 {
-    readyList = new List<Thread *>;
+    for(int i=0;i<3;i++){
+      readyList[i] = new List<Thread *>;
+    }
+
 }
 
 /// De-allocate the list of ready threads.
 Scheduler::~Scheduler()
 {
-    delete readyList;
+    for(int i=0;i<3;i++) delete readyList[i];
 }
 
 /// Mark a thread as ready, but not running.
@@ -43,10 +46,19 @@ Scheduler::ReadyToRun(Thread *thread)
 {
     ASSERT(thread != nullptr);
 
-    DEBUG('t', "Putting thread %s on ready list\n", thread->GetName());
+    int priority = thread->GetPriority();
 
+    DEBUG('t', "Putting thread %s with priority %d on ready list\n", thread->GetName(),priority);
     thread->SetStatus(READY);
-    readyList->Append(thread);
+
+    if(priority<20){
+      readyList[0]->SortedInsert(thread,priority);
+    }else if(priority==20){
+      readyList[1]->SortedInsert(thread,priority);
+    }else{
+      readyList[2]->SortedInsert(thread,priority);
+    }
+
 }
 
 /// Return the next thread to be scheduled onto the CPU.
@@ -57,15 +69,27 @@ Scheduler::ReadyToRun(Thread *thread)
 Thread *
 Scheduler::FindNextToRun()
 {
-    return readyList->Pop();
+
+  Print();
+
+  for(int i=2;i>=0;i--){
+    if(!readyList[i]->IsEmpty()){
+      return readyList[i]->Pop();
+    }
+  }
+
+
+  DEBUG('t',"****No hay procesos para ejecutar****\n");
+
+  return NULL;
 }
 
 /// Dispatch the CPU to `nextThread`.
 ///
+/// Note: we assume the state of the previously running thread has already
 /// Save the state of the old thread, and load the state of the new thread,
 /// by calling the machine dependent context switch routine, `SWITCH`.
 ///
-/// Note: we assume the state of the previously running thread has already
 /// been changed from running to blocked or ready (depending).
 ///
 /// Side effect: the global variable `currentThread` becomes `nextThread`.
@@ -136,6 +160,13 @@ ThreadPrint(Thread *t)
 void
 Scheduler::Print()
 {
-    printf("Ready list contents:\n");
-    readyList->Apply(ThreadPrint);
+
+  for(int i=2;i>=0;i--){
+      if(readyList[i]->IsEmpty()){
+          printf("List %d is empty\n",i);
+      }else{
+          printf("Priority %d ready list contents:\n",i);
+          readyList[i]->Apply(ThreadPrint);
+      }
+  }
 }

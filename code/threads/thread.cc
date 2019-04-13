@@ -38,14 +38,14 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName,int _priority,bool j_flag)
+Thread::Thread(const char *threadName,bool j_flag,int _priority)
 {
-    name     = threadName;
-    stackTop = nullptr;
-    stack    = nullptr;
-    status   = JUST_CREATED;
+    name      = threadName;
+    stackTop  = nullptr;
+    stack     = nullptr;
+    status    = JUST_CREATED;
     join_flag = j_flag;
-    priority = _priority;
+    priority  = _priority;
     dead = NULL;
     if(join_flag){
         dead = new Port("Join_Port");
@@ -72,9 +72,6 @@ Thread::~Thread()
     if (stack != nullptr)
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
-    if(join_flag){
-        delete dead;
-    }
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -200,6 +197,9 @@ Thread::Join()
         DEBUG('t', "%s is waiting \"%s\" to finishes\n", currentThread->GetName(),GetName());
         int msm;
         dead->Receive(&msm);
+        //con delete dead aca me aseguro de que viva hasta que main termine de usarlo
+        //el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
+        delete dead;
     }
 }
 /// Relinquish the CPU if any other thread is ready to run.

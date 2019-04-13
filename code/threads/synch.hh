@@ -196,7 +196,7 @@ public:
 private:
 
     const char *name;
-    int buffer,num_receive;
+    int buffer,num_receive,num_tot;
     bool buffer_flag,get_out_flag;
     Lock *internal_lock;
     Condition *cond_new_receiver;
