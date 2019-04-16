@@ -1,0 +1,4 @@
+4) B:
+No es posible aplicar la misma solucion al caso de semaforos pues el proceso de alta prioridad que esta siendo bloqueado podria no ser liberado por los procesos que se encuentran en
+el semaforo, si no por un proceso externo. Por ejemplo, en el caso de los productores y los consumidores, los procesos bloqueados dependerian de los productores para empezar su
+ejecucion, y no de los consumidores que se encuentran dentro del semaforo.
