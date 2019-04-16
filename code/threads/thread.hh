@@ -131,6 +131,8 @@ public:
 
     void SetPriority(int _priority);
 
+    void RestoreOriginalPriority();
+
     void Print() const;
 
 private:
@@ -148,6 +150,7 @@ private:
     Port * dead;
     bool join_flag;
     int priority;
+    int original_priority;
     /// Allocate a stack for thread.  Used internally by `Fork`.
     void StackAllocate(VoidFunctionPtr func, void *arg);
 

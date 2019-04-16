@@ -121,7 +121,15 @@ void
 Lock::Acquire()
 {
     ASSERT(!IsHeldByCurrentThread());
-
+    //nuevo
+    if(thread!=NULL)
+    {
+        if(thread->GetPriority() < currentThread->GetPriority())
+        {
+            thread->SetPriority(currentThread->GetPriority());
+        }
+    }
+    //fin nuevo
     lock->P();
     thread = currentThread;
     DEBUG('l',"%s acquires the lock %s\n",thread->GetName(),name);
@@ -133,6 +141,9 @@ Lock::Release()
     ASSERT(IsHeldByCurrentThread());
     DEBUG('l',"%s releases the lock %s\n",thread->GetName(),name);
     thread = NULL;
+    //nuevo
+    currentThread->RestoreOriginalPriority();
+    //fin nuevo
     lock->V();
 }
 

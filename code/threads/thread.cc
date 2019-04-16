@@ -46,6 +46,7 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
     status    = JUST_CREATED;
     join_flag = j_flag;
     priority  = _priority;
+    original_priority = _priority;
     dead = NULL;
     if(join_flag){
         dead = new Port("Join_Port");
@@ -153,6 +154,12 @@ void
 Thread::SetPriority(int _priority)
 {
     priority = _priority;
+}
+
+void
+Thread::RestoreOriginalPriority()
+{
+    priority = original_priority;
 }
 
 void
