@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rango=$(seq 1000)
+rango=$(seq 500)
 pass=1
 
 echo "Compilando.."
@@ -10,7 +10,7 @@ echo "Ejecutando.."
 
 for i in $rango
 do
-	.//threads/nachos -rs $i > /dev/null
+	.//threads/nachos -rs $i -d tpslc  > /dev/null
 	if [ $? != 0 ]
 	then
 		pass=0

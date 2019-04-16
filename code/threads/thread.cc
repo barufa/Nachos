@@ -189,6 +189,7 @@ Thread::Finish()
 
     if(join_flag){
         dead->Send(0);
+        delete dead;
     }
 
     threadToBeDestroyed = currentThread;
@@ -206,7 +207,7 @@ Thread::Join()
         dead->Receive(&msm);
         //con delete dead aca me aseguro de que viva hasta que main termine de usarlo
         //el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
-        delete dead;
+        //~ delete dead;
     }
 }
 /// Relinquish the CPU if any other thread is ready to run.

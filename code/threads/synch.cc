@@ -224,14 +224,15 @@ Condition::Broadcast()
 
 Port::Port(const char *debugName)
 {
-    name=debugName;
-    internal_lock = new Lock("Internal_port_lock");
+    name = debugName;
+    internal_lock     = new Lock("Internal_port_lock");
     cond_new_receiver = new Condition("Receiver_condition", internal_lock);
     cond_message = new Condition("Message_condition", internal_lock);
-    buffer_flag = get_out_flag = false; //true=>buffer not empty
-    buffer = 0;
+    buffer_flag  = false; //true=>buffer not empty
+    get_out_flag = false;
+    buffer      = 0;
+    num_tot     = 0;
     num_receive = 0;
-    num_tot = 0;
 }
 
 Port::~Port()
@@ -254,13 +255,13 @@ Port::Send(int msg)
 
     internal_lock->Acquire();
     num_tot++;
-    //si el buffer esta null, espero a que se llame un receive
+
     while(num_receive<=0)
     {
         DEBUG('p', "%s: The thread %s is waiting for a receiver\n",name,currentThread->GetName());
         cond_new_receiver->Wait();
         if(get_out_flag){
-            DEBUG('p',"%s: The thread %s is aborting\n",name,currentThread->GetName());
+            DEBUG('p',"The thread %s is leaving the port\n",currentThread->GetName());
             //Si soy el ultimo elimino el lock
             num_tot--;
             if(num_tot==0)delete internal_lock;
@@ -292,7 +293,7 @@ Port::Receive(int *msg)
         DEBUG('p', "%s: The thread %s is waiting for a message\n",name,currentThread->GetName());
         cond_message->Wait();
         if(get_out_flag){
-            DEBUG('p',"%s: The thread %s is aborting\n",name,currentThread->GetName());
+            DEBUG('p',"The thread %s is leaving the port\n",currentThread->GetName());
             *msg=-1;
             num_tot--;
             //Si soy el ultimo elimino el lock
