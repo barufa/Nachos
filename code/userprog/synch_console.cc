@@ -1,16 +1,18 @@
 #include "synch_console.hh"
 
-SynchConsole::SynchConsole(const char *read_buffer, const char *write_buffer){
-
+SynchConsole::SynchConsole(const char * s, const char *read_buffer, const char *write_buffer){
+	DEBUG('a',"Creando consola syncronizada\n");
 	console = new Console(read_buffer, write_buffer, SynchConsole::CheckCharAvail,
 			              SynchConsole::WriteDone,this);
 	can_read   = new Semaphore("read avail", 0);//Bloque al proceso hasta que alguien escriba
 	write_done = new Semaphore("write done", 0);
 	write      = new Lock("lock console write");
 	read       = new Lock("lock console read");
+	name       = s;
 }
 
 SynchConsole::~SynchConsole(){
+	DEBUG('a',"Borrando consola %s syncronizada\n",name);
 	delete can_read;
 	delete write_done;
 	delete write;
@@ -20,8 +22,9 @@ SynchConsole::~SynchConsole(){
 
 void
 SynchConsole::PutChar(char ch){
-
+	DEBUG('a',"%s: Llamando a putchar\n",name);
 	write->Acquire();
+	DEBUG('a',"%s: Escribiendo...\n",name);
 	console->PutChar(ch);
 	write_done->P();
 	write->Release();
@@ -30,9 +33,10 @@ SynchConsole::PutChar(char ch){
 
 char
 SynchConsole::GetChar(){
-
+	DEBUG('a',"%s: Llamando a getchar\n",name);
 	read->Acquire();
 	can_read->P();
+	DEBUG('a',"%s: Leyendo...\n",name);
 	char ch = console->GetChar();
 	read->Release();
 
@@ -74,7 +78,7 @@ SynchConsole::CheckCharAvail(void* consol){
 }
 
 void
-SynchConsole::void WriteDone(void * consol){
+SynchConsole::WriteDone(void * consol){
 	ASSERT(consol!=NULL);
 	((SynchConsole *)consol)->can_read->V();
 }

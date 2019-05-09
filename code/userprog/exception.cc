@@ -76,7 +76,7 @@ static void
 SyscallHandler(ExceptionType _et)
 {
     int scid = machine->ReadRegister(2);//r2
-	int arg1 = machine->ReadRegister(4);//r4
+	  int arg1 = machine->ReadRegister(4);//r4
     int arg2 = machine->ReadRegister(5);//r5
     int arg3 = machine->ReadRegister(6);//r6
     int arg4 = machine->ReadRegister(7);//r7
@@ -112,16 +112,16 @@ SyscallHandler(ExceptionType _et)
 
 			switch (id) {
 				case CONSOLE_INPUT:{
-					// char * buffer = new char[size];
-					// for(int i=0;i<size;i++){
-					// 	buffer[i] = synchConsole->ReadChar();
-					// }
+          char * bffr = new char[size];
+          
 					break;
 				}
 				case CONSOLE_OUTPUT:{
+
 					break;
 				}
 				default:{
+
 					break;
 				}
 			}
@@ -136,11 +136,11 @@ SyscallHandler(ExceptionType _et)
 
 			break;
 		}
-        case SC_CLOSE: {
-            int fid = machine->ReadRegister(4);
-            DEBUG('a', "Close requested for id %u.\n", fid);
-            break;
-        }
+    case SC_CLOSE: {
+        int fid = machine->ReadRegister(4);
+        DEBUG('a', "Close requested for id %u.\n", fid);
+        break;
+    }
 		case SC_JOIN:{
 
 			break;

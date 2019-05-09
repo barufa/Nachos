@@ -13,6 +13,7 @@
 #include "machine/console.hh"
 #include "threads/synch.hh"
 #include "threads/system.hh"
+#include "synch_console.hh"
 
 
 /// Run a user program.
@@ -47,6 +48,7 @@ StartProcess(const char *filename)
 /// Threads making I/O requests wait on a `Semaphore` to delay until the I/O
 /// completes.
 
+static SynchConsole * synchconsole;
 static Console   *console;
 static Semaphore *readAvail;
 static Semaphore *writeDone;
@@ -71,9 +73,27 @@ WriteDone(void *arg)
 /// output.
 ///
 /// Stop when the user types a `q`.
+
+void
+ConsoleSynchTest(const char *in, const char *out)
+{
+    synchconsole = new SynchConsole("SynchConsole",in, out);
+
+    for (;;) {
+        puts("Entrando en for");
+        char ch = synchconsole->GetChar();
+        puts("Loops");
+        synchconsole->PutChar(ch);  // Echo it!
+        if (ch == 'q')
+            return;  // If `q`, then quit.
+    }
+}
+
 void
 ConsoleTest(const char *in, const char *out)
 {
+    ConsoleSynchTest(in,out);
+    return;
     console   = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
