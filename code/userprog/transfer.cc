@@ -28,15 +28,13 @@ void ReadBufferFromUser(int userAddress, char *outBuffer,
     ASSERT(userAddress != 0);
     ASSERT(outBuffer != nullptr);
     ASSERT(byteCount != 0);
-
-    for(unsigned count = 0;count<byteCount;count++)
+	for(unsigned count = 0;count<byteCount;count++)
     {
         int tmp;
 		ASSERT(machine->ReadMem(userAddress++, 1, &tmp));
-		*outBuffer = (unsigned char) tmp;
-    }
-
-    return;
+		outBuffer[count] = (unsigned char) tmp;
+	}
+	return;
 }
 
 /// Copy a byte array from host to virtual machine.

@@ -7,7 +7,7 @@
 class SynchConsole{
   public:
 
-    SynchConsole(const char * name,const char * read_buffer, const char *write_buffer);
+    SynchConsole(const char * name,const char * read_buffer=NULL, const char *write_buffer=NULL);
   	~SynchConsole();
   	void PutChar(char ch);
   	char GetChar();

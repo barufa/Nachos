@@ -182,6 +182,7 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
     Debugger *d = debugUserProg ? new Debugger : nullptr;
     machine = new Machine(d);  // This must come first.
+	synchConsole = new SynchConsole("Console");
     SetExceptionHandlers();
 #endif
 
@@ -213,6 +214,7 @@ Cleanup()
 
 #ifdef USER_PROGRAM
     delete machine;
+	delete synchConsole;
 #endif
 
 #ifdef FILESYS_NEEDED
