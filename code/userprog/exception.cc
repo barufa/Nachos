@@ -101,8 +101,8 @@ SyscallHandler(ExceptionType _et)
             if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
                 DEBUG('a', "Error: filename string too long (maximum is %u bytes).\n",
                       FILE_NAME_MAX_LEN);
-
             DEBUG('a', "Open requested for file `%s`.\n", filename);
+			machine_ret(fileSystem->Create(filename, 0));
             break;
         }
 		case SC_READ:{//Codeado
