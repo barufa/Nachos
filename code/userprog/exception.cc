@@ -70,6 +70,11 @@ DefaultHandler(ExceptionType et)
 ///
 /// And do not forget to increment the program counter before returning. (Or
 /// else you will loop making the same system call forever!)
+
+void machine_ret(int r){
+	machine->WriteRegister(2,r);
+}
+
 static void
 SyscallHandler(ExceptionType _et)
 {
@@ -77,17 +82,18 @@ SyscallHandler(ExceptionType _et)
 	int arg1 = machine->ReadRegister(4);//r4
     int arg2 = machine->ReadRegister(5);//r5
     int arg3 = machine->ReadRegister(6);//r6
-    int arg4 = machine->ReadRegister(7);//r7
+    // int arg4 = machine->ReadRegister(7);//r7
 
     switch (scid) {
-
-        case SC_HALT:
+        case SC_HALT:{//Codeado
+			DEBUG('a', "Calling SC_HALT.\n");
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
             break;
-
-        case SC_CREATE: {
-            int filenameAddr = machine->ReadRegister(4);
+		}
+        case SC_CREATE:{//Codeado
+			DEBUG('a', "Calling SC_CREATE\n");
+			int filenameAddr = machine->ReadRegister(4);
             if (filenameAddr == 0)
                 DEBUG('a', "Error: address to filename string is null.\n");
 
@@ -99,84 +105,114 @@ SyscallHandler(ExceptionType _et)
             DEBUG('a', "Open requested for file `%s`.\n", filename);
             break;
         }
-
-		case SC_READ:{
+		case SC_READ:{//Codeado
+			DEBUG('a', "Calling SC_READ.\n");
 			int buffer    = arg1;
 			int size      = arg2;
 			OpenFileId id = arg3;
+			int r         = -1;
 
 			ASSERT(buffer);
 			ASSERT(0<size);
 
 			switch (id) {
 				case CONSOLE_INPUT:{
-					char * bff = new char[size];
-					synchConsole->GetString(bff,size);
-					WriteBufferToUser(buffer,bff,size);
+					char * bff = new char[size+1];
+					r = synchConsole->GetString(bff,size);
+					WriteBufferToUser(buffer,bff,r);
 					delete bff;
 					break;
 				}
 				default:{
-					puts("Leer de archivo no implementado");
-					//Tratando de leer de un archivo.
-					//Filedescriptor en donde?
+					if(currentThread->IsOpenFile(id)){
+						OpenFile * file = currentThread->GetFile(id);
+						char * bff = new char[size];
+						r = file->Read(bff,size);
+						WriteBufferToUser(buffer,bff,r);
+						delete bff;
+					}
 					break;
 				}
 			}
-
+			machine_ret(r);
 			break;
 		}
-		case SC_WRITE:{
+		case SC_WRITE:{//Codedado
+			DEBUG('a', "Calling SC_WRITE.\n");
 			int buffer    = arg1;
 			int size      = arg2;
 			OpenFileId id = arg3;
+			int r         = -1;
 
 			ASSERT(buffer);
 			ASSERT(0<size);
 
 			switch (id) {
-				case CONSOLE_OUTPUT:{
-					char * bff = new char[size];
+				case CONSOLE_OUTPUT:{//STDOUT
+					char * bff = new char[size+1];
 					ReadBufferFromUser(buffer,bff,size);
-					synchConsole->PutString(bff,size);
+					r = synchConsole->PutString(bff,size);
 					delete bff;
 					break;
 				}
 				default:{
-					puts("Escribir en archivo no implementado");
-					//Necesito tabla de Filedescriptor
+					if(currentThread->IsOpenFile(id)){
+						OpenFile * file = currentThread->GetFile(id);
+						char * bff = new char[size];
+						ReadBufferFromUser(buffer,bff,size);
+						r = file->Write(bff,size);
+						delete bff;
+					}
 					break;
 				}
 			}
-
+			machine_ret(r);
 			break;
 		}
-		case SC_OPEN:{
+		case SC_OPEN:{//Codeado
+			DEBUG('a', "Calling SC_OPEN.\n");
+			int nameaddr = arg1;
+			int r        = -1;
 
+			char * filename = new char[FILE_NAME_MAX_LEN+1];
+			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
+				OpenFile * file = fileSystem->Open(filename);
+				r = currentThread->AddFile(file);
+			}
+
+			machine_ret(r);
 			break;
 		}
-		case SC_CLOSE: {
-		    int fid = machine->ReadRegister(4);
-		    DEBUG('a', "Close requested for id %u.\n", fid);
+		case SC_CLOSE:{//Codeado
+			DEBUG('a', "Calling SC_CLOSE.\n");
+			int fid = machine->ReadRegister(4);
+			int r   = -1;
+			DEBUG('a', "Close requested for id %u.\n", fid);
+			if(currentThread->IsOpenFile(fid)){
+				OpenFile* file = currentThread->RemoveFile(fid);
+				delete file;
+			}
+			machine_ret(r);
 		    break;
 		}
-		case SC_JOIN:{
-
+		case SC_EXIT:{//Codeado
+			DEBUG('a', "Calling SC_EXIT.\n");
+			currentThread->Finish();
+			machine_ret(arg1);
 			break;
 		}
-		case SC_EXIT:{
-
+		case SC_JOIN:{
+			DEBUG('a', "Calling SC_JOIN.\n");
 			break;
 		}
 		case SC_EXEC:{
-
+			DEBUG('a', "Calling SC_EXEC.\n");
 			break;
 		}
-
-        default:
-            fprintf(stderr, "Unexpected system call: id %d.\n", scid);
-            ASSERT(false);
-
+        default:{
+			fprintf(stderr, "Unexpected system call: id %d.\n", scid);
+			ASSERT(false);
+		}
     }
 
     IncrementPC();

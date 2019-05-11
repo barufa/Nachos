@@ -54,6 +54,10 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
 
 #ifdef USER_PROGRAM
     space    = nullptr;
+	DescriptorTable = new Table<OpenFile*>();
+	// DescriptorTable->Add(0);//Adding CONSOLE_INPUT
+	// DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
+	// ASSERT(DescriptorTable->Size()==2);
 #endif
 }
 
@@ -73,6 +77,9 @@ Thread::~Thread()
     if (stack != nullptr)
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
+#ifdef USER_PROGRAM
+	delete DescriptorTable;
+#endif
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -352,6 +359,43 @@ Thread::RestoreUserState()
 {
     for (unsigned i = 0; i < NUM_TOTAL_REGS; i++)
         machine->WriteRegister(i, userRegisters[i]);
+}
+
+OpenFileId
+Thread::AddFile(OpenFile * file){
+	DEBUG('a',"%s: Adding a file\n",currentThread->GetName());
+	ASSERT(file!=NULL);
+	return DescriptorTable->Add(file);
+}
+
+OpenFile *
+Thread::GetFile(OpenFileId fId){
+
+	ASSERT(DescriptorTable->HasKey(fId));
+
+	return DescriptorTable->Get(fId);
+}
+
+bool
+Thread::IsOpenFile(OpenFileId fId){
+	return DescriptorTable->HasKey(fId);
+}
+
+OpenFile *
+Thread::RemoveFile(OpenFileId fId){
+	DEBUG('a',"%s: removing a file\n",currentThread->GetName());
+	return DescriptorTable->Remove(fId);
+}
+
+void
+Thread::ResetTable(){
+	DEBUG('a',"%s: reset descriptortable\n",currentThread->GetName());
+	delete DescriptorTable;
+	DescriptorTable = new Table<OpenFile*>();
+	// DescriptorTable->Add(0);//Adding CONSOLE_INPUT
+	// DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
+	// ASSERT(DescriptorTable->Size()==2);
+	return;
 }
 
 #endif

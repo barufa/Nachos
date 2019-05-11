@@ -44,6 +44,8 @@
 #ifdef USER_PROGRAM
 #include "machine/machine.hh"
 #include "userprog/address_space.hh"
+#include "lib/table.hh"
+#include "userprog/syscall.h"
 #endif
 
 class Port;
@@ -162,6 +164,9 @@ private:
     /// state while executing kernel code.
     int userRegisters[NUM_TOTAL_REGS];
 
+	//Filedescriptors table
+	Table <OpenFile*> * DescriptorTable;
+
 public:
 
     // Save user-level register state.
@@ -172,6 +177,22 @@ public:
 
     // User code this thread is running.
     AddressSpace *space;
+
+	//Add a file to the Table
+	OpenFileId AddFile(OpenFile * file);
+
+	//Return OpenFile * from the table
+	OpenFile * GetFile(OpenFileId fId);
+
+	//Check if the file exist in the table
+	bool IsOpenFile(OpenFileId fId);
+
+	//Remove a file from the table
+	OpenFile * RemoveFile(OpenFileId fId);
+
+	//Reset the table
+	void ResetTable();
+
 #endif
 };
 
