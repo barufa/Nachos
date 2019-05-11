@@ -90,8 +90,6 @@ ConsoleSynchTest(const char *in, const char *out)
 void
 ConsoleTest(const char *in, const char *out)
 {
-    ConsoleSynchTest(in,out);
-    return;
     console   = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
@@ -99,9 +97,9 @@ ConsoleTest(const char *in, const char *out)
     for (;;) {
         readAvail->P();        // Wait for character to arrive.
         char ch = console->GetChar();
+		if (ch == 'q')
+			return;  // If `q`, then quit.
         console->PutChar(ch);  // Echo it!
         writeDone->P();        // Wait for write to finish.
-        if (ch == 'q')
-            return;  // If `q`, then quit.
     }
 }

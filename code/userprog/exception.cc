@@ -23,11 +23,9 @@
 
 
 #include "transfer.hh"
-#include "synch_console.hh"
 #include "syscall.h"
 #include "filesys/directory_entry.hh"
 #include "threads/system.hh"
-
 
 static void
 IncrementPC()
@@ -76,7 +74,7 @@ static void
 SyscallHandler(ExceptionType _et)
 {
     int scid = machine->ReadRegister(2);//r2
-	  int arg1 = machine->ReadRegister(4);//r4
+	int arg1 = machine->ReadRegister(4);//r4
     int arg2 = machine->ReadRegister(5);//r5
     int arg3 = machine->ReadRegister(6);//r6
     int arg4 = machine->ReadRegister(7);//r7
@@ -112,16 +110,16 @@ SyscallHandler(ExceptionType _et)
 
 			switch (id) {
 				case CONSOLE_INPUT:{
-          char * bffr = new char[size];
-          
-					break;
-				}
-				case CONSOLE_OUTPUT:{
-
+					char * bff = new char[size];
+					synchConsole->GetString(bff,size);
+					WriteBufferToUser(buffer,bff,size);
+					delete bff;
 					break;
 				}
 				default:{
-
+					puts("Leer de archivo no implementado");
+					//Tratando de leer de un archivo.
+					//Filedescriptor en donde?
 					break;
 				}
 			}
@@ -129,6 +127,27 @@ SyscallHandler(ExceptionType _et)
 			break;
 		}
 		case SC_WRITE:{
+			int buffer    = arg1;
+			int size      = arg2;
+			OpenFileId id = arg3;
+
+			ASSERT(buffer);
+			ASSERT(0<size);
+
+			switch (id) {
+				case CONSOLE_OUTPUT:{
+					char * bff = new char[size];
+					ReadBufferFromUser(buffer,bff,size);
+					synchConsole->PutString(bff,size);
+					delete bff;
+					break;
+				}
+				default:{
+					puts("Escribir en archivo no implementado");
+					//Necesito tabla de Filedescriptor
+					break;
+				}
+			}
 
 			break;
 		}
@@ -136,11 +155,11 @@ SyscallHandler(ExceptionType _et)
 
 			break;
 		}
-    case SC_CLOSE: {
-        int fid = machine->ReadRegister(4);
-        DEBUG('a', "Close requested for id %u.\n", fid);
-        break;
-    }
+		case SC_CLOSE: {
+		    int fid = machine->ReadRegister(4);
+		    DEBUG('a', "Close requested for id %u.\n", fid);
+		    break;
+		}
 		case SC_JOIN:{
 
 			break;
