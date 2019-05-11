@@ -80,12 +80,10 @@ ConsoleSynchTest(const char *in, const char *out)
     synchconsole = new SynchConsole("SynchConsole",in, out);
 
     for (;;) {
-        puts("Entrando en for");
         char ch = synchconsole->GetChar();
-        puts("Loops");
-        synchconsole->PutChar(ch);  // Echo it!
         if (ch == 'q')
             return;  // If `q`, then quit.
+		synchconsole->PutChar(ch);  // Echo it!
     }
 }
 

@@ -127,7 +127,6 @@ char
 Console::GetChar()
 {
     char ch = incoming;
-
     incoming = EOF;
     return ch;
 }

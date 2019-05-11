@@ -1,7 +1,7 @@
 #include "synch_console.hh"
 
 SynchConsole::SynchConsole(const char * s, const char *read_buffer, const char *write_buffer){
-	DEBUG('a',"Creando consola syncronizada\n");
+	DEBUG('a',"Creando %s consola syncronizada\n",s);
 	console = new Console(read_buffer, write_buffer, SynchConsole::CheckCharAvail,
 			              SynchConsole::WriteDone,this);
 	can_read   = new Semaphore("read avail", 0);//Bloque al proceso hasta que alguien escriba
@@ -74,11 +74,11 @@ SynchConsole::GetString(char * buffer,int size){
 void
 SynchConsole::CheckCharAvail(void* consol){
 	ASSERT(consol!=NULL);
-	((SynchConsole *)consol)->write_done->V();
+	((SynchConsole *)consol)->can_read->V();
 }
 
 void
 SynchConsole::WriteDone(void * consol){
 	ASSERT(consol!=NULL);
-	((SynchConsole *)consol)->can_read->V();
+	((SynchConsole *)consol)->write_done->V();
 }
