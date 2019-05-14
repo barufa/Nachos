@@ -56,6 +56,7 @@ SwapHeader(noffHeader *noffH)
 ///
 /// * `executable` is the file containing the object code to load into
 ///   memory.
+
 AddressSpace::AddressSpace(OpenFile *executable)
 {
     ASSERT(executable != nullptr);
@@ -82,39 +83,62 @@ AddressSpace::AddressSpace(OpenFile *executable)
     DEBUG('a', "Initializing address space, num pages %u, size %u\n",
           numPages, size);
 
+    char *mainMemory = machine->GetMMU()->mainMemory;
     // First, set up the translation.
 
     pageTable = new TranslationEntry[numPages];
     for (unsigned i = 0; i < numPages; i++) {
+        int next_page = bitmap->Find();
+        ASSERT(next_page!=-1);
         pageTable[i].virtualPage  = i;
           // For now, virtual page number = physical page number.
-        pageTable[i].physicalPage = i;
+        pageTable[i].physicalPage = next_page;
         pageTable[i].valid        = true;
         pageTable[i].use          = false;
         pageTable[i].dirty        = false;
         pageTable[i].readOnly     = false;
-          // If the code segment was entirely on a separate page, we could
-          // set its pages to be read-only.
+        memset(&(mainMemory[next_page*PAGE_SIZE]), 0, PAGE_SIZE);
+        // If the code segment was entirely on a separate page, we could
+        // set its pages to be read-only.
     }
 
-    char *mainMemory = machine->GetMMU()->mainMemory;
 
     // Zero out the entire address space, to zero the unitialized data
     // segment and the stack segment.
-    memset(mainMemory, 0, size);
+
 
     // Then, copy in the code and data segments into memory.
     if (noffH.code.size > 0) {
+        uint32_t virtualAddr = noffH.code.virtualAddr;
+        uint32_t inFileAddr  = noffH.code.inFileAddr;
+        uint32_t codesize    = noffH.code.size;
+
         DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
-              noffH.code.virtualAddr, noffH.code.size);
-        executable->ReadAt(&(mainMemory[noffH.code.virtualAddr]),
-                           noffH.code.size, noffH.code.inFileAddr);
+              virtualAddr, codesize);
+
+        for(uint32_t i=0;i<codesize;i++){
+            unsigned page = (virtualAddr+i)/PAGE_SIZE;
+            uint32_t physicalAddr = pageTable[page].physicalPage + ((virtualAddr+i)%PAGE_SIZE);
+            executable->ReadAt(&(mainMemory[physicalAddr]), 1, inFileAddr+i);
+        }
+        // executable->ReadAt(&(mainMemory[virtualAddr]),size,inFileAddr);
     }
     if (noffH.initData.size > 0) {
+        uint32_t virtualAddr = noffH.initData.virtualAddr;
+        uint32_t inFileAddr  = noffH.initData.inFileAddr;
+        uint32_t datasize    = noffH.initData.size;
+
         DEBUG('a', "Initializing data segment, at 0x%X, size %u\n",
-              noffH.initData.virtualAddr, noffH.initData.size);
-        executable->ReadAt(&(mainMemory[noffH.initData.virtualAddr]),
-          noffH.initData.size, noffH.initData.inFileAddr);
+                virtualAddr,datasize);
+
+        for(uint32_t i=0;i<datasize;i++){
+            unsigned page = (virtualAddr+i)/PAGE_SIZE;
+            uint32_t physicalAddr = pageTable[page].physicalPage + ((virtualAddr+i)%PAGE_SIZE);
+            executable->ReadAt(&(mainMemory[physicalAddr]), 1, inFileAddr+i);
+        }
+
+        // executable->ReadAt(&(mainMemory[noffH.initData.virtualAddr]),
+        // noffH.initData.size, noffH.initData.inFileAddr);
     }
 
 }

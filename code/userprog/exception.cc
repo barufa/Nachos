@@ -197,7 +197,7 @@ SyscallHandler(ExceptionType _et)
 		}
 		case SC_EXIT:{//Codeado
 			DEBUG('a', "Calling SC_EXIT.\n");
-			currentThread->Finish();
+			// currentThread->Finish();
 			machine_ret(arg1);
 			break;
 		}
