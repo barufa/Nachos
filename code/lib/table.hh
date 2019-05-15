@@ -28,15 +28,12 @@ public:
 
     T Remove(int i);
 
-	int Size();
-
 private:
     /// Data items.
     T data[SIZE];
 
     /// Current greatest index for a new item.
-    int current,size;
-
+    int current;
     /// A list to store indexes of items that have been freed and are not
     /// among those with greatest numbers, so it is not possible to modify
     /// `current`.  In other words, this keeps track of external
@@ -49,7 +46,6 @@ template <class T>
 Table<T>::Table()
 {
     current = 0;
-	size = 0;
 }
 
 template <class T>
@@ -57,7 +53,6 @@ int
 Table<T>::Add(T item)
 {
     int i;
-	size++;
 
     if (!freed.IsEmpty()) {
         i = freed.Pop();
@@ -68,7 +63,6 @@ Table<T>::Add(T item)
         data[i] = item;
         return i;
     } else {
-		size--;
         return -1;
     }
 }
@@ -111,7 +105,6 @@ Table<T>::Remove(int i)
     if (!HasKey(i)) {
         return T();
     }
-	size--;
     if (i == current - 1) {
         current--;
         for (int j = current - 1; j >= 0 && !HasKey(j); j--) {
@@ -123,12 +116,6 @@ Table<T>::Remove(int i)
         freed.SortedInsert(i, i);
     }
     return data[i];
-}
-
-template <class T>
-int
-Table<T>::Size(){
-	return current;
 }
 
 #endif

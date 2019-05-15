@@ -43,6 +43,7 @@ SynchDisk *synchDisk;
 Machine *machine;  ///< User program memory and registers.
 SynchConsole * synchConsole;
 Bitmap *bitmap;
+Table<Thread*> * processTable;
 #endif
 
 #ifdef NETWORK
@@ -185,6 +186,7 @@ Initialize(int argc, char **argv)
     machine = new Machine(d);  // This must come first.
 	  synchConsole = new SynchConsole("Console");
     bitmap = new Bitmap(NUM_PHYS_PAGES);
+	processTable = new Table<Thread *>;
     SetExceptionHandlers();
 #endif
 
@@ -217,7 +219,8 @@ Cleanup()
 #ifdef USER_PROGRAM
     delete machine;
 	delete synchConsole;
-  delete bitmap;
+  	delete bitmap;
+	delete processTable;
 #endif
 
 #ifdef FILESYS_NEEDED

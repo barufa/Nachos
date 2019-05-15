@@ -197,16 +197,36 @@ SyscallHandler(ExceptionType _et)
 		}
 		case SC_EXIT:{//Codeado
 			DEBUG('a', "Calling SC_EXIT.\n");
-			// currentThread->Finish();
+			currentThread->Finish(arg1);
 			machine_ret(arg1);
 			break;
 		}
 		case SC_JOIN:{
 			DEBUG('a', "Calling SC_JOIN.\n");
+			SpaceId id = arg1;
+			if(!(processTable->HasKey(id))){
+				DEBUG('a', "Invalid pid %d.\n",id);
+				break;
+			}
+			int r = (processTable->Get(id))->Join();
+			machine_ret(r);
 			break;
 		}
 		case SC_EXEC:{
 			DEBUG('a', "Calling SC_EXEC.\n");
+			int nameaddr = arg1;
+			int r        = -1;
+
+			char * filename = new char[FILE_NAME_MAX_LEN+1];
+			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
+				OpenFile * executable = fileSystem->Open(filename);
+				Thread * newThread    = new Thread("Child_Thread",true);
+				newThread->space      = new AddressSpace(executable);;
+				machine_ret(newThread->pid);
+				delete executable;
+			}
+
+			machine_ret(r);
 			break;
 		}
         default:{

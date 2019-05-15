@@ -111,7 +111,7 @@ public:
     /// Make thread run `(*func)(arg)`.
     void Fork(VoidFunctionPtr func, void *arg);
 
-    void Join();
+    int Join();
 
     /// Relinquish the CPU if any other thread is runnable.
     void Yield();
@@ -120,7 +120,7 @@ public:
     void Sleep();
 
     /// The thread is done executing.
-    void Finish();
+    void Finish(int ret=1);
 
     /// Check if thread has overflowed its stack.
     void CheckOverflow() const;
@@ -163,7 +163,6 @@ private:
     /// registers -- one for its state while executing user code, one for its
     /// state while executing kernel code.
     int userRegisters[NUM_TOTAL_REGS];
-
 	//Filedescriptors table
 	Table <OpenFile*> * DescriptorTable;
 
@@ -178,6 +177,8 @@ public:
     // User code this thread is running.
     AddressSpace *space;
 
+	//Process Id.
+	int pid;
 	//Add a file to the Table
 	OpenFileId AddFile(OpenFile * file);
 

@@ -54,6 +54,8 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
 
 #ifdef USER_PROGRAM
     space    = nullptr;
+	if(processTable)
+		pid = processTable->Add(this);
 	DescriptorTable = new Table<OpenFile*>();
 	// DescriptorTable->Add(0);//Adding CONSOLE_INPUT
 	// DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
@@ -78,6 +80,8 @@ Thread::~Thread()
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
 #ifdef USER_PROGRAM
+	if(processTable)
+		processTable->Remove(pid);
 	delete DescriptorTable;
 #endif
 }
@@ -187,7 +191,7 @@ Thread::Print() const
 /// NOTE: we disable interrupts, so that we do not get a time slice between
 /// setting `threadToBeDestroyed`, and going to sleep.
 void
-Thread::Finish()
+Thread::Finish(int ret)
 {
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
@@ -195,7 +199,7 @@ Thread::Finish()
     DEBUG('t',"Finishing thread \"%s\"\n", GetName());
 
     if(join_flag){
-        dead->Send(0);
+        dead->Send(ret);
         delete dead;
     }
 
@@ -204,7 +208,7 @@ Thread::Finish()
     // Not reached.
 }
 
-void
+int
 Thread::Join()
 {
     if(join_flag)
@@ -212,10 +216,12 @@ Thread::Join()
         DEBUG('t', "%s is waiting \"%s\" to finishes\n", currentThread->GetName(),GetName());
         int msm;
         dead->Receive(&msm);
-        //con delete dead aca me aseguro de que viva hasta que main termine de usarlo
+		//con delete dead aca me aseguro de que viva hasta que main termine de usarlo
         //el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
         //~ delete dead;
+		return msm;
     }
+	return 0;
 }
 /// Relinquish the CPU if any other thread is ready to run.
 ///
