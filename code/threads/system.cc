@@ -187,6 +187,8 @@ Initialize(int argc, char **argv)
 	  synchConsole = new SynchConsole("Console");
     bitmap = new Bitmap(NUM_PHYS_PAGES);
 	processTable = new Table<Thread *>;
+	if (!timer)
+        timer = new Timer(TimerInterruptHandler, 0, randomYield);
     SetExceptionHandlers();
 #endif
 

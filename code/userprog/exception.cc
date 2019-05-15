@@ -82,7 +82,6 @@ SyscallHandler(ExceptionType _et)
 	int arg1 = machine->ReadRegister(4);//r4
     int arg2 = machine->ReadRegister(5);//r5
     int arg3 = machine->ReadRegister(6);//r6
-    // int arg4 = machine->ReadRegister(7);//r7
 
     switch (scid) {
         case SC_HALT:{//Codeado
@@ -221,8 +220,8 @@ SyscallHandler(ExceptionType _et)
 			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
 				OpenFile * executable = fileSystem->Open(filename);
 				Thread * newThread    = new Thread("Child_Thread",true);
-				newThread->space      = new AddressSpace(executable);;
-				machine_ret(newThread->pid);
+				newThread->space      = new AddressSpace(executable);
+				r = newThread->pid;
 				delete executable;
 			}
 

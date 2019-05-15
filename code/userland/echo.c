@@ -16,10 +16,7 @@ int
 main(void)
 {
 	char bf[10];
-    //~ Create("test.txt");
-    //~ OpenFileId f = Open("test.txt");
     Read(bf,10,0);//Leo de STDIN
     Write(bf,10,1);//Escribo en STDOUT
-    //~ Close(o);
-    // Not reached.
+    Halt();
 }
