@@ -117,9 +117,10 @@ AddressSpace::AddressSpace(OpenFile *executable)
               virtualAddr, codesize);
 
         for(uint32_t i=0;i<codesize;i++){
-            unsigned page = (virtualAddr+i)/PAGE_SIZE;
-            uint32_t physicalAddr = pageTable[page].physicalPage + ((virtualAddr+i)%PAGE_SIZE);
-            executable->ReadAt(&(mainMemory[physicalAddr]), 1, inFileAddr+i);
+            unsigned page   = (virtualAddr+i)/PAGE_SIZE;
+	    unsigned offset = (virtualAddr+i)%PAGE_SIZE;
+            uint32_t physicalAddr = pageTable[page].physicalPage*PAGE_SIZE;
+            executable->ReadAt(&(mainMemory[physicalAddr+offset]), 1, inFileAddr+i);
         }
         // executable->ReadAt(&(mainMemory[virtualAddr]),size,inFileAddr);
     }
@@ -133,8 +134,9 @@ AddressSpace::AddressSpace(OpenFile *executable)
 
         for(uint32_t i=0;i<datasize;i++){
             unsigned page = (virtualAddr+i)/PAGE_SIZE;
-            uint32_t physicalAddr = pageTable[page].physicalPage + ((virtualAddr+i)%PAGE_SIZE);
-            executable->ReadAt(&(mainMemory[physicalAddr]), 1, inFileAddr+i);
+	    unsigned offset = (virtualAddr+i)%PAGE_SIZE;
+	    uint32_t physicalAddr = pageTable[page].physicalPage*PAGE_SIZE;
+            executable->ReadAt(&(mainMemory[physicalAddr+offset]), 1, inFileAddr+i);
         }
 
         // executable->ReadAt(&(mainMemory[noffH.initData.virtualAddr]),
