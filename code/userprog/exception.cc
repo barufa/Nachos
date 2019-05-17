@@ -92,7 +92,7 @@ SyscallHandler(ExceptionType _et)
 		}
         case SC_CREATE:{//Codeado
 			DEBUG('a', "Calling SC_CREATE\n");
-			int filenameAddr = machine->ReadRegister(4);
+			int filenameAddr = arg1;
             if (filenameAddr == 0)
                 DEBUG('a', "Error: address to filename string is null.\n");
 
@@ -104,38 +104,6 @@ SyscallHandler(ExceptionType _et)
 			machine_ret(fileSystem->Create(filename, 0));
             break;
         }
-		case SC_READ:{//Codeado
-			DEBUG('a', "Calling SC_READ.\n");
-			int buffer    = arg1;
-			int size      = arg2;
-			OpenFileId id = arg3;
-			int r         = -1;
-
-			ASSERT(buffer);
-			ASSERT(0<size);
-
-			switch (id) {
-				case CONSOLE_INPUT:{
-					char * bff = new char[size+1];
-					r = synchConsole->GetString(bff,size);
-					WriteBufferToUser(buffer,bff,r);
-					delete bff;
-					break;
-				}
-				default:{
-					if(currentThread->IsOpenFile(id)){
-						OpenFile * file = currentThread->GetFile(id);
-						char * bff = new char[size];
-						r = file->Read(bff,size);
-						WriteBufferToUser(buffer,bff,r);
-						delete bff;
-					}
-					break;
-				}
-			}
-			machine_ret(r);
-			break;
-		}
 		case SC_WRITE:{//Codedado
 			DEBUG('a', "Calling SC_WRITE.\n");
 			int buffer    = arg1;
@@ -200,7 +168,7 @@ SyscallHandler(ExceptionType _et)
 			machine_ret(arg1);
 			break;
 		}
-		case SC_JOIN:{
+		case SC_JOIN:{//Codeado
 			DEBUG('a', "Calling SC_JOIN.\n");
 			SpaceId id = arg1;
 			if(!(processTable->HasKey(id))){
@@ -211,7 +179,7 @@ SyscallHandler(ExceptionType _et)
 			machine_ret(r);
 			break;
 		}
-		case SC_EXEC:{
+		case SC_EXEC:{//Codeado
 			DEBUG('a', "Calling SC_EXEC.\n");
 			int nameaddr = arg1;
 			int r        = -1;
@@ -226,6 +194,59 @@ SyscallHandler(ExceptionType _et)
 			}
 
 			machine_ret(r);
+			break;
+		}
+		case SC_READ:{//Codeado
+			DEBUG('a', "Calling SC_READ.\n");
+			int buffer    = arg1;
+			int size      = arg2;
+			OpenFileId id = arg3;
+			int r         = -1;
+
+			ASSERT(buffer);
+			ASSERT(0<size);
+
+			switch (id) {
+				case CONSOLE_INPUT:{
+					char * bff = new char[size+1];
+					r = synchConsole->GetString(bff,size);
+					WriteBufferToUser(buffer,bff,r);
+					delete bff;
+					break;
+				}
+				default:{
+					if(currentThread->IsOpenFile(id)){
+						OpenFile * file = currentThread->GetFile(id);
+						char * bff = new char[size];
+						r = file->Read(bff,size);
+						WriteBufferToUser(buffer,bff,r);
+						delete bff;
+					}
+					break;
+				}
+			}
+			machine_ret(r);
+			break;
+		}
+		case SC_REMOVE:{//Codeado
+			DEBUG('a', "Calling SC_REMOVE\n");
+			int filenameAddr = arg1;
+            if (filenameAddr == 0)
+                DEBUG('a', "Error: address to filename string is null.\n");
+
+            char filename[FILE_NAME_MAX_LEN + 1];
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
+                DEBUG('a', "Error: filename string too long (maximum is %u bytes).\n",
+                      FILE_NAME_MAX_LEN);
+			machine_ret(fileSystem->Remove(filename));
+			break;
+		}
+		case SC_FORK:{
+			DEBUG('a', "Calling SC_FORK.\n");
+			break;
+		}
+		case SC_YIELD:{
+			DEBUG('a', "Calling SC_YIELD.\n");
 			break;
 		}
         default:{
