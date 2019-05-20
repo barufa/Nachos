@@ -57,9 +57,8 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
 	if(processTable)
 		pid = processTable->Add(this);
 	DescriptorTable = new Table<OpenFile*>();
-	// DescriptorTable->Add(0);//Adding CONSOLE_INPUT
-	// DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
-	// ASSERT(DescriptorTable->Size()==2);
+	DescriptorTable->Add(NULL);//Adding CONSOLE_INPUT
+	DescriptorTable->Add(NULL);//Adding CONSOLE_OUTPUT
 #endif
 }
 
