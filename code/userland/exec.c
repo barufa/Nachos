@@ -3,7 +3,8 @@
 int
 main(void)
 {
-    SpaceId n = Exec("userland/filetest");
+    char * argv[] = {"A la grande le puse cuca"};
+    SpaceId n = Exec("userland/filetest",1,argv);
     Join(n);
     Halt();
 }

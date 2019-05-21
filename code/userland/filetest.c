@@ -13,10 +13,10 @@
 
 
 int
-main(void)
+main(int argc,char ** argv)
 {
     Create("test.txt");
     OpenFileId o = Open("test.txt");
-    Write("Hello world\n",12,o);
+    Write(argv[0],25,o);
     Close(o);
 }

@@ -113,14 +113,14 @@ main(void)
             WriteError("too many arguments.", OUTPUT);
             continue;
         }
-		
+
 		if(line[0]=='&'){
-			const SpaceId newProc = Exec(line+1);
+			const SpaceId newProc = Exec(line+1,0,0);
 		}else{
-			const SpaceId newProc = Exec(line);
+			const SpaceId newProc = Exec(line,0,0);
 			Join(newProc);
 		}
-		
+
         // Comment and uncomment according to whether command line arguments
         // are given in the system call or not.
         //const SpaceId newProc = Exec(line, argv);

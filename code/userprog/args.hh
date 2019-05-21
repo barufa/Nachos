@@ -38,7 +38,7 @@ char **SaveArgs(int address);
 ///            -└───────────────────────┘
 ///
 /// * `args` is a kernel-space pointer to the start of an `argv`-like array.
-void WriteArgs(char **args);
+int WriteArgs(char **args);
 
 
 #endif

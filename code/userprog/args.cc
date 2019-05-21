@@ -4,7 +4,8 @@
 
 
 #include "transfer.hh"
-#include "machine/machine.h"
+#include "machine/machine.hh"
+#include "threads/system.hh"
 
 
 const unsigned MAX_ARG_COUNT  = 32;
@@ -42,7 +43,7 @@ SaveArgs(int address)
     return ret;
 }
 
-void
+int
 WriteArgs(char **args)
 {
     ASSERT(args != nullptr);
@@ -52,7 +53,7 @@ WriteArgs(char **args)
     // Start writing the arguments where the current SP points.
     int args_address[MAX_ARG_COUNT];
     unsigned i;
-    int sp = machine->ReadRegister(StackReg);
+    int sp = machine->ReadRegister(STACK_REG);
     for (i = 0; i < MAX_ARG_COUNT; i++) {
         if (args[i] == nullptr)     // If the last was reached, terminate.
             break;
@@ -72,6 +73,8 @@ WriteArgs(char **args)
     machine->WriteMem(sp + 4 * i, 4, 0);  // The last is null.
     sp -= 16;  // Make room for the “register saves”.
 
-    machine->WriteRegister(StackReg, sp);
+    machine->WriteRegister(STACK_REG, sp);
     delete args;  // Free the array.
+
+    return i;
 }

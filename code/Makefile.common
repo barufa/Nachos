@@ -95,6 +95,7 @@ USERPROG_HDR = ../userprog/address_space.hh            \
                ../machine/machine.hh                   \
                ../machine/mmu.hh                       \
                ../machine/translation_entry.hh         \
+               ../userprog/args.hh                     \
                ../userprog/synch_console.hh
 USERPROG_SRC = ../userprog/address_space.cc            \
                ../userprog/debugger.cc                 \
@@ -111,6 +112,7 @@ USERPROG_SRC = ../userprog/address_space.cc            \
                ../machine/machine.cc                   \
                ../machine/mips_sim.cc                  \
                ../machine/mmu.cc                       \
+               ../userprog/args.cc                     \
                ../userprog/synch_console.cc
 USERPROG_OBJ = address_space.o            \
                bitmap.o                   \
@@ -127,6 +129,7 @@ USERPROG_OBJ = address_space.o            \
                mips_sim.o                 \
                mmu.o                      \
                transfer.o                 \
+               args.o                     \
                synch_console.o
 
 VMEM_HDR =
