@@ -64,12 +64,12 @@ SynchConsole::GetString(char * buffer,int size){
 	for(i=0;i<size;i++){
 		can_read->P();
 		char ch = console->GetChar();
-		if(ch=='\0' || ch=='\n')
-			break;
 		buffer[i] = ch;
+		if(ch=='\n' || ch=='\0'){
+			i++;
+			break;
+		}
 	}
-	buffer[i]='\0';
-
 	read->Release();
 
 	return i;

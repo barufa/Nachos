@@ -75,6 +75,12 @@ void machine_ret(int r){
 	machine->WriteRegister(2,r);
 }
 
+void run_program(void * arg){
+	currentThread->space->InitRegisters();
+	currentThread->space->RestoreState();
+	machine->Run();
+}
+
 static void
 SyscallHandler(ExceptionType _et)
 {
@@ -183,16 +189,17 @@ SyscallHandler(ExceptionType _et)
 			DEBUG('a', "Calling SC_EXEC.\n");
 			int nameaddr = arg1;
 			int r        = -1;
-
 			char * filename = new char[FILE_NAME_MAX_LEN+1];
+
 			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
+				DEBUG('a', "Opening %s file\n",filename);
 				OpenFile * executable = fileSystem->Open(filename);
 				Thread * newThread    = new Thread("Child_Thread",true);
 				newThread->space      = new AddressSpace(executable);
 				r = newThread->pid;
+				newThread->Fork(run_program,NULL);
 				delete executable;
 			}
-
 			machine_ret(r);
 			break;
 		}
@@ -218,6 +225,7 @@ SyscallHandler(ExceptionType _et)
 					if(currentThread->IsOpenFile(id)){
 						OpenFile * file = currentThread->GetFile(id);
 						char * bff = new char[size];
+						memset(bff,0,size);
 						r = file->Read(bff,size);
 						WriteBufferToUser(buffer,bff,r);
 						delete bff;
