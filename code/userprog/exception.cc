@@ -77,12 +77,19 @@ void machine_ret(int r){
 }
 
 void run_program(void * arg){
-  int argv = WriteArgs((char **)arg);
-  int argc = machine->ReadRegister(STACK_REG+16);
-  currentThread->space->InitRegisters();
+
+  	int *args = WriteArgs((char **)arg);
+	int argc = args[0];
+	int argv = args[1];
+
+	DEBUG('e',"argc = %d - argv = %d in run_program\n",argv,argc);
+
+	currentThread->space->InitRegisters();
 	currentThread->space->RestoreState();
-  machine->WriteRegister(4,argc);
-  machine->WriteRegister(5,argv);
+
+  	machine->WriteRegister(4,argc);
+  	machine->WriteRegister(5,argv);
+
 	machine->Run();
 }
 
@@ -90,7 +97,7 @@ static void
 SyscallHandler(ExceptionType _et)
 {
     int scid = machine->ReadRegister(2);//r2
-	  int arg1 = machine->ReadRegister(4);//r4
+	int arg1 = machine->ReadRegister(4);//r4
     int arg2 = machine->ReadRegister(5);//r5
     int arg3 = machine->ReadRegister(6);//r6
 
@@ -191,19 +198,22 @@ SyscallHandler(ExceptionType _et)
 			break;
 		}
 		case SC_EXEC:{//Codeado
-			DEBUG('a', "Calling SC_EXEC.\n");
-      int nameaddr = arg1;
-			int r        = -1;
-      void * argx  = (void *)SaveArgs(arg3);
 
-      char * filename = new char[FILE_NAME_MAX_LEN+1];
-			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
-				DEBUG('r', "Opening %s file with argc %d\n",filename,argx);
+			DEBUG('a', "Calling SC_EXEC.\n\n");
+      		int nameaddr = arg1;
+			int r        = -1;
+      		void * argvs  = (void *)SaveArgs(arg2);
+      		char * filename = new char[FILE_NAME_MAX_LEN+1];
+
+			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN))
+			{
+				DEBUG('e', "Opening %s file to execute\n",filename);
+
 				OpenFile * executable = fileSystem->Open(filename);
 				Thread * newThread    = new Thread("Child_Thread",true);
 				newThread->space      = new AddressSpace(executable);
 				r = newThread->pid;
-				newThread->Fork(run_program,argx);
+				newThread->Fork(run_program,argvs);
 				delete executable;
 			}
 			machine_ret(r);
