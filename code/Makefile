@@ -22,6 +22,7 @@ all:
 	$(MAKE) -C network all
 	$(MAKE) -C bin
 	$(MAKE) -C userland
+	@echo "\033[0;32mCompilacion Exitosa!!!\033[0m"
 
 # Do not delete executables in `userland` in case there is no cross-compiler.
 clean:

@@ -11,15 +11,20 @@
 
 #include "syscall.h"
 
+unsigned
+strlen(const char *s){
+    unsigned i;
+    for (i = 0; s[i] != '\0'; i++);
+    return i;
+}
 
 int
 main(int argc,char ** argv)
 {
-    //char * filename = argv[0];
     char * filename = argv[0];
     char * filecontent = argv[1];
     Create(filename);
     OpenFileId o = Open(filename);
-    Write(filecontent,5,1);
+    Write(filecontent,strlen(filecontent),o);
     Close(o);
 }

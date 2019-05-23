@@ -115,9 +115,9 @@ main(void)
         }
 
 		if(line[0]=='&'){
-			const SpaceId newProc = Exec(line+1,0);
+			const SpaceId newProc = Exec(line+1,argv,0);
 		}else{
-			const SpaceId newProc = Exec(line,0);
+			const SpaceId newProc = Exec(line,argv,1);
 			Join(newProc);
 		}
 

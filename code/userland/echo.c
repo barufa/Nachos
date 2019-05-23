@@ -11,5 +11,4 @@ main(void)
 	}while(bf[i]!='\n' && bf[i]!='\0');
     Write(bf,i,CONSOLE_OUTPUT);
     Write("\n",1,CONSOLE_OUTPUT);
-    Halt();
 }

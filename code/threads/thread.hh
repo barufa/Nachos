@@ -137,6 +137,8 @@ public:
 
     void Print() const;
 
+    bool join_flag;
+
 private:
     // Some of the private data for this class is listed above.
 
@@ -150,7 +152,6 @@ private:
 
     const char *name;
     Port * dead;
-    bool join_flag;
     int priority;
     int original_priority;
     /// Allocate a stack for thread.  Used internally by `Fork`.
