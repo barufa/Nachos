@@ -78,14 +78,15 @@ void machine_ret(int r){
 
 void run_program(void * arg){
 
-  	int *args = WriteArgs((char **)arg);
+  currentThread->space->InitRegisters();
+  currentThread->space->RestoreState();
+  
+  int *args = WriteArgs((char **)arg);
 	int argc = args[0];
 	int argv = args[1];
 
-	DEBUG('e',"argc = %d - argv = %d in run_program\n",argv,argc);
+	DEBUG('e',"argc = %d - argv = %d in run_program\n",argc,argv);
 
-	currentThread->space->InitRegisters();
-	currentThread->space->RestoreState();
 
   	machine->WriteRegister(4,argc);
   	machine->WriteRegister(5,argv);

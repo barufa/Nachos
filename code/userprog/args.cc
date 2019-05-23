@@ -53,7 +53,8 @@ WriteArgs(char **args)
     int args_address[MAX_ARG_COUNT];
     unsigned i;
     int sp = machine->ReadRegister(STACK_REG);
-    for (i = 0; i < MAX_ARG_COUNT; i++) 
+    
+    for (i = 0; i < MAX_ARG_COUNT; i++)
     {
         if (args[i] == nullptr)     // If the last was reached, terminate.
             break;
@@ -71,11 +72,9 @@ WriteArgs(char **args)
 
     sp -= sp % 4;     // Align the stack to a multiple of four.
     sp -= i * 4 + 4;  // Make room for the array and the trailing null.
-    for (unsigned j = 0; j < i; j++)
-    {
+    for (unsigned j = 0; j < i; j++){
         //getting the address memory of the first parameter
         if(j==0) argv = sp + 4 * j;
-
         // Save the address of the j-th argument counting from the end down
         // to the beginning.
         DEBUG('e',"Writing value: %d in memory address: %d\n",args_address[j],sp + 4 * j);

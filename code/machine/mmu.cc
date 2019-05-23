@@ -153,7 +153,7 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         // Use a page table; `vpn` is an index in the table.
 
         if (vpn >= pageTableSize) {
-            DEBUG_CONT('a', "virtual page # %u too large for"
+            DEBUG_CONT('e', "virtual page # %u too large for"
                             " page table size %u!\n",
                        vpn, pageTableSize);
             return ADDRESS_ERROR_EXCEPTION;

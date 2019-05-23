@@ -16,10 +16,10 @@ int
 main(int argc,char ** argv)
 {
     //char * filename = argv[0];
-    char * filename = "test.txt";
-    char * filecontent = "Hello";
-    Create(filecontent);
+    char * filename = argv[0];
+    char * filecontent = argv[1];
+    Create(filename);
     OpenFileId o = Open(filename);
-    Write(filecontent,5,o);
+    Write(filecontent,5,1);
     Close(o);
 }
