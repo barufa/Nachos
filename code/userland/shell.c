@@ -102,28 +102,32 @@ main(void)
     const OpenFileId OUTPUT = CONSOLE_OUTPUT;
     char             line[MAX_LINE_SIZE];
     char            *argv[MAX_ARG_COUNT];
+    int             background;
 
     for (;;) {
-        WritePrompt(OUTPUT);
-        const unsigned lineSize = ReadLine(line, MAX_LINE_SIZE, INPUT);
-        if (lineSize == 0)
-            continue;
 
-        if (PrepareArguments(line, argv, MAX_ARG_COUNT) == 0) {
+        background=0;
+
+        WritePrompt(OUTPUT);
+
+        const unsigned lineSize = ReadLine(line, MAX_LINE_SIZE, INPUT);
+        if (lineSize == 0) continue;
+
+        if(line[0]=='&'){
+            background = 1;
+			for(int i=0; i<strlen(line);i++){//bypassing &
+                line[i] = line[i+1];
+            }
+		}
+
+        if(PrepareArguments(line, argv, MAX_ARG_COUNT) == 0) {
             WriteError("too many arguments.", OUTPUT);
             continue;
         }
+		
+        const SpaceId newProc = Exec(line,argv, background ? 0 : 1 );
+        if(!background) Join(newProc);
 
-		if(line[0]=='&'){
-			const SpaceId newProc = Exec(line+1,argv,0);
-		}else{
-			const SpaceId newProc = Exec(line,argv,1);
-			Join(newProc);
-		}
-
-        // Comment and uncomment according to whether command line arguments
-        // are given in the system call or not.
-        //const SpaceId newProc = Exec(line, argv);
 
         // TO DO: check for errors when calling `Exec`; this depends on how
         //        errors are reported.

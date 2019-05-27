@@ -194,6 +194,7 @@ SyscallHandler(ExceptionType _et)
 				DEBUG('a', "Invalid pid %d.\n",id);
 				break;
 			}
+			DEBUG('e',"The userland/program is joining\n");
 			int r = (processTable->Get(id))->Join();
 			machine_ret(r);
 			break;
@@ -209,8 +210,8 @@ SyscallHandler(ExceptionType _et)
 			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN))
 			{
 				DEBUG('e', "Opening %s file to execute\n",filename);
-
-				OpenFile * executable = fileSystem->Open(filename);
+				DEBUG('e',"The program is executing with join_flag=%d\n",arg3);
+				OpenFile *executable = fileSystem->Open(filename);
 				Thread * newThread    = new Thread("Child_Thread",arg3);
 				newThread->space      = new AddressSpace(executable);
 				r = newThread->pid;

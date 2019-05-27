@@ -48,6 +48,7 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
     priority  = _priority;
     original_priority = _priority;
     dead = NULL;
+    DEBUG('e',"Thread constructor starting with join_flag=%d - name=%s\n", j_flag,name);
     if(join_flag){
         dead = new Port("Join_Port");
     }
@@ -212,6 +213,7 @@ Thread::Join()
 {
     if(join_flag)
     {
+        DEBUG('e',"The Thread::Join method is joining - name=%s\n",currentThread->GetName());
         DEBUG('t', "%s is waiting \"%s\" to finishes\n", currentThread->GetName(),GetName());
         int msm;
         dead->Receive(&msm);
