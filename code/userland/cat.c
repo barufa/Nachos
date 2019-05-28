@@ -1,18 +1,14 @@
 #include "syscall.h"
-#define BSIZE 4096
+#define BSIZE 30
 
 int
 main(int arg,char * argv[])
 {
-	char * filename = argv[1];
-    char buffer[BSIZE];
-    int bs = 0, i = -1;
-    
-    OpenFileId f = Open(filename);
+	char bf[BSIZE];
+	int i=-1;
 	do{
-		Read(&buffer[++i],1,f);
-	}while(buffer[i]!=ENDCHAR && buffer[i]!='\n');
-    Write(buffer,bs,f);
-    Close(f);
-    Halt();
+		Read(&bf[++i],1,CONSOLE_INPUT);
+	}while(bf[i]!='\n' && bf[i]!='\0');
+    Write(bf,i,CONSOLE_OUTPUT);
+    Write("\n",1,CONSOLE_OUTPUT);
 }

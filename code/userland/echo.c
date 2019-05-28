@@ -1,14 +1,17 @@
 #include "syscall.h"
 #define BSIZE 30
 
-int
-main(void)
+static inline unsigned
+strlen(const char *s)
 {
-	char bf[BSIZE];
-	int i=-1;
-	do{
-		Read(&bf[++i],1,CONSOLE_INPUT);
-	}while(bf[i]!='\n' && bf[i]!='\0');
-    Write(bf,i,CONSOLE_OUTPUT);
+    unsigned i;
+    for (i = 0; s[i] != '\0'; i++);
+    return i;
+}
+
+int
+main(int argc,char * argv[])
+{
+    Write(argv[1],strlen(argv[1]),CONSOLE_OUTPUT);
     Write("\n",1,CONSOLE_OUTPUT);
 }

@@ -76,12 +76,13 @@ AddressSpace::AddressSpace(OpenFile *executable)
     numPages = DivRoundUp(size, PAGE_SIZE);
     size = numPages * PAGE_SIZE;
 
-    ASSERT(numPages <= NUM_PHYS_PAGES);
-      // Check we are not trying to run anything too big -- at least until we
-      // have virtual memory.
 
-    DEBUG('a', "Initializing address space, num pages %u, size %u\n",
+    DEBUG('e', "Initializing address space, num pages %u, size %u\n",
           numPages, size);
+
+	ASSERT(numPages <= NUM_PHYS_PAGES);
+	// Check we are not trying to run anything too big -- at least until we
+	// have virtual memory.
 
     char *mainMemory = machine->GetMMU()->mainMemory;
     // First, set up the translation.
@@ -150,7 +151,10 @@ AddressSpace::AddressSpace(OpenFile *executable)
 /// Nothing for now!
 AddressSpace::~AddressSpace()
 {
-    delete [] pageTable;
+	DEBUG('e',"Liberando %u paginas\n",numPages);
+	for(unsigned page=0;page<numPages;page++)
+		bitmap->Clear(pageTable[page].physicalPage);
+	delete [] pageTable;
 }
 
 /// Set the initial values for the user-level register set.

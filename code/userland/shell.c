@@ -2,7 +2,7 @@
 
 
 #define MAX_LINE_SIZE  60
-#define MAX_ARG_COUNT  32
+#define MAX_ARG_COUNT  12
 #define ARG_SEPARATOR  ' '
 
 #define NULL  ((void *) 0)
@@ -10,7 +10,8 @@
 static inline unsigned
 strlen(const char *s)
 {
-    // TO DO: how to make sure that `s` is not `NULL`?
+
+	if(!s)return 0;
 
     unsigned i;
     for (i = 0; s[i] != '\0'; i++);
@@ -27,13 +28,11 @@ WritePrompt(OpenFileId output)
 static inline void
 WriteError(const char *description, OpenFileId output)
 {
-    // TO DO: how to make sure that `description` is not `NULL`?
-
     static const char PREFIX[] = "Error: ";
     static const char SUFFIX[] = "\n";
 
     Write(PREFIX, sizeof PREFIX - 1, output);
-    Write(description, strlen(description), output);
+    if(description)Write(description, strlen(description), output);
     Write(SUFFIX, sizeof SUFFIX - 1, output);
 }
 
@@ -79,20 +78,30 @@ PrepareArguments(char *line, char **argv, unsigned argvSize)
     //
     // TO DO: what if the user wants to include a space as part of an
     //        argument?
-    for (unsigned i = 0; line[i] != '\0'; i++)
-        if (line[i] == ARG_SEPARATOR) {
-            if (argCount == argvSize - 1)
-                // The maximum of allowed arguments is exceeded, and
-                // therefore the size of `argv` is too.  Note that 1 is
-                // decreased in order to leave space for the NULL at the end.
-                return 0;
-            line[i] = '\0';
-            argv[argCount] = &line[i + 1];
-            argCount++;
-        }
+	for (unsigned i = 0; i<MAX_LINE_SIZE && line[i] != '\0'; i++){
+		if (line[i] == ARG_SEPARATOR) {
+			if (argCount == argvSize - 1)return 0;
+			line[i]='\0';
+			do i++; while(i<MAX_LINE_SIZE && line[i]==' ');
+			if(i<MAX_LINE_SIZE && line[i]!='\0'){
+				argv[argCount++] = &line[i];
+			}
+		}
+	}
 
     argv[argCount] = NULL;
     return 1;
+}
+
+int isexit(const char * line){
+	if(!line)return 0;
+	int i=0;
+	if(line[0]=='&')i++;
+	int ret = (line[i+0]=='e') +
+			  (line[i+1]=='x') +
+			  (line[i+2]=='i') +
+			  (line[i+3]=='t');
+	return (ret==4);
 }
 
 int
@@ -100,9 +109,9 @@ main(void)
 {
     const OpenFileId INPUT  = CONSOLE_INPUT;
     const OpenFileId OUTPUT = CONSOLE_OUTPUT;
-    char             line[MAX_LINE_SIZE];
-    char            *argv[MAX_ARG_COUNT];
-    int             background;
+    char   line[MAX_LINE_SIZE];
+    char * argv[MAX_ARG_COUNT];
+    int    background;
 
     for (;;) {
 
@@ -112,10 +121,12 @@ main(void)
 
         const unsigned lineSize = ReadLine(line, MAX_LINE_SIZE, INPUT);
         if (lineSize == 0) continue;
-
+		if(isexit(line)){
+			Halt();
+		}
         if(line[0]=='&'){
             background = 1;
-			for(int i=0; i<strlen(line);i++){//bypassing &
+			for(int i=0; i<lineSize;i++){
                 line[i] = line[i+1];
             }
 		}
@@ -124,8 +135,8 @@ main(void)
             WriteError("too many arguments.", OUTPUT);
             continue;
         }
-		
-        const SpaceId newProc = Exec(line,argv, background ? 0 : 1 );
+
+        const SpaceId newProc = Exec(line, argv, background ? 0 : 1 );
         if(!background) Join(newProc);
 
 

@@ -233,9 +233,9 @@ SyscallHandler(ExceptionType _et)
 
 			switch (id) {
 				case CONSOLE_INPUT:{
-          char * bff = new char[size+1];
-          r = synchConsole->GetString(bff,size);
-          WriteBufferToUser(buffer,bff,r);
+          			char * bff = new char[size+1];
+			          r = synchConsole->GetString(bff,size);
+			          WriteBufferToUser(buffer,bff,r);
 					delete bff;
 					break;
 				}

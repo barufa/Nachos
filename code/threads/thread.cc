@@ -82,7 +82,11 @@ Thread::~Thread()
 #ifdef USER_PROGRAM
 	if(processTable)
 		processTable->Remove(pid);
+	for(int fd=0;!DescriptorTable->IsEmpty() && fd<100;fd++){
+		delete DescriptorTable->Remove(fd);
+	}
 	delete DescriptorTable;
+	delete space;
 #endif
 }
 
