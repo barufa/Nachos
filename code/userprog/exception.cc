@@ -284,6 +284,18 @@ SyscallHandler(ExceptionType _et)
     IncrementPC();
 }
 
+static void
+Page_Fault_Handler(ExceptionType _et){
+  puts("Page_Fault_Handler");
+  ASSERT(false);
+}
+
+static void
+Read_Only_Handler(ExceptionType _et){
+  puts("Read_Only_Handler");
+  ASSERT(false);
+}
+
 
 /// By default, only system calls have their own handler.  All other
 /// exception types are assigned the default handler.
@@ -292,8 +304,8 @@ SetExceptionHandlers()
 {
     machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
     machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
-    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &DefaultHandler);
-    machine->SetHandler(READ_ONLY_EXCEPTION,     &DefaultHandler);
+    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &Page_Fault_Handler);
+    machine->SetHandler(READ_ONLY_EXCEPTION,     &Read_Only_Handler);
     machine->SetHandler(BUS_ERROR_EXCEPTION,     &DefaultHandler);
     machine->SetHandler(ADDRESS_ERROR_EXCEPTION, &DefaultHandler);
     machine->SetHandler(OVERFLOW_EXCEPTION,      &DefaultHandler);

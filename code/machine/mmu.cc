@@ -40,8 +40,7 @@ MMU::MMU()
 
 #ifdef USE_TLB
     tlb = new TranslationEntry[TLB_SIZE];
-    for (unsigned i = 0; i < TLB_SIZE; i++)
-        tlb[i].valid = false;
+    Clear_TLB();
     pageTable = nullptr;
 #else  // Use linear page table.
     tlb = nullptr;
@@ -54,6 +53,36 @@ MMU::~MMU()
     delete [] mainMemory;
     if (tlb != nullptr)
         delete [] tlb;
+}
+
+void
+MMU::Clear_TLB(){
+  for (unsigned i = 0; i < TLB_SIZE; i++)
+      tlb[i].valid = false;
+}
+
+void
+MMU::Set_TLB(const TranslationEntry * pageT, unsigned numPages){
+  Clear_TLB();
+
+  unsigned k = TLB_SIZE<numPages? TLB_SIZE:numPages;
+
+  for (unsigned i = 0; i < k; i++)
+    tlb[i] = pageT[i];
+
+}
+
+void
+MMU::Get_TLB(TranslationEntry * pageT, unsigned numPages){
+
+  for (unsigned i = 0; i < TLB_SIZE; i++)
+    if(tlb[i].valid){
+      numPages--;
+      ASSERT(numPages>=0);
+      *pageT=tlb[i];
+      pageT++;
+    }
+
 }
 
 /// Read `size` (1, 2, or 4) bytes of virtual memory at `addr` into

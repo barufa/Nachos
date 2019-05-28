@@ -70,8 +70,12 @@ public:
     /// *read-only*, although the contents of the TLB are free to be modified
     /// by the kernel software.
 
-    TranslationEntry *tlb;  ///< This pointer should be considered
+    TranslationEntry * tlb;  ///< This pointer should be considered
                             ///< “read-only” to Nachos kernel code.
+
+    void Clear_TLB(void);
+    void Set_TLB(const TranslationEntry * pageT,unsigned numPages);
+    void Get_TLB(TranslationEntry * pageT,unsigned numPages);
 
     TranslationEntry *pageTable;
     unsigned pageTableSize;

@@ -86,13 +86,11 @@ AddressSpace::AddressSpace(OpenFile *executable)
 
     char *mainMemory = machine->GetMMU()->mainMemory;
     // First, set up the translation.
-
     pageTable = new TranslationEntry[numPages];
     for (unsigned i = 0; i < numPages; i++) {
         int next_page = bitmap->Find();
         ASSERT(next_page!=-1);
         pageTable[i].virtualPage  = i;
-          // For now, virtual page number = physical page number.
         pageTable[i].physicalPage = next_page;
         pageTable[i].valid        = true;
         pageTable[i].use          = false;
@@ -190,7 +188,9 @@ AddressSpace::InitRegisters()
 /// For now, nothing!
 void
 AddressSpace::SaveState()
-{}
+{
+  machine->GetMMU()->Get_TLB(pageTable,numPages);
+}
 
 /// On a context switch, restore the machine state so that this address space
 /// can run.
@@ -199,6 +199,7 @@ AddressSpace::SaveState()
 void
 AddressSpace::RestoreState()
 {
-    machine->GetMMU()->pageTable     = pageTable;
-    machine->GetMMU()->pageTableSize = numPages;
+    machine->GetMMU()->Set_TLB(pageTable,numPages);
+    //machine->GetMMU()->pageTable     = pageTable;
+    // machine->GetMMU()->pageTableSize = numPages;
 }
