@@ -76,6 +76,8 @@ public:
     void Clear_TLB(void);
     void Set_TLB(const TranslationEntry * pageT,unsigned numPages);
     void Get_TLB(TranslationEntry * pageT,unsigned numPages);
+    TranslationEntry Get_Entry(unsigned index);
+    void Set_Entry(TranslationEntry pageT,unsigned index);
 
     TranslationEntry *pageTable;
     unsigned pageTableSize;

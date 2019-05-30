@@ -131,7 +131,7 @@ SyscallHandler(ExceptionType _et)
 			int r         = -1;
 
 			ASSERT(buffer);
-			ASSERT(0<size);
+      if(size<=0)break;
 
 			switch (id) {
 				case CONSOLE_OUTPUT:{//STDOUT
@@ -286,14 +286,16 @@ SyscallHandler(ExceptionType _et)
 
 static void
 Page_Fault_Handler(ExceptionType _et){
-  puts("Page_Fault_Handler");
-  ASSERT(false);
+  //buscar en la pageTable, y insertar en la TBL?
+  unsigned vpn = machine->ReadRegister(BAD_VADDR_REG)/PAGE_SIZE;
+  currentThread->space->Update_TLB(vpn);
+  DEBUG('w',"Saliendo de Page_Fault_Handler\n");
 }
 
 static void
 Read_Only_Handler(ExceptionType _et){
   puts("Read_Only_Handler");
-  ASSERT(false);
+  currentThread->Finish();
 }
 
 

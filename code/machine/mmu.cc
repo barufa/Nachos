@@ -57,8 +57,12 @@ MMU::~MMU()
 
 void
 MMU::Clear_TLB(){
-  for (unsigned i = 0; i < TLB_SIZE; i++)
-      tlb[i].valid = false;
+
+  for (unsigned i = 0; i < TLB_SIZE; i++){
+    tlb[i].valid = false;
+    tlb[i].virtualPage=2000;
+  }
+
 }
 
 void
@@ -75,13 +79,12 @@ MMU::Set_TLB(const TranslationEntry * pageT, unsigned numPages){
 void
 MMU::Get_TLB(TranslationEntry * pageT, unsigned numPages){
 
-  for (unsigned i = 0; i < TLB_SIZE; i++)
+  for (unsigned i = 0; i < TLB_SIZE; i++){
     if(tlb[i].valid){
-      numPages--;
-      ASSERT(numPages>=0);
-      *pageT=tlb[i];
-      pageT++;
+      pageT[tlb[i].virtualPage]=tlb[i];
     }
+  }
+
 
 }
 
@@ -200,12 +203,11 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         // Use the TLB.
 
         unsigned i;
-        for (entry = nullptr, i = 0; i < TLB_SIZE; i++)
+        for (i = 0; i < TLB_SIZE; i++)
             if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                 *entry = &tlb[i];  // FOUND!
                 return NO_EXCEPTION;
             }
-
         // Not found.
         DEBUG_CONT('a', "no valid TLB entry found for this virtual page!\n");
         return PAGE_FAULT_EXCEPTION;  // Really, this is a TLB fault, the
@@ -226,6 +228,17 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
 /// * `physAddr" is the place to store the physical address.
 /// * `size" is the amount of memory being read or written.
 /// * `writing` -- if true, check the “read-only” bit in the TLB.
+TranslationEntry
+MMU::Get_Entry(unsigned index){
+  ASSERT(index>=0 && index<TLB_SIZE);
+  return tlb[index];
+}
+
+void
+MMU::Set_Entry(TranslationEntry pageT,unsigned index){
+  tlb[index]=pageT;
+}
+
 ExceptionType
 MMU::Translate(unsigned virtAddr, unsigned *physAddr,
                unsigned size, bool writing)

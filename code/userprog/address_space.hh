@@ -40,6 +40,7 @@ public:
 
     void SaveState();
     void RestoreState();
+    void Update_TLB(unsigned vpn);
 
 private:
 

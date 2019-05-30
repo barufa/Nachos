@@ -181,6 +181,24 @@ AddressSpace::InitRegisters()
     DEBUG('a', "Initializing stack register to %u\n",
           numPages * PAGE_SIZE - 16);
 }
+void
+AddressSpace::Update_TLB(unsigned vpn){
+
+  unsigned random = (unsigned)rand()%TLB_SIZE;
+  unsigned random_vpn = machine->GetMMU()->Get_Entry(random).virtualPage;
+
+  DEBUG('w',"Swapeando %d con %d\n",vpn,random_vpn);
+
+  pageTable[random_vpn] = machine->GetMMU()->Get_Entry(random);
+  machine->GetMMU()->Set_Entry(pageTable[vpn],random);
+
+  for(unsigned i=0;i<numPages;i++)
+    DEBUG('w',"Pagina[%u] = %d\n",i,pageTable[i].virtualPage);
+
+  for(unsigned i=0;i<TLB_SIZE;i++)
+    DEBUG('w',"TLB[%u] = %d\n",i,machine->GetMMU()->Get_Entry(i).virtualPage);
+
+}
 
 /// On a context switch, save any machine state, specific to this address
 /// space, that needs saving.
@@ -200,6 +218,4 @@ void
 AddressSpace::RestoreState()
 {
     machine->GetMMU()->Set_TLB(pageTable,numPages);
-    //machine->GetMMU()->pageTable     = pageTable;
-    // machine->GetMMU()->pageTableSize = numPages;
 }
