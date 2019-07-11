@@ -40,10 +40,11 @@ public:
 
     void SaveState();
     void RestoreState();
-    void Update_TLB(unsigned vpn);
+    bool Update_TLB(unsigned vpn);
 
 private:
 
+    static unsigned last_page;
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;
 
@@ -51,6 +52,7 @@ private:
     unsigned numPages;
 
 };
+
 
 
 #endif

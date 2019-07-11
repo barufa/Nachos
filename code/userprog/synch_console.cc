@@ -63,13 +63,11 @@ SynchConsole::GetString(char * buffer,int size){
 	int i;
 	for(i=0;i<size;i++){
 		can_read->P();
-		char ch = console->GetChar();
-		buffer[i] = ch;
-		if(ch=='\n' || ch=='\0'){
-			i++;
+		buffer[i] = console->GetChar();
+		if(buffer[i]=='\0')
 			break;
-		}
 	}
+	buffer[i]='\0';
 	read->Release();
 
 	return i;

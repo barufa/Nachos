@@ -131,7 +131,7 @@ SyscallHandler(ExceptionType _et)
 			int r         = -1;
 
 			ASSERT(buffer);
-      if(size<=0)break;
+			if(size<=0)break;
 
 			switch (id) {
 				case CONSOLE_OUTPUT:{//STDOUT
@@ -233,9 +233,10 @@ SyscallHandler(ExceptionType _et)
 
 			switch (id) {
 				case CONSOLE_INPUT:{
-          			char * bff = new char[size+1];
+					  char * bff = new char[size+1];
 			          r = synchConsole->GetString(bff,size);
 			          WriteBufferToUser(buffer,bff,r);
+			          DEBUG('a', "Read: %s[%d]\n",bff,r);
 					delete bff;
 					break;
 				}
@@ -246,6 +247,7 @@ SyscallHandler(ExceptionType _et)
 						memset(bff,0,size);
 						r = file->Read(bff,size);
 						WriteBufferToUser(buffer,bff,r);
+						DEBUG('a', "Read: %s",bff);
 						delete bff;
 					}
 					break;
@@ -286,15 +288,17 @@ SyscallHandler(ExceptionType _et)
 
 static void
 Page_Fault_Handler(ExceptionType _et){
-  //buscar en la pageTable, y insertar en la TBL?
+  //buscar en la pageTable, y insertar en la TBL
   unsigned vpn = machine->ReadRegister(BAD_VADDR_REG)/PAGE_SIZE;
-  currentThread->space->Update_TLB(vpn);
+  if(!currentThread->space->Update_TLB(vpn)){
+	  currentThread->Finish(-1);
+  }
   DEBUG('w',"Saliendo de Page_Fault_Handler\n");
 }
 
 static void
 Read_Only_Handler(ExceptionType _et){
-  puts("Read_Only_Handler");
+  DEBUG('w',"Read only exception\n");
   currentThread->Finish();
 }
 

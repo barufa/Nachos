@@ -39,18 +39,23 @@ WriteError(const char *description, OpenFileId output)
 static unsigned
 ReadLine(char *buffer, unsigned size, OpenFileId input)
 {
-    // TO DO: how to make sure that `buffer` is not `NULL`?
-
-    unsigned i;
-
+	if(!buffer)return 0;
+		
+	unsigned i = 0;
+	size--;
+	
     for (i = 0; i < size; i++) {
-        Read(&buffer[i], 1, input);
-        // TO DO: what happens when the input ends?
-        if (buffer[i] == '\n') {
-            buffer[i] = '\0';
+        buffer[i] = '1';
+        if(Read(&buffer[i], 1, input)!=1){
+			Write("Error en read\n",strlen("Error en read\n"),CONSOLE_OUTPUT);
+			Halt();
+		}
+        if (buffer[i] == '\n' || buffer[i] == '\0') {
             break;
         }
     }
+    buffer[i] = '\0';
+    
     return i;
 }
 
@@ -93,15 +98,33 @@ PrepareArguments(char *line, char **argv, unsigned argvSize)
     return 1;
 }
 
-int isexit(const char * line){
+static void
+add_userland(char * line){
+	
+	char buffer[MAX_LINE_SIZE] = "userland/";
+	int j = strlen("userland/");
+		
+	for(int i=0;i<strlen(line);i++){
+		buffer[j++] = line[i];
+	}
+	
+	for(int i=0;i<strlen(buffer);i++){
+		line[i]=buffer[i];
+	}
+	
+	return;
+}
+
+static int 
+isexit(const char * line){
 	if(!line)return 0;
 	int i=0;
 	if(line[0]=='&')i++;
-	int ret = (line[i+0]=='e') +
-			  (line[i+1]=='x') +
-			  (line[i+2]=='i') +
+	int ret = (line[i+0]=='e') &&
+			  (line[i+1]=='x') &&
+			  (line[i+2]=='i') &&
 			  (line[i+3]=='t');
-	return (ret==4);
+	return ret;
 }
 
 int
@@ -120,10 +143,11 @@ main(void)
         WritePrompt(OUTPUT);
 
         const unsigned lineSize = ReadLine(line, MAX_LINE_SIZE, INPUT);
-        if (lineSize == 0) continue;
-		if(isexit(line)){
+        
+		if(lineSize == 0 || isexit(line)){
 			Halt();
 		}
+        
         if(line[0]=='&'){
             background = 1;
 			for(int i=0; i<lineSize;i++){

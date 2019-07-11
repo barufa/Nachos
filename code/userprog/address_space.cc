@@ -21,6 +21,7 @@
 #include "machine/endianness.hh"
 #include "threads/system.hh"
 
+unsigned AddressSpace::last_page=0;
 
 /// Do little endian to big endian conversion on the bytes in the object file
 /// header, in case the file was generated on a little endian machine, and we
@@ -181,23 +182,28 @@ AddressSpace::InitRegisters()
     DEBUG('a', "Initializing stack register to %u\n",
           numPages * PAGE_SIZE - 16);
 }
-void
+
+bool
 AddressSpace::Update_TLB(unsigned vpn){
+  // Verificar que la vpn sea valida
+  if(numPages <= vpn){
+	  DEBUG('w',"VPN=%u invalida\n",vpn);
+	  return false;
+  }
+  
+  // Busco pagina victima
+  unsigned next = (++AddressSpace::last_page)%TLB_SIZE;
+  unsigned next_vpn = machine->GetMMU()->Get_Entry(next).virtualPage;
 
-  unsigned random = (unsigned)rand()%TLB_SIZE;
-  unsigned random_vpn = machine->GetMMU()->Get_Entry(random).virtualPage;
-
-  DEBUG('w',"Swapeando %d con %d\n",vpn,random_vpn);
-
-  pageTable[random_vpn] = machine->GetMMU()->Get_Entry(random);
-  machine->GetMMU()->Set_Entry(pageTable[vpn],random);
-
-  for(unsigned i=0;i<numPages;i++)
-    DEBUG('w',"Pagina[%u] = %d\n",i,pageTable[i].virtualPage);
+  DEBUG('w',"Swapeando %d con %d\n",vpn,next_vpn);
+  // Guardo la pagina victima en memoria y actualizo la tlb
+  pageTable[next_vpn] = machine->GetMMU()->Get_Entry(next);
+  machine->GetMMU()->Set_Entry(pageTable[vpn],next);
 
   for(unsigned i=0;i<TLB_SIZE;i++)
     DEBUG('w',"TLB[%u] = %d\n",i,machine->GetMMU()->Get_Entry(i).virtualPage);
 
+	return true;
 }
 
 /// On a context switch, save any machine state, specific to this address
