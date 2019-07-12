@@ -1,0 +1,61 @@
+2)
+MatMul:
+Paging: searchs 926752, hits 788562, faults 138190
+Hit Ratio: 0.85
+Sort:
+Paging: searchs 30481930, hits 25228040, faults 5253890
+Hit Ratio: 0.83
+
+4)
+MatMul:
+Paging: searchs 809527, hits 746971, faults 62556
+Hit Ratio: 0.92
+Sort:
+Paging: searchs 23933717, hits 22612091, faults 1321626
+Hit Ratio: 0.94
+
+8)
+MatMul:
+Paging: searchs 735511, hits 719798, faults 15713
+Hit Ratio: 0.98
+Sort:
+Paging: searchs 22104252, hits 22087890, faults 16362
+Hit Ratio: ~1.00
+
+16)
+MatMul:
+Paging: searchs 724294, hits 716069, faults 8225
+Hit Ratio: 0.99
+Sort:
+Paging: searchs 22096123, hits 22085694, faults 10429
+Hit Ratio: ~1.00
+
+32)
+MatMul:
+Paging: searchs 709407, hits 709358, faults 49
+Hit Ratio: ~1.00
+Sort:
+Paging: searchs 22083148, hits 22080116, faults 3032
+Hit Ratio: ~1.00
+
+64)
+MatMul:
+Paging: searchs 709318, hits 709318, faults 0
+Hit Ratio: 1.00
+Sort:
+Paging: searchs 22077447, hits 22077447, faults 0
+Hit Ratio: 1.00
+
+Para las pruebas se utilizo al programa MatMul con DIM=50 y Sort con DIM=2048. Si bien estos programas son grandes en relacion a la memoria de Nachos, no se puede ver una gran diferencia en la cantidad de fallos de paginas entre una TLB de 32 entradas y una de 64. Bajo estos datos convendria utilizar una TLB de 32 entradas ya que esta se encuentra en una memoria cache especifica y es costosa en el mundo real.
+
+Matmul(DIM=60)
+32)
+Paging: searchs 18993665, hits 18721570, faults 272095
+Hit Ratio: 0.99
+
+64)
+Paging: searchs 18953222, hits 18708059, faults 245163
+Hit Ratio: 0.99
+
+Si agrandamos la dimension de MatMul (DIM=60), podemos ver que las 64 entradas ya no son suficientes y se generan algunos fallos de paginas.
+Sin embargo, no hay una gran diferencia entre la cantidad de fallos de paginas de una tabla con 64 entradas y una con 32, por ende tener una TLB con 32 entradas seguiria siendo conveniente.

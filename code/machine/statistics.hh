@@ -44,14 +44,20 @@ public:
     /// Number of characters written to the display.
     unsigned numConsoleCharsWritten;
 
-    /// Number of virtual memory page faults.
-    unsigned numPageFaults;
-
     /// Number of packets sent over the network.
     unsigned numPacketsSent;
 
     /// Number of packets received over the network.
     unsigned numPacketsRecvd;
+
+    /// Number of virtual memory page faults.
+    unsigned numPageFaults;
+    
+    /// Number of searchs inside the TLB
+    unsigned numPageSearchs;
+        
+    /// Number of Hist of the TLB
+    unsigned numsPageHits;
 
 #ifdef DFS_TICKS_FIX
     /// Number of times the tick count gets reset.
