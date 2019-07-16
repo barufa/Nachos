@@ -58,91 +58,47 @@ SwapHeader(noffHeader *noffH)
 /// * `executable` is the file containing the object code to load into
 ///   memory.
 
-AddressSpace::AddressSpace(OpenFile *executable)
+AddressSpace::AddressSpace(OpenFile * _executable)
 {
+    executable = _executable;
+    
     ASSERT(executable != nullptr);
-
-    noffHeader noffH;
+	
     executable->ReadAt((char *) &noffH, sizeof noffH, 0);
     if (noffH.noffMagic != NOFF_MAGIC &&
           WordToHost(noffH.noffMagic) == NOFF_MAGIC)
         SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFF_MAGIC);
 
-    // How big is address space?
-
     unsigned size = noffH.code.size + noffH.initData.size
                     + noffH.uninitData.size + USER_STACK_SIZE;
-      // We need to increase the size to leave room for the stack.
+    // We need to increase the size to leave room for the stack.
     numPages = DivRoundUp(size, PAGE_SIZE);
     size = numPages * PAGE_SIZE;
 
 
     DEBUG('e', "Initializing address space, num pages %u, size %u\n",
           numPages, size);
+	//~ char * mainMemory = machine->GetMMU()->mainMemory;
 
 	ASSERT(numPages <= NUM_PHYS_PAGES);
 	// Check we are not trying to run anything too big -- at least until we
 	// have virtual memory.
 
-    char *mainMemory = machine->GetMMU()->mainMemory;
     // First, set up the translation.
     pageTable = new TranslationEntry[numPages];
     for (unsigned i = 0; i < numPages; i++) {
-        int next_page = bitmap->Find();
-        ASSERT(next_page!=-1);
+		//~ int next_page = bitmap->Find();
+		//~ ASSERT(next_page!=-1);
+		pageTable[i].physicalPage = -1;
         pageTable[i].virtualPage  = i;
-        pageTable[i].physicalPage = next_page;
-        pageTable[i].valid        = true;
+        pageTable[i].valid        = false;
         pageTable[i].use          = false;
         pageTable[i].dirty        = false;
         pageTable[i].readOnly     = false;
-        memset(&(mainMemory[next_page*PAGE_SIZE]), 0, PAGE_SIZE);
         // If the code segment was entirely on a separate page, we could
         // set its pages to be read-only.
     }
-
-
-    // Zero out the entire address space, to zero the unitialized data
-    // segment and the stack segment.
-
-
-    // Then, copy in the code and data segments into memory.
-    if (noffH.code.size > 0) {
-        uint32_t virtualAddr = noffH.code.virtualAddr;
-        uint32_t inFileAddr  = noffH.code.inFileAddr;
-        uint32_t codesize    = noffH.code.size;
-
-        DEBUG('a', "Initializing code segment, at 0x%X, size %u\n",
-              virtualAddr, codesize);
-
-        for(uint32_t i=0;i<codesize;i++){
-            unsigned page   = (virtualAddr+i)/PAGE_SIZE;
-	    unsigned offset = (virtualAddr+i)%PAGE_SIZE;
-            uint32_t physicalAddr = pageTable[page].physicalPage*PAGE_SIZE;
-            executable->ReadAt(&(mainMemory[physicalAddr+offset]), 1, inFileAddr+i);
-        }
-        // executable->ReadAt(&(mainMemory[virtualAddr]),size,inFileAddr);
-    }
-    if (noffH.initData.size > 0) {
-        uint32_t virtualAddr = noffH.initData.virtualAddr;
-        uint32_t inFileAddr  = noffH.initData.inFileAddr;
-        uint32_t datasize    = noffH.initData.size;
-
-        DEBUG('a', "Initializing data segment, at 0x%X, size %u\n",
-                virtualAddr,datasize);
-
-        for(uint32_t i=0;i<datasize;i++){
-            unsigned page = (virtualAddr+i)/PAGE_SIZE;
-	    unsigned offset = (virtualAddr+i)%PAGE_SIZE;
-	    uint32_t physicalAddr = pageTable[page].physicalPage*PAGE_SIZE;
-            executable->ReadAt(&(mainMemory[physicalAddr+offset]), 1, inFileAddr+i);
-        }
-
-        // executable->ReadAt(&(mainMemory[noffH.initData.virtualAddr]),
-        // noffH.initData.size, noffH.initData.inFileAddr);
-    }
-
 }
 
 /// Deallocate an address space.
@@ -184,13 +140,42 @@ AddressSpace::InitRegisters()
 }
 
 bool
+AddressSpace::LoadPage(unsigned vpn){
+	if(!pageTable[vpn].valid){
+		// Asigno una pagina en memoria
+		int next_page = bitmap->Find();
+		ASSERT(next_page!=-1);
+		pageTable[vpn].physicalPage = next_page;
+		// Copio la informacion a la pagina
+        char * mainMemory = machine->GetMMU()->mainMemory;
+		uint32_t code_begin   = noffH.code.virtualAddr;
+		uint32_t code_end     = noffH.code.virtualAddr + noffH.code.size;
+		uint32_t data_begin   = noffH.initData.virtualAddr;
+		uint32_t data_end     = noffH.initData.virtualAddr + noffH.initData.size;
+		uint32_t VirtualAddr  = pageTable[vpn].virtualPage * PAGE_SIZE;
+		uint32_t PhysicalAddr = pageTable[vpn].physicalPage * PAGE_SIZE;
+		uint32_t inFileAddr;
+		if(code_begin <= vpn && vpn <= code_end){
+			inFileAddr = noffH.code.inFileAddr;
+		}else if(data_begin <= vpn && vpn <= data_end){
+			inFileAddr = noffH.initData.inFileAddr + (noffH.code.inFileAddr-noffH.code.size);
+		}
+		memset(&mainMemory[PhysicalAddr],0,PAGE_SIZE);
+		executable->ReadAt(&(mainMemory[PhysicalAddr]), PAGE_SIZE, inFileAddr+VirtualAddr);
+		pageTable[vpn].valid = true;
+	}
+	return pageTable[vpn].valid;
+}
+
+bool
 AddressSpace::Update_TLB(unsigned vpn){
   // Verificar que la vpn sea valida
   if(numPages <= vpn){
 	  DEBUG('w',"VPN=%u invalida\n",vpn);
 	  return false;
   }
-  
+  // Cargo la pagina en memoria
+  LoadPage(vpn);
   // Busco pagina victima
   unsigned next = (++AddressSpace::last_page)%TLB_SIZE;
   unsigned next_vpn = machine->GetMMU()->Get_Entry(next).virtualPage;
@@ -200,10 +185,7 @@ AddressSpace::Update_TLB(unsigned vpn){
   pageTable[next_vpn] = machine->GetMMU()->Get_Entry(next);
   machine->GetMMU()->Set_Entry(pageTable[vpn],next);
 
-  for(unsigned i=0;i<TLB_SIZE;i++)
-    DEBUG('w',"TLB[%u] = %d\n",i,machine->GetMMU()->Get_Entry(i).virtualPage);
-
-	return true;
+  return true;
 }
 
 /// On a context switch, save any machine state, specific to this address

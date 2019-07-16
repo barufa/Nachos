@@ -212,12 +212,11 @@ SyscallHandler(ExceptionType _et)
 			{
 				DEBUG('e', "Opening %s file to execute\n",filename);
 				DEBUG('e',"The program is executing with join_flag=%d\n",arg3);
-				OpenFile *executable = fileSystem->Open(filename);
+				OpenFile *executable  = fileSystem->Open(filename);
 				Thread * newThread    = new Thread("Child_Thread",arg3);
 				newThread->space      = new AddressSpace(executable);
 				r = newThread->pid;
 				newThread->Fork(run_program,argvs);
-				delete executable;
 			}
 			machine_ret(r);
 			break;

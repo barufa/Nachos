@@ -16,7 +16,7 @@
 
 #include "filesys/file_system.hh"
 #include "machine/translation_entry.hh"
-
+#include "../bin/noff.h"
 
 const unsigned USER_STACK_SIZE = 1024;  ///< Increase this as necessary!
 
@@ -50,6 +50,10 @@ private:
 
     /// Number of pages in the virtual address space.
     unsigned numPages;
+	
+	bool LoadPage(unsigned vpn);
+    noffHeader noffH;
+    OpenFile *executable;
 
 };
 

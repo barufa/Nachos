@@ -1,5 +1,9 @@
+Arreglar llamada a systema Exit()
+
 currentThread->Finish() no retorna (creo que deberia). userprog/exception.cc 187.12
 
 Las banderas de debug estan en cumbia (empezamos a asignar cualquier bandera a cualquier cosa). Escribirlas en algun lado y acomodarlas (a cosas iguales poner las mismas banderas).
 
 El ejercicio 2 de la practica 4 es sopechosamente muy bueno. Los hits ratios estan siempre(o casi siempre) por encima de 0.9. Revisar
+
+Identar el codigo apropiadamente. En muchas casos se cambiaron espacios por tabs y tabs por espacios. Definir una identaticion apropiada y utilizar esa.
