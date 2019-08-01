@@ -42,18 +42,27 @@ public:
     void RestoreState();
     bool Update_TLB(unsigned vpn);
 
-private:
+    void save_page(unsigned vpn);
+    void load_page(unsigned vpn,unsigned ppn);
+    bool swap_find(unsigned vpn);
 
-    static unsigned last_page;
     /// Assume linear page table translation for now!
     TranslationEntry *pageTable;
 
+private:
+
+    static unsigned last_page;
+    static unsigned next_id;
+
     /// Number of pages in the virtual address space.
     unsigned numPages;
-	
-	bool LoadPage(unsigned vpn);
+
+    bool LoadPage(unsigned vpn);
     noffHeader noffH;
     OpenFile *executable;
+
+    char * swap_id;
+    OpenFile * swap;
 
 };
 

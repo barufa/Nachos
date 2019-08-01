@@ -164,8 +164,8 @@ private:
     /// registers -- one for its state while executing user code, one for its
     /// state while executing kernel code.
     int userRegisters[NUM_TOTAL_REGS];
-	//Filedescriptors table
-	Table <OpenFile*> * DescriptorTable;
+    //Filedescriptors table
+    Table <OpenFile*> * DescriptorTable;
 
 public:
 
@@ -178,22 +178,22 @@ public:
     // User code this thread is running.
     AddressSpace *space;
 
-	//Process Id.
-	int pid;
-	//Add a file to the Table
-	OpenFileId AddFile(OpenFile * file);
+    //Process Id.
+    int pid;
+    //Add a file to the Table
+    OpenFileId AddFile(OpenFile * file);
 
-	//Return OpenFile * from the table
-	OpenFile * GetFile(OpenFileId fId);
+    //Return OpenFile * from the table
+    OpenFile * GetFile(OpenFileId fId);
 
-	//Check if the file exist in the table
-	bool IsOpenFile(OpenFileId fId);
+    //Check if the file exist in the table
+    bool IsOpenFile(OpenFileId fId);
 
-	//Remove a file from the table
-	OpenFile * RemoveFile(OpenFileId fId);
+    //Remove a file from the table
+    OpenFile * RemoveFile(OpenFileId fId);
 
-	//Reset the table
-	void ResetTable();
+    //Reset the table
+    void ResetTable();
 
 #endif
 };

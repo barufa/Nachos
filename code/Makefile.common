@@ -27,7 +27,7 @@
 # All rights reserved.  See `copyright.h` for copyright notice and
 # limitation of liability and disclaimer of warranty provisions.
 
-CXXFLAGS = -std=c++11 -g -Wall -Wshadow -DTHREAD_TEST_TYPE=JOIN $(INCLUDE_DIRS) $(DEFINES) $(HOST)
+CXXFLAGS = -std=c++11 -Wall -g -Wshadow -DTHREAD_TEST_TYPE=JOIN $(INCLUDE_DIRS) $(DEFINES) $(HOST)
 LDFLAGS  =
 
 # These definitions may change as the software is updated.
@@ -96,6 +96,7 @@ USERPROG_HDR = ../userprog/address_space.hh            \
                ../machine/mmu.hh                       \
                ../machine/translation_entry.hh         \
                ../userprog/args.hh                     \
+               ../lib/coremap.hh                       \
                ../userprog/synch_console.hh
 USERPROG_SRC = ../userprog/address_space.cc            \
                ../userprog/debugger.cc                 \
@@ -113,6 +114,7 @@ USERPROG_SRC = ../userprog/address_space.cc            \
                ../machine/mips_sim.cc                  \
                ../machine/mmu.cc                       \
                ../userprog/args.cc                     \
+               ../lib/coremap.cc                       \
                ../userprog/synch_console.cc
 USERPROG_OBJ = address_space.o            \
                bitmap.o                   \
@@ -130,9 +132,10 @@ USERPROG_OBJ = address_space.o            \
                mmu.o                      \
                transfer.o                 \
                args.o                     \
+               coremap.o                  \
                synch_console.o
 
-VMEM_HDR =
+VMEM_HDR = 
 VMEM_SRC =
 VMEM_OBJ =
 

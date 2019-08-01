@@ -19,9 +19,9 @@
 const unsigned PAGE_SIZE = SECTOR_SIZE;  ///< Set the page size equal to the
                                          ///< disk sector size, for
                                          ///< simplicity.
-const unsigned NUM_PHYS_PAGES = 512;
+const unsigned NUM_PHYS_PAGES = 20;
 const unsigned MEMORY_SIZE = NUM_PHYS_PAGES * PAGE_SIZE;
-const unsigned TLB_SIZE = 32;  ///< if there is a TLB, make it small.
+const unsigned TLB_SIZE = 6;  ///< if there is a TLB, make it small.
 
 
 /// This class simulates an MMU (memory management unit) that can use either

@@ -45,7 +45,6 @@ ReadLine(char *buffer, unsigned size, OpenFileId input)
 	size--;
 	
     for (i = 0; i < size; i++) {
-        buffer[i] = '1';
         if(Read(&buffer[i], 1, input)!=1){
 			Write("Error en read\n",strlen("Error en read\n"),CONSOLE_OUTPUT);
 			Halt();

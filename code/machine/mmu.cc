@@ -180,7 +180,21 @@ ExceptionType
 MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
 {
     ASSERT(entry != nullptr);
-
+	DEBUG('z',"Buscando entrada %u\n",vpn);
+	
+	for(int i=0;i<NumPages;i++){
+		unsigned _vpn = i;
+		unsigned _virt = currentThread->space->pageTable[i].virtualPage;
+		unsigned _phys = currentThread->space->pageTable[i].physicalPage;
+		if(_phys == 4294967295){
+			DEBUG('z',"PageTable[%u] = (%u, No asignada)\n",_vpn,_virt);
+		} else if(_phys == 4294967294){
+			DEBUG('z',"PageTable[%u] = (%u, En swap)\n",_vpn,_virt);
+		}else{
+			DEBUG('z',"PageTable[%u] = (%u, %u)\n",_vpn,_virt,_phys);
+		}
+	}
+	
     if (tlb == nullptr) {
         // Use a page table; `vpn` is an index in the table.
 
@@ -262,7 +276,9 @@ MMU::Translate(unsigned virtAddr, unsigned *physAddr,
     // from the virtual address.
     unsigned vpn    = (unsigned) virtAddr / PAGE_SIZE;
     unsigned offset = (unsigned) virtAddr % PAGE_SIZE;
-
+	
+	DEBUG('a',"virtAddr:%u vpn:%u offset:%u\n",virtAddr,vpn,offset);
+	
     TranslationEntry *entry;
     ExceptionType exception = RetrievePageEntry(vpn, &entry);
     if (exception != NO_EXCEPTION)

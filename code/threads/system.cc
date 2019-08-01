@@ -14,11 +14,11 @@
 #include "userprog/exception.hh"
 #endif
 
-
 /// This defines *all* of the global data structures used by Nachos.
 ///
 /// These are all initialized and de-allocated by this file.
 
+int NumPages = 0;
 Thread *currentThread;        ///< The thread we are running now.
 Thread *threadToBeDestroyed;  ///< The thread that just finished.
 Scheduler *scheduler;         ///< The ready list.
@@ -44,6 +44,7 @@ Machine *machine;  ///< User program memory and registers.
 SynchConsole * synchConsole;
 Bitmap *bitmap;
 Table<Thread*> * processTable;
+CoreMap * coremap;
 #endif
 
 #ifdef NETWORK
@@ -185,7 +186,8 @@ Initialize(int argc, char **argv)
     Debugger *d = debugUserProg ? new Debugger : nullptr;
     machine = new Machine(d);  // This must come first.
 	  synchConsole = new SynchConsole("Console");
-    bitmap = new Bitmap(NUM_PHYS_PAGES);
+    bitmap = new Bitmap(NUM_PHYS_PAGES-1);
+    coremap = new CoreMap();
 	processTable = new Table<Thread *>;
 	if (!timer)
         timer = new Timer(TimerInterruptHandler, 0, randomYield);

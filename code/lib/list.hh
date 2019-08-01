@@ -58,6 +58,9 @@ public:
 
     void Remove(Item item);
 
+    /// Find an element in the list
+    Item* GetFirst(bool (*func)(Item));
+
     /// Apply `func` to all elements in list.
     void Apply(void (*func)(Item));
 
@@ -211,6 +214,18 @@ List<Item>::Apply(void (*func)(Item))
     for (ListNode *ptr = first; ptr != nullptr; ptr = ptr->next) {
        func(ptr->item);
     }
+}
+
+template <class Item>
+Item*
+List<Item>::GetFirst(bool (*func)(Item))
+{
+    ASSERT(func != nullptr);
+
+    for (ListNode *ptr = first; ptr != nullptr; ptr = ptr->next) {
+       if(func(ptr->item))return &(ptr->item);
+    }
+    return NULL;
 }
 
 template <class Item>

@@ -1,9 +1,16 @@
+El nachos se rompe si ejecutamos un programa mas grande que la memoria RAM disponible(y en teoria no deberia)
+
+En la practica 3 cargamos las pagina byte a byte, en la 4 lo hacemos por pagina completa. Que pasa si accedemos a memoria que no es de nuestro programa?
+
 Arreglar llamada a systema Exit()
 
 currentThread->Finish() no retorna (creo que deberia). userprog/exception.cc 187.12
 
-Las banderas de debug estan en cumbia (empezamos a asignar cualquier bandera a cualquier cosa). Escribirlas en algun lado y acomodarlas (a cosas iguales poner las mismas banderas).
+Las banderas de debug estan en cumbia (empezamos a asignar cualquier bandera a cualquier cosa). Escribirlas en thread/main y acomodarlas (a cosas iguales poner las mismas banderas).
 
 El ejercicio 2 de la practica 4 es sopechosamente muy bueno. Los hits ratios estan siempre(o casi siempre) por encima de 0.9. Revisar
 
 Identar el codigo apropiadamente. En muchas casos se cambiaron espacios por tabs y tabs por espacios. Definir una identaticion apropiada y utilizar esa.
+
+Agregar banderas con compilacio condicional para acceder a los distintos ejercicios (checkear esto tambien en practicas anteriores)
+
