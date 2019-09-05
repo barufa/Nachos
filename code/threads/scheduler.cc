@@ -78,7 +78,7 @@ Scheduler::FindNextToRun()
   }
 
 
-  DEBUG('p',"****No hay procesos para ejecutar****\n");
+  DEBUG('A',"****No hay procesos para ejecutar****\n");
 
   return NULL;
 }

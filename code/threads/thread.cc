@@ -54,7 +54,7 @@ Thread::Thread(const char *threadName,bool j_flag,int _priority)
     }
 
 #ifdef USER_PROGRAM
-    space    = nullptr;
+    space = nullptr;
 	if(processTable)
 		pid = processTable->Add(this);
 	DescriptorTable = new Table<OpenFile*>();

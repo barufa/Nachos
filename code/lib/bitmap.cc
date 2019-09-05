@@ -89,6 +89,17 @@ Bitmap::CountClear() const
     return count;
 }
 
+unsigned
+Bitmap::CountNotClear() const
+{
+    unsigned count = 0;
+
+    for (unsigned i = 0; i < numBits; i++)
+        if (Test(i))
+            count++;
+    return count;
+}
+
 /// Print the contents of the bitmap, for debugging.
 ///
 /// Could be done in a number of ways, but we just print the indexes of all

@@ -315,5 +315,4 @@ List<Item>::SortedPop(int *keyPtr)
     return thing;
 }
 
-
 #endif

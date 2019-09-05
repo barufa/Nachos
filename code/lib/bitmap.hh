@@ -63,7 +63,7 @@ public:
 
     /// Return the number of clear bits.
     unsigned CountClear() const;
-
+    unsigned CountNotClear() const;
     /// Print contents of bitmap.
     void Print() const;
 
