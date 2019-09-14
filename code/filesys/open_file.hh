@@ -23,8 +23,8 @@
 #include "lib/utility.hh"
 
 
-#ifdef FILESYS_STUB  // Temporarily implement calls to Nachos file system as
-                     // calls to UNIX!  See definitions listed under `#else`.
+#ifdef FILESYS_STUB // Temporarily implement calls to Nachos file system as
+                    // calls to UNIX!  See definitions listed under `#else`.
 class OpenFile {
 public:
 
@@ -41,14 +41,17 @@ public:
         Close(file);
     }
 
-    int ReadAt(char *into, unsigned numBytes, unsigned position)
+    int
+    ReadAt(char * into, unsigned numBytes, unsigned position)
     {
         ASSERT(into != nullptr);
         ASSERT(numBytes > 0);
         Lseek(file, position, 0);
         return ReadPartial(file, into, numBytes);
     }
-    int WriteAt(const char *from, unsigned numBytes, unsigned position)
+
+    int
+    WriteAt(const char * from, unsigned numBytes, unsigned position)
     {
         ASSERT(from != nullptr);
         ASSERT(numBytes > 0);
@@ -56,7 +59,9 @@ public:
         WriteFile(file, from, numBytes);
         return numBytes;
     }
-    int Read(char *into, unsigned numBytes)
+
+    int
+    Read(char * into, unsigned numBytes)
     {
         ASSERT(into != nullptr);
         ASSERT(numBytes > 0);
@@ -64,7 +69,9 @@ public:
         currentOffset += numRead;
         return numRead;
     }
-    int Write(const char *from, unsigned numBytes)
+
+    int
+    Write(const char * from, unsigned numBytes)
     {
         ASSERT(from != nullptr);
         ASSERT(numBytes > 0);
@@ -73,7 +80,8 @@ public:
         return numWritten;
     }
 
-    unsigned Length() const
+    unsigned
+    Length() const
     {
         Lseek(file, 0, 2);
         return Tell(file);
@@ -97,29 +105,47 @@ public:
     ~OpenFile();
 
     /// Set the position from which to start reading/writing -- UNIX `lseek`.
-    void Seek(unsigned position);
+    void
+    Seek(unsigned position);
 
     /// Read/write bytes from the file, starting at the implicit position.
     /// Return the # actually read/written, and increment position in file.
 
-    int Read(char *into, unsigned numBytes);
-    int Write(const char *from, unsigned numBytes);
+    int
+    Read(char * into, unsigned numBytes);
+
+    int
+    Write(const char * from, unsigned numBytes);
 
     /// Read/write bytes from the file, bypassing the implicit position.
 
-    int ReadAt(char *into, unsigned numBytes, unsigned position);
-    int WriteAt(const char *from, unsigned numBytes, unsigned position);
+    int
+    ReadAt(char * into, unsigned numBytes, unsigned position);
+
+    int
+    WriteAt(const char * from, unsigned numBytes, unsigned position);
 
     // Return the number of bytes in the file (this interface is simpler than
     // the UNIX idiom -- `lseek` to end of file, `tell`, `lseek` back).
-    unsigned Length() const;
+    unsigned
+    Length() const;
 
-  private:
-    FileHeader *hdr;  ///< Header for this file.
-    unsigned seekPosition;  ///< Current position within the file.
+private:
+    FileHeader * hdr;      ///< Header for this file.
+    unsigned seekPosition; ///< Current position within the file.
+    char * name;
+    int sector;
+
+	int
+    Internal_ReadAt(char * into, unsigned numBytes, unsigned position);
+
+    int
+    Internal_WriteAt(const char * from, unsigned numBytes, unsigned position);
+
+
 };
 
-#endif
+#endif /* ifdef FILESYS_STUB */
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_OPENFILE__HH */

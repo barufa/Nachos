@@ -20,45 +20,50 @@
 /// Initialization and cleanup routines.
 
 // Initialization, called before anything else.
-extern void Initialize(int argc, char **argv);
+extern void
+Initialize(int argc, char ** argv);
 
 // Cleanup, called when Nachos is done.
-extern void Cleanup();
+extern void
+Cleanup();
 
 extern int NumPages;
-extern Thread *currentThread;        ///< The thread holding the CPU.
-extern Thread *threadToBeDestroyed;  ///< The thread that just finished.
-extern Scheduler *scheduler;         ///< The ready list.
-extern Interrupt *interrupt;         ///< Interrupt status.
-extern Statistics *stats;            ///< Performance metrics.
-extern Timer *timer;                 ///< The hardware alarm clock.
+extern Thread * currentThread;       ///< The thread holding the CPU.
+extern Thread * threadToBeDestroyed; ///< The thread that just finished.
+extern Scheduler * scheduler;        ///< The ready list.
+extern Interrupt * interrupt;        ///< Interrupt status.
+extern Statistics * stats;           ///< Performance metrics.
+extern Timer * timer;                ///< The hardware alarm clock.
 
 #ifdef USER_PROGRAM
-#include "machine/machine.hh"
-#include "userprog/synch_console.hh"
-#include "lib/bitmap.hh"
-#include "lib/coremap.hh"
-extern Machine *machine;  // User program memory and registers.
+# include "machine/machine.hh"
+# include "userprog/synch_console.hh"
+# include "lib/bitmap.hh"
+# include "lib/coremap.hh"
+extern Machine * machine; // User program memory and registers.
 extern SynchConsole * synchConsole;
 extern Bitmap * bitmap;
-extern Table<Thread *> * processTable;
+extern Table < Thread * > * processTable;
 extern CoreMap * coremap;
 #endif
 
-#ifdef FILESYS_NEEDED  // *FILESYS* or *FILESYS_STUB*.
-#include "filesys/file_system.hh"
-extern FileSystem *fileSystem;
+#ifdef FILESYS_NEEDED // *FILESYS* or *FILESYS_STUB*.
+# include "filesys/file_system.hh"
+
+extern FileSystem * fileSystem;
 #endif
 
 #ifdef FILESYS
-#include "filesys/synch_disk.hh"
-extern SynchDisk *synchDisk;
+# include "filesys/synch_disk.hh"
+# include "filesys/filetable.hh"
+extern SynchDisk * synchDisk;
+extern FileTable * filetable;
 #endif
 
 #ifdef NETWORK
-#include "network/post.hh"
-extern PostOffice *postOffice;
+# include "network/post.hh"
+extern PostOffice * postOffice;
 #endif
 
 
-#endif
+#endif /* ifndef NACHOS_THREADS_SYSTEM__HH */

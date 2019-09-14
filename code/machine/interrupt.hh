@@ -78,14 +78,14 @@ class PendingInterrupt {
 public:
 
     /// initialize an interrupt that will occur in the future.
-    PendingInterrupt(VoidFunctionPtr func, void *param,
-                     unsigned time, IntType kind);
+    PendingInterrupt(VoidFunctionPtr func, void * param,
+      unsigned time, IntType kind);
 
-    VoidFunctionPtr handler;  ///< The function (in the hardware device
-                              ///< emulator) to call when the interrupt
-                              ///< occurs.
-    void *arg;  ///< The argument to the function.
-    unsigned when;  ///< When the interrupt is supposed to fire.
+    VoidFunctionPtr handler; ///< The function (in the hardware device
+    ///< emulator) to call when the interrupt
+    ///< occurs.
+    void * arg;    ///< The argument to the function.
+    unsigned when; ///< When the interrupt is supposed to fire.
     IntType type;  ///< For debugging.
 };
 
@@ -104,31 +104,40 @@ public:
     ~Interrupt();
 
     /// Disable or enable interrupts and return previous setting.
-    IntStatus SetLevel(IntStatus level);
+    IntStatus
+    SetLevel(IntStatus level);
 
     /// Enable interrupts.
-    void Enable();
+    void
+    Enable();
 
     /// Return whether interrupts are enabled or disabled.
-    IntStatus GetLevel() const;
+    IntStatus
+    GetLevel() const;
 
     // The ready queue is empty, roll simulated time forward until the next
     // interrupt.
-    void Idle();
+    void
+    Idle();
 
     // Quit and print out stats.
-    void Halt();
+    void
+    Halt();
 
     // Cause a context switch on return from an interrupt handler.
-    void YieldOnReturn();
+    void
+    YieldOnReturn();
 
     // Idle, kernel, user.
-    MachineStatus GetStatus() const;
+    MachineStatus
+    GetStatus() const;
 
-    void SetStatus(MachineStatus st);
+    void
+    SetStatus(MachineStatus st);
 
     // Print interrupt state.
-    void DumpState();
+    void
+    DumpState();
 
 
     /// NOTE: the following are internal to the hardware simulation code.
@@ -139,36 +148,40 @@ public:
     /// Schedule an interrupt to occur at time ``when''.
     ///
     /// This is called by the hardware device simulators.
-    void Schedule(VoidFunctionPtr handler, void *arg,
-                  unsigned when, IntType type);
+    void
+    Schedule(VoidFunctionPtr handler, void * arg,
+      unsigned when, IntType type);
 
     /// Advance simulated time.
-    void OneTick();
+    void
+    OneTick();
 
 private:
-    IntStatus level;  ///< Are interrupts enabled or disabled?
-    List<PendingInterrupt *> *pending;  ///< The list of interrupts scheduled
-                                        ///< to occur in the future.
-    bool inHandler;  ///< True if we are running an interrupt handler.
-    bool yieldOnReturn;  ///< True if we are to context switch on return from
-                         ///< the interrupt handler.
-    MachineStatus status;  ///< Idle, kernel mode, user mode.
+    IntStatus level;                      ///< Are interrupts enabled or disabled?
+    List < PendingInterrupt * > *pending; ///< The list of interrupts scheduled
+    ///< to occur in the future.
+    bool inHandler;     ///< True if we are running an interrupt handler.
+    bool yieldOnReturn; ///< True if we are to context switch on return from
+    ///< the interrupt handler.
+    MachineStatus status; ///< Idle, kernel mode, user mode.
 
     /// These functions are internal to the interrupt simulation code.
 
     /// Check if an interrupt is supposed to occur now.
-    bool CheckIfDue(bool advanceClock);
+    bool
+    CheckIfDue(bool advanceClock);
 
     /// SetLevel, without advancing the simulated time.
-    void ChangeLevel(IntStatus old,
-                     IntStatus now);
+    void
+    ChangeLevel(IntStatus old,
+      IntStatus           now);
 
-#ifdef DFS_TICKS_FIX
+    #ifdef DFS_TICKS_FIX
     /// Restart total ticks and the pending interrupt list.
-    void RestartTicks();
-#endif
-
+    void
+    RestartTicks();
+    #endif
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_INTERRUPT__HH */

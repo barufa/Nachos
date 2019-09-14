@@ -20,25 +20,25 @@
 ///
 /// Open the executable, load it into memory, and jump to it.
 void
-StartProcess(const char *filename)
+StartProcess(const char * filename)
 {
     ASSERT(filename != nullptr);
 
-    OpenFile *executable = fileSystem->Open(filename);
+    OpenFile * executable = fileSystem->Open(filename);
     if (executable == nullptr) {
         printf("Unable to open file %s\n", filename);
         return;
     }
 
-    AddressSpace *space = new AddressSpace(executable);
+    AddressSpace * space = new AddressSpace(executable);
     currentThread->space = space;
 
-    space->InitRegisters();  // Set the initial register values.
-    space->RestoreState();   // Load page table register.
+    space->InitRegisters(); // Set the initial register values.
+    space->RestoreState();  // Load page table register.
 
-    machine->Run();  // Jump to the user progam.
-    ASSERT(false);   // `machine->Run` never returns; the address space
-                     // exits by doing the system call `Exit`.
+    machine->Run(); // Jump to the user progam.
+    ASSERT(false);  // `machine->Run` never returns; the address space
+                    // exits by doing the system call `Exit`.
 }
 
 /// Data structures needed for the console test.
@@ -47,22 +47,22 @@ StartProcess(const char *filename)
 /// completes.
 
 static SynchConsole * synchconsole;
-static Console   *console;
-static Semaphore *readAvail;
-static Semaphore *writeDone;
+static Console * console;
+static Semaphore * readAvail;
+static Semaphore * writeDone;
 
 /// Console interrupt handlers.
 ///
 /// Wake up the thread that requested the I/O.
 
 static void
-ReadAvail(void *arg)
+ReadAvail(void * arg)
 {
     readAvail->V();
 }
 
 static void
-WriteDone(void *arg)
+WriteDone(void * arg)
 {
     writeDone->V();
 }
@@ -73,31 +73,33 @@ WriteDone(void *arg)
 /// Stop when the user types a `q`.
 
 void
-ConsoleSynchTest(const char *in, const char *out)
+ConsoleSynchTest(const char * in, const char * out)
 {
-    synchconsole = new SynchConsole("SynchConsole",in, out);
+    synchconsole = new SynchConsole("SynchConsole", in, out);
 
     for (;;) {
         char ch = synchconsole->GetChar();
         if (ch == 'q')
             return;  // If `q`, then quit.
-		synchconsole->PutChar(ch);  // Echo it!
+
+        synchconsole->PutChar(ch); // Echo it!
     }
 }
 
 void
-ConsoleTest(const char *in, const char *out)
+ConsoleTest(const char * in, const char * out)
 {
     console   = new Console(in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
 
     for (;;) {
-        readAvail->P();        // Wait for character to arrive.
+        readAvail->P(); // Wait for character to arrive.
         char ch = console->GetChar();
-		if (ch == 'q')
-			return;  // If `q`, then quit.
-        console->PutChar(ch);  // Echo it!
-        writeDone->P();        // Wait for write to finish.
+        if (ch == 'q')
+            return;  // If `q`, then quit.
+
+        console->PutChar(ch); // Echo it!
+        writeDone->P();       // Wait for write to finish.
     }
 }

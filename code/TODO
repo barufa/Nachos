@@ -1,9 +1,3 @@
-El nachos se rompe si ejecutamos un programa mas grande que la memoria RAM disponible(y en teoria no deberia). Problema: Trata de acceder a la pargina virtual 26926.
-
 Las banderas de debug estan en cumbia. Escribirlas en thread/main y acomodarlas (a cosas iguales poner las mismas banderas).
 
-En la practica 3 cargamos las pagina byte a byte, en la 4 lo hacemos por pagina completa. Que pasa si accedemos a memoria que no es de nuestro programa?
-
 El ejercicio 2 de la practica 4 es sopechosamente muy bueno. Los hits ratios estan siempre(o casi siempre) por encima de 0.9. Aparentemente esta bien (by Esteban). Contar los errores dos veces.
-
-Identar el codigo apropiadamente. En muchas casos se cambiaron espacios por tabs y tabs por espacios. Definir una identaticion apropiada y utilizar esa.

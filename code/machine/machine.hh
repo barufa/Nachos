@@ -32,24 +32,24 @@
 // any two instructions (thus we need to keep track of things like load
 // delay slots, etc.)
 enum {
-    STACK_REG      = 29,  ///< User's stack pointer.
-    RET_ADDR_REG   = 31,  ///< Holds return address for procedure calls.
-    HI_REG         = 32,  ///< Double register to hold multiply result.
+    STACK_REG      = 29, ///< User's stack pointer.
+    RET_ADDR_REG   = 31, ///< Holds return address for procedure calls.
+    HI_REG         = 32, ///< Double register to hold multiply result.
     LO_REG         = 33,
-    PC_REG         = 34,  ///< Current program counter.
-    NEXT_PC_REG    = 35,  ///< Next program counter (for branch delay).
-    PREV_PC_REG    = 36,  ///< Previous program counter (for debugging).
-    LOAD_REG       = 37,  ///< The register target of a delayed load.
-    LOAD_VALUE_REG = 38,  ///< The value to be loaded by a delayed load.
-    BAD_VADDR_REG  = 39,  ///< The failing virtual address on an exception.
+    PC_REG         = 34, ///< Current program counter.
+    NEXT_PC_REG    = 35, ///< Next program counter (for branch delay).
+    PREV_PC_REG    = 36, ///< Previous program counter (for debugging).
+    LOAD_REG       = 37, ///< The register target of a delayed load.
+    LOAD_VALUE_REG = 38, ///< The value to be loaded by a delayed load.
+    BAD_VADDR_REG  = 39, ///< The failing virtual address on an exception.
 
-    NUM_GP_REGS    = 32,  ///< 32 general purpose registers on MIPS.
+    NUM_GP_REGS    = 32, ///< 32 general purpose registers on MIPS.
     NUM_TOTAL_REGS = 40
 };
 
 class Instruction;
 
-typedef void (*ExceptionHandler)(ExceptionType);
+typedef void (* ExceptionHandler)(ExceptionType);
 
 /// The following class defines the simulated host workstation hardware, as
 /// seen by user programs -- the CPU registers, main memory, etc.
@@ -68,49 +68,61 @@ class Machine {
 public:
 
     /// Initialize the simulation of the hardware for running user programs.
-    Machine(SingleStepper *st);
+    Machine(SingleStepper * st);
 
     /// Routines callable by the Nachos kernel.
 
     /// Run a user program.
-    void Run();
+    void
+    Run();
 
-    const int *GetRegisters() const;
+    const int *
+    GetRegisters() const;
 
-    MMU *GetMMU();
+    MMU *
+    GetMMU();
 
     /// Read the contents of a CPU register.
-    int ReadRegister(unsigned num) const;
+    int
+    ReadRegister(unsigned num) const;
 
     /// Store a value into a CPU register.
-    void WriteRegister(unsigned num, int value);
+    void
+    WriteRegister(unsigned num, int value);
 
     /// Wrappers for MMU methods.  These wrappers raise an exception in the
     /// machine if needed.
 
-    bool ReadMem(unsigned addr, unsigned size, int *value);
+    bool
+    ReadMem(unsigned addr, unsigned size, int * value);
 
-    bool WriteMem(unsigned addr, unsigned size, int value);
+    bool
+    WriteMem(unsigned addr, unsigned size, int value);
 
     /// Print the user CPU and memory state.
-    void DumpState();
+    void
+    DumpState();
 
     /// Routines internal to the machine simulation -- DO NOT call these.
 
     /// Fetch one instruction of a user program.
     ///
     /// Return false if an exception occurs, true otherwise.
-    bool FetchInstruction(Instruction *instr);
+    bool
+    FetchInstruction(Instruction * instr);
 
     /// Run a certain instruction of a user program.
-    void ExecInstruction(const Instruction *instr);
+    void
+    ExecInstruction(const Instruction * instr);
 
     /// Do a pending delayed load (modifying a reg).
-    void DelayedLoad(unsigned nextReg, int nextVal);
+    void
+    DelayedLoad(unsigned nextReg, int nextVal);
 
     /// Trap to the Nachos kernel, because of a system call or other
     /// exception.
-    void RaiseException(ExceptionType et, unsigned badVAddr);
+    void
+    RaiseException(ExceptionType et, unsigned badVAddr);
 
     /// Register an exception handler: a callback kernel function to invoke
     /// when an exception of a certain type is raised.
@@ -118,21 +130,22 @@ public:
     /// Such handlers are the entry points into the kernel.  The exception
     /// type is passed to the handler as an argument, so the same handler
     /// can be assigned to multiple exception types.
-    void SetHandler(ExceptionType et, ExceptionHandler handler);
+    void
+    SetHandler(ExceptionType et, ExceptionHandler handler);
 
 private:
-    SingleStepper *singleStepper;  ///< Drop back into the method of a
-                                   ///< provided object (may be a debugger)
-                                   ///< after each simulated instruction.
+    SingleStepper * singleStepper; ///< Drop back into the method of a
+    ///< provided object (may be a debugger)
+    ///< after each simulated instruction.
 
     /// Private data structures.
-    int registers[NUM_TOTAL_REGS];  ///< CPU registers, for executing user
-                                    ///< programs.
+    int registers[NUM_TOTAL_REGS]; ///< CPU registers, for executing user
+    ///< programs.
 
     MMU mmu; ///< Memory management unit.
 
-    ExceptionHandler handlers[NUM_EXCEPTION_TYPES];  ///< Exception handlers.
+    ExceptionHandler handlers[NUM_EXCEPTION_TYPES]; ///< Exception handlers.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_MACHINE__HH */

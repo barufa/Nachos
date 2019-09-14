@@ -9,7 +9,7 @@
 #include "syscall.h"
 
 
-#define DIM  2048
+#define DIM 256
 
 /// Size of physical memory; with code, we will run out of space!
 static int A[DIM];
@@ -26,12 +26,13 @@ main(void)
     // Then sort!
     for (i = 0; i < DIM - 1; i++)
         for (j = i; j < DIM - 1 - i; j++)
-            if (A[j] > A[j + 1]) {  // Out of order -> need to swap!
-                tmp = A[j];
-                A[j] = A[j + 1];
+            if (A[j] > A[j + 1]) { // Out of order -> need to swap!
+                tmp      = A[j];
+                A[j]     = A[j + 1];
                 A[j + 1] = tmp;
             }
 
     // And then we're done -- should be 0!
-    Exit(A[0]);
+    //~ Exit(A[0]);
+    Halt();
 }

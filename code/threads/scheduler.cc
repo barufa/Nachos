@@ -25,16 +25,15 @@
 /// Initialize the list of ready but not running threads to empty.
 Scheduler::Scheduler()
 {
-    for(int i=0;i<3;i++){
-      readyList[i] = new List<Thread *>;
+    for (int i = 0; i < 3; i++) {
+        readyList[i] = new List<Thread *>;
     }
-
 }
 
 /// De-allocate the list of ready threads.
 Scheduler::~Scheduler()
 {
-    for(int i=0;i<3;i++) delete readyList[i];
+    for (int i = 0; i < 3; i++) delete readyList[i];
 }
 
 /// Mark a thread as ready, but not running.
@@ -42,23 +41,23 @@ Scheduler::~Scheduler()
 ///
 /// * `thread` is the thread to be put on the ready list.
 void
-Scheduler::ReadyToRun(Thread *thread)
+Scheduler::ReadyToRun(Thread * thread)
 {
     ASSERT(thread != nullptr);
 
     int priority = thread->GetPriority();
 
-    DEBUG('p', "Putting thread %s with priority %d on ready list\n", thread->GetName(),priority);
+    DEBUG('p', "Putting thread %s with priority %d on ready list\n",
+      thread->GetName(), priority);
     thread->SetStatus(READY);
 
-    if(priority<20){
-      readyList[0]->SortedInsert(thread,priority);
-    }else if(priority==20){
-      readyList[1]->SortedInsert(thread,priority);
-    }else{
-      readyList[2]->SortedInsert(thread,priority);
+    if (priority < 20) {
+        readyList[0]->SortedInsert(thread, priority);
+    } else if (priority == 20) {
+        readyList[1]->SortedInsert(thread, priority);
+    } else {
+        readyList[2]->SortedInsert(thread, priority);
     }
-
 }
 
 /// Return the next thread to be scheduled onto the CPU.
@@ -69,18 +68,16 @@ Scheduler::ReadyToRun(Thread *thread)
 Thread *
 Scheduler::FindNextToRun()
 {
-
-
-  for(int i=2;i>=0;i--){
-    if(!readyList[i]->IsEmpty()){
-      return readyList[i]->Pop();
+    for (int i = 2; i >= 0; i--) {
+        if (!readyList[i]->IsEmpty()) {
+            return readyList[i]->Pop();
+        }
     }
-  }
 
 
-  DEBUG('A',"****No hay procesos para ejecutar****\n");
+    DEBUG('A', "****No hay procesos para ejecutar****\n");
 
-  return NULL;
+    return NULL;
 }
 
 /// Dispatch the CPU to `nextThread`.
@@ -95,28 +92,28 @@ Scheduler::FindNextToRun()
 ///
 /// * `nextThread` is the thread to be put into the CPU.
 void
-Scheduler::Run(Thread *nextThread)
+Scheduler::Run(Thread * nextThread)
 {
     ASSERT(nextThread != nullptr);
 
-    Thread *oldThread = currentThread;
+    Thread * oldThread = currentThread;
 
-#ifdef USER_PROGRAM  // Ignore until running user programs.
+    #ifdef USER_PROGRAM // Ignore until running user programs.
     if (currentThread->space != nullptr) {
         // If this thread is a user program, save the user's CPU registers.
         currentThread->SaveUserState();
         currentThread->space->SaveState();
     }
-#endif
+    #endif
 
-    oldThread->CheckOverflow();  // Check if the old thread had an undetected
-                                 // stack overflow.
+    oldThread->CheckOverflow(); // Check if the old thread had an undetected
+                                // stack overflow.
 
-    currentThread = nextThread;  // Switch to the next thread.
-    currentThread->SetStatus(RUNNING);  // `nextThread` is now running.
+    currentThread = nextThread;        // Switch to the next thread.
+    currentThread->SetStatus(RUNNING); // `nextThread` is now running.
 
     DEBUG('p', "Switching from thread \"%s\" to thread \"%s\"\n",
-          oldThread->GetName(), nextThread->GetName());
+      oldThread->GetName(), nextThread->GetName());
 
     // This is a machine-dependent assembly language routine defined in
     // `switch.s`.  You may have to think a bit to figure out what happens
@@ -136,21 +133,21 @@ Scheduler::Run(Thread *nextThread)
         threadToBeDestroyed = nullptr;
     }
 
-#ifdef USER_PROGRAM
+    #ifdef USER_PROGRAM
     if (currentThread->space != nullptr) {
         // If there is an address space to restore, do it.
         currentThread->RestoreUserState();
         currentThread->space->RestoreState();
     }
-#endif
-}
+    #endif
+} // Scheduler::Run
 
 /// Print the scheduler state -- in other words, the contents of the ready
 /// list.
 ///
 /// For debugging.
 static void
-ThreadPrint(Thread *t)
+ThreadPrint(Thread * t)
 {
     ASSERT(t != nullptr);
     t->Print();
@@ -159,13 +156,12 @@ ThreadPrint(Thread *t)
 void
 Scheduler::Print()
 {
-
-  for(int i=2;i>=0;i--){
-      if(readyList[i]->IsEmpty()){
-          printf("List %d is empty\n",i);
-      }else{
-          printf("Priority %d ready list contents:\n",i);
-          readyList[i]->Apply(ThreadPrint);
-      }
-  }
+    for (int i = 2; i >= 0; i--) {
+        if (readyList[i]->IsEmpty()) {
+            printf("List %d is empty\n", i);
+        } else {
+            printf("Priority %d ready list contents:\n", i);
+            readyList[i]->Apply(ThreadPrint);
+        }
+    }
 }

@@ -18,7 +18,7 @@
 #include "machine/translation_entry.hh"
 #include "../bin/noff.h"
 
-const unsigned USER_STACK_SIZE = 1024;  ///< Increase this as necessary!
+const unsigned USER_STACK_SIZE = 1024; ///< Increase this as necessary!
 
 
 class AddressSpace {
@@ -28,26 +28,33 @@ public:
     /// the file `executable`.
     ///
     /// * `executable` is the open file that corresponds to the program.
-    AddressSpace(OpenFile *executable);
+    AddressSpace(OpenFile * executable);
 
     /// De-allocate an address space.
     ~AddressSpace();
 
     /// Initialize user-level CPU registers, before jumping to user code.
-    void InitRegisters();
+    void
+    InitRegisters();
 
     /// Save/restore address space-specific info on a context switch.
 
-    void SaveState();
-    void RestoreState();
-    bool Update_TLB(unsigned vpn);
+    void
+    SaveState();
+    void
+    RestoreState();
+    bool
+    Update_TLB(unsigned vpn);
 
-    void save_page(unsigned vpn);
-    void load_page(unsigned vpn,unsigned ppn);
-    bool swap_find(unsigned vpn);
+    void
+    save_page(unsigned vpn);
+    void
+    load_page(unsigned vpn, unsigned ppn);
+    bool
+    swap_find(unsigned vpn);
 
     /// Assume linear page table translation for now!
-    TranslationEntry *pageTable;
+    TranslationEntry * pageTable;
 
 private:
 
@@ -57,15 +64,14 @@ private:
     /// Number of pages in the virtual address space.
     unsigned numPages;
 
-    bool LoadPage(unsigned vpn);
+    bool
+    LoadPage(unsigned vpn);
     noffHeader noffH;
-    OpenFile *executable;
+    OpenFile * executable;
 
     char * swap_id;
     OpenFile * swap;
-
 };
 
 
-
-#endif
+#endif /* ifndef NACHOS_USERPROG_ADDRESSSPACE__HH */

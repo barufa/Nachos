@@ -22,9 +22,10 @@
 /// TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 
-static const char *VERSION = "Nachos (unr19c)";
+static const char * VERSION = "Nachos (unr19c)";
 
-static const char *COPYRIGHT = "\
+static const char * COPYRIGHT =
+  "\
 Copyright (c) 1992-1993 The Regents of the University of California.\n\
               1998-2010 Universidad de Las Palmas de Gran Canaria.\n\
               2016-2019 Docentes de la Universidad Nacional de Rosario.\n";

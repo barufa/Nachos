@@ -18,7 +18,8 @@
 ///
 /// * `address` is a user-space address pointing to the start of an
 ///   `argv`-like array.
-char **SaveArgs(int address);
+char **
+SaveArgs(int address);
 
 /// Write command-line arguments into the stack memory of a user process.
 ///
@@ -38,7 +39,8 @@ char **SaveArgs(int address);
 ///            -└───────────────────────┘
 ///
 /// * `args` is a kernel-space pointer to the start of an `argv`-like array.
-int * WriteArgs(char **args);
+int *
+WriteArgs(char ** args);
 
 
-#endif
+#endif /* ifndef NACHOS_USERPROG_ARGS__HH */

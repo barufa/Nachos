@@ -10,41 +10,46 @@ class DebuggerCommandManager {
 public:
     enum RunResult {
         RUN_RESULT_STAY,
-          ///< Stay in the debugger, do not advance execution of the user
-          ///< process.
+        ///< Stay in the debugger, do not advance execution of the user
+        ///< process.
         RUN_RESULT_STEP,
-          ///< Advance execution while keeping the debugger working.
+        ///< Advance execution while keeping the debugger working.
         RUN_RESULT_NORMALIZE,
-          ///< Proceed with normal execution, end the debugger.
+        ///< Proceed with normal execution, end the debugger.
     };
 
-    typedef RunResult (*CommandFunc)(char **args, void *extra);
-    typedef RunResult (*EmptyFunc)();
-    typedef RunResult (*UnknownFunc)(const char *name);
+    typedef RunResult (* CommandFunc)(char ** args, void * extra);
+    typedef RunResult (* EmptyFunc)();
+    typedef RunResult (* UnknownFunc)(const char * name);
 
     /// Fetch the next argument for a command invocation.
-    static const char *FetchArg(char **args);
+    static const char *
+    FetchArg(char ** args);
 
-    bool AddCommand(const char *name, CommandFunc f, void *extra);
-    void SetEmpty(EmptyFunc f);
-    void SetUnknown(UnknownFunc f);
-    RunResult Run(char *line);
+    bool
+    AddCommand(const char * name, CommandFunc f, void * extra);
+    void
+    SetEmpty(EmptyFunc f);
+    void
+    SetUnknown(UnknownFunc f);
+    RunResult
+    Run(char * line);
 
 private:
     static const unsigned CAPACITY = 20;
 
     struct Command {
-        const char *name;
-        CommandFunc func;
-        void *extra;
+        const char * name;
+        CommandFunc  func;
+        void *       extra;
     };
 
     Command commands[CAPACITY];
-    unsigned count;  ///< How many commands are added?
+    unsigned count; ///< How many commands are added?
 
     EmptyFunc empty;
     UnknownFunc unknown;
 };
 
 
-#endif
+#endif /* ifndef NACHOS_USERPROG_DEBUGGER_COMMAND_MANAGER__HH */

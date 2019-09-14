@@ -10,10 +10,10 @@
 class DirectoryEntry;
 
 struct RawDirectory {
-    unsigned tableSize;  ///< Number of directory entries.
-    DirectoryEntry *table;  ///< Table of pairs:
-                            ///< *<file name, file header location>*.
+    unsigned         tableSize; ///< Number of directory entries.
+    DirectoryEntry * table;     ///< Table of pairs:
+    ///< *<file name, file header location>*.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_RAWDIRECTORY__HH */

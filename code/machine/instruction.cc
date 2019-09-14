@@ -15,25 +15,26 @@
 void
 Instruction::Decode()
 {
-    const OpInfo *opPtr;
+    const OpInfo * opPtr;
 
-    rs = value >> 21 & 0x1F;
-    rt = value >> 16 & 0x1F;
-    rd = value >> 11 & 0x1F;
+    rs     = value >> 21 & 0x1F;
+    rt     = value >> 16 & 0x1F;
+    rd     = value >> 11 & 0x1F;
     opPtr  = &OP_TABLE[value >> 26 & 0x3F];
     opCode = opPtr->opCode;
     if (opPtr->format == IFMT) {
         extra = value & 0xFFFF;
         if (extra & 0x8000)
             extra |= 0xFFFF0000;
-    } else if (opPtr->format == RFMT)
+    } else if (opPtr->format == RFMT) {
         extra = value >> 6 & 0x1F;
-    else
+    } else {
         extra = value & 0x3FFFFFF;
+    }
 
-    if (opCode == SPECIAL)
+    if (opCode == SPECIAL) {
         opCode = SPECIAL_TABLE[value & 0x3F];
-    else if (opCode == BCOND) {
+    } else if (opCode == BCOND) {
         int i = value & 0x1F0000;
 
         if (i == 0)
@@ -47,7 +48,7 @@ Instruction::Decode()
         else
             opCode = OP_UNIMP;
     }
-}
+} // Instruction::Decode
 
 int
 Instruction::RegFromType(RegType t) const
@@ -55,14 +56,19 @@ Instruction::RegFromType(RegType t) const
     switch (t) {
         case RS:
             return rs;
+
         case RT:
             return rt;
+
         case RD:
             return rd;
+
         case EXTRA:
             return extra;
+
         case NONE:
             return 0;
+
         default:
             ASSERT(false);
             return -1;

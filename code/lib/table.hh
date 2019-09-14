@@ -11,22 +11,27 @@
 #include "list.hh"
 
 
-template <class T>
+template < class T >
 class Table {
 public:
     static const unsigned SIZE = 20;
 
     Table();
 
-    int Add(T item);
+    int
+    Add(T item);
 
-    T Get(int i) const;
+    T
+    Get(int i) const;
 
-    bool HasKey(int i) const;
+    bool
+    HasKey(int i) const;
 
-    bool IsEmpty() const;
+    bool
+    IsEmpty() const;
 
-    T Remove(int i);
+    T
+    Remove(int i);
 
 private:
     /// Data items.
@@ -38,28 +43,28 @@ private:
     /// among those with greatest numbers, so it is not possible to modify
     /// `current`.  In other words, this keeps track of external
     /// fragmentation.
-    List<int> freed;
+    List < int > freed;
 };
 
 
-template <class T>
-Table<T>::Table()
+template < class T >
+Table < T > ::Table()
 {
     current = 0;
 }
 
-template <class T>
+template < class T >
 int
-Table<T>::Add(T item)
+Table < T > ::Add(T item)
 {
     int i;
 
     if (!freed.IsEmpty()) {
-        i = freed.Pop();
+        i       = freed.Pop();
         data[i] = item;
         return i;
-    } else if (current < static_cast<int>(SIZE)) {
-        i = current++;
+    } else if (current < static_cast < int > (SIZE)) {
+        i       = current++;
         data[i] = item;
         return i;
     } else {
@@ -67,9 +72,9 @@ Table<T>::Add(T item)
     }
 }
 
-template <class T>
+template < class T >
 T
-Table<T>::Get(int i) const
+Table < T > ::Get(int i) const
 {
     ASSERT(i >= 0);
 
@@ -80,25 +85,25 @@ Table<T>::Get(int i) const
     return data[i];
 }
 
-template <class T>
+template < class T >
 bool
-Table<T>::HasKey(int i) const
+Table < T > ::HasKey(int i) const
 {
     ASSERT(i >= 0);
 
     return !(freed.Has(i) || i >= current);
 }
 
-template <class T>
+template < class T >
 bool
-Table<T>::IsEmpty() const
+Table < T > ::IsEmpty() const
 {
     return current == 0;
 }
 
-template <class T>
+template < class T >
 T
-Table<T>::Remove(int i)
+Table < T > ::Remove(int i)
 {
     ASSERT(i >= 0);
 
@@ -118,4 +123,4 @@ Table<T>::Remove(int i)
     return data[i];
 }
 
-#endif
+#endif /* ifndef NACHOS_LIB_TABLE__HH */

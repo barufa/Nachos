@@ -38,39 +38,48 @@ public:
     ~Directory();
 
     /// Initialize directory contents from disk.
-    void FetchFrom(OpenFile *file);
+    void
+    FetchFrom(OpenFile * file);
 
     /// Write modifications to directory contents back to disk.
-    void WriteBack(OpenFile *file);
+    void
+    WriteBack(OpenFile * file);
 
     /// Find the sector number of the `FileHeader` for file: `name`.
-    int Find(const char *name);
+    int
+    Find(const char * name);
 
     /// Add a file name into the directory.
-    bool Add(const char *name, int newSector);
+    bool
+    Add(const char * name, int newSector);
 
     /// Remove a file from the directory.
-    bool Remove(const char *name);
+    bool
+    Remove(const char * name);
 
     /// Print the names of all the files in the directory.
-    void List() const;
+    void
+    List() const;
 
     /// Verbose print of the contents of the directory -- all the file names
     /// and their contents.
-    void Print() const;
+    void
+    Print() const;
 
     /// Get the raw directory structure.
     ///
     /// NOTE: this should only be used by routines that operating on the file
     /// system at a low level.
-    const RawDirectory *GetRaw() const;
+    const RawDirectory *
+    GetRaw() const;
 
 private:
     RawDirectory raw;
 
     /// Find the index into the directory table corresponding to `name`.
-    int FindIndex(const char *name);
+    int
+    FindIndex(const char * name);
 };
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_DIRECTORY__HH */

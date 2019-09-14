@@ -34,18 +34,18 @@ typedef int NetworkAddress;
 /// 2. data (containing `MailHeader` from the `PostOffice`!).
 class PacketHeader {
 public:
-    NetworkAddress to;  ///< Destination machine ID.
-    NetworkAddress from;  ///< source machine ID.
-    unsigned length;  ///< Bytes of packet data, excluding the packet header
-                      ///< (but including the `MailHeader` prepended by the
-                      ///< by the post office).
+    NetworkAddress to;   ///< Destination machine ID.
+    NetworkAddress from; ///< source machine ID.
+    unsigned length;     ///< Bytes of packet data, excluding the packet header
+    ///< (but including the `MailHeader` prepended by the
+    ///< by the post office).
 };
 
 /// Largest packet that can go out on the wire.
 const unsigned MAX_WIRE_SIZE = 64;
 
 /// Data “payload” of the largest packet.
-const unsigned MAX_PACKET_SIZE = MAX_WIRE_SIZE - sizeof (PacketHeader);
+const unsigned MAX_PACKET_SIZE = MAX_WIRE_SIZE - sizeof(PacketHeader);
 
 
 /// The following class defines a physical network device.
@@ -63,8 +63,8 @@ public:
 
     /// Allocate and initialize network driver.
     Network(NetworkAddress addr, double reliability,
-            VoidFunctionPtr readAvail, VoidFunctionPtr writeDone,
-            void *callArg);
+      VoidFunctionPtr readAvail, VoidFunctionPtr writeDone,
+      void * callArg);
 
     /// De-allocate the network driver data.
     ~Network();
@@ -78,19 +78,23 @@ public:
     ///
     /// Also note that the `from` field of the `PacketHeader` is filled in
     /// automatically by `Send`.
-    void Send(PacketHeader hdr, const char *data);
+    void
+    Send(PacketHeader hdr, const char * data);
 
     /// Poll the network for incoming messages.
     ///
     /// If there is a packet waiting, copy the packet into `data` and return
     /// the header.  If no packet is waiting, return a header with length 0.
-    PacketHeader Receive(char *data);
+    PacketHeader
+    Receive(char * data);
 
     /// Interrupt handler, called when message is sent.
-    void SendDone();
+    void
+    SendDone();
 
     /// Check if there is an incoming packet.
-    void CheckPktAvail();
+    void
+    CheckPktAvail();
 
 private:
 
@@ -113,7 +117,7 @@ private:
     VoidFunctionPtr readHandler;
 
     /// Argument to be passed to interrupt handler (pointer to post office).
-    void *handlerArg;
+    void * handlerArg;
 
     /// Packet is being sent.
     bool sendBusy;
@@ -129,4 +133,4 @@ private:
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_NETWORK__HH */

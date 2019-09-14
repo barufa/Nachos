@@ -27,7 +27,7 @@ class SynchDisk {
 public:
 
     /// Initialize a synchronous disk, by initializing the raw Disk.
-    SynchDisk(const char *name);
+    SynchDisk(const char * name);
 
     /// De-allocate the synch disk data.
     ~SynchDisk();
@@ -36,20 +36,23 @@ public:
     /// read or written.  These call `Disk::ReadRequest`/`WriteRequest` and
     /// then wait until the request is done.
 
-    void ReadSector(int sectorNumber, char *data);
-    void WriteSector(int sectorNumber, const char *data);
+    void
+    ReadSector(int sectorNumber, char * data);
+    void
+    WriteSector(int sectorNumber, const char * data);
 
     /// Called by the disk device interrupt handler, to signal that the
     /// current disk operation is complete.
-    void RequestDone();
+    void
+    RequestDone();
 
 private:
-    Disk *disk;  ///< Raw disk device.
-    Semaphore *semaphore;  ///< To synchronize requesting thread with the
-                           ///< interrupt handler.
-    Lock *lock;  ///< Only one read/write request can be sent to the disk at
-                 ///< a time.
+    Disk * disk;           ///< Raw disk device.
+    Semaphore * semaphore; ///< To synchronize requesting thread with the
+    ///< interrupt handler.
+    Lock * lock; ///< Only one read/write request can be sent to the disk at
+    ///< a time.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_SYNCHDISK__HH */

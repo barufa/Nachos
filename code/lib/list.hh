@@ -20,14 +20,14 @@
 ///
 /// Internal data structures kept public so that `List` operations can access
 /// them directly.
-template <class Item>
+template < class Item >
 class ListElement {
 public:
 
     // Initialize a list element.
     ListElement(Item itemPtr, int sortKey);
 
-    ListElement *next;  ///< Next element on list, null if this is the last.
+    ListElement * next; ///< Next element on list, null if this is the last.
     int key;            ///< Priority, for a sorted list.
     Item item;          ///< Item on the list.
 };
@@ -37,7 +37,7 @@ public:
 ///
 /// By using the `Sorted` functions, the list can be kept in sorted in
 /// increasing order by `key` in `ListElement`.
-template <class Item>
+template < class Item >
 class List {
 public:
 
@@ -48,61 +48,71 @@ public:
     ~List();
 
     /// Put item at the beginning of the list.
-    void Prepend(Item item);
+    void
+    Prepend(Item item);
 
     /// Put item at the end of the list.
-    void Append(Item item);
+    void
+    Append(Item item);
 
     /// Take item off the front of the list.
-    Item Pop();
+    Item
+    Pop();
 
-    void Remove(Item item);
+    void
+    Remove(Item item);
 
     /// Find an element in the list
-    Item* GetFirst(bool (*func)(Item));
+    Item *
+    GetFirst(bool (*func)(Item));
 
     /// Apply `func` to all elements in list.
-    void Apply(void (*func)(Item));
+    void
+    Apply(void (*func)(Item));
 
     /// Does the list have some item?
-    bool Has(Item item) const;
+    bool
+    Has(Item item) const;
 
     /// Is the list empty?
-    bool IsEmpty() const;
+    bool
+    IsEmpty() const;
 
     /// Routines to put/get items on/off list in order (sorted by key).
 
     /// Put item into list.
-    void SortedInsert(Item item, int sortKey);
+    void
+    SortedInsert(Item item, int sortKey);
 
     /// Remove first item from list.
-    Item SortedPop(int *keyPtr);
+    Item
+    SortedPop(int * keyPtr);
 
 private:
 
-    typedef ListElement<Item> ListNode;
+    typedef ListElement < Item > ListNode;
 
-    ListNode *first;  ///< Head of the list, null if list is empty.
-    ListNode *last;   ///< Last element of list.
+    ListNode * first; ///< Head of the list, null if list is empty.
+    ListNode * last;  ///< Last element of list.
 };
 
 /// Initialize a list element, so it can be added somewhere on a list.
 ///
 /// * `anItem` is the item to be put on the list.
 /// * `sortKey` is the priority of the item, if any.
-template <class Item>
-ListElement<Item>::ListElement(Item anItem, int sortKey)
+template < class Item >
+ListElement < Item > ::ListElement(Item anItem, int sortKey)
 {
-     item = anItem;
-     key  = sortKey;
-     next = nullptr;  // Assume we will put it at the end of the list.
+    item = anItem;
+    key  = sortKey;
+    next = nullptr; // Assume we will put it at the end of the list.
 }
 
 /// Initialize a list, empty to start with.
 ///
 /// Elements can now be added to the list.
-template <class Item>
-List<Item>::List()
+template < class Item >
+List < Item > ::List()
 {
     first = last = nullptr;
 }
@@ -114,8 +124,8 @@ List<Item>::List()
 /// this module allocates and de-allocates the `ListElement`s to keep track
 /// of each item, but a given item may be on multiple lists, so we cannot
 /// de-allocate them here.
-template <class Item>
-List<Item>::~List()
+template < class Item >
+List < Item > ::~List()
 {
     /// Delete all the list elements.
     while (!IsEmpty()) {
@@ -129,18 +139,19 @@ List<Item>::~List()
 // then this will be the only element.  Otherwise, put it at the end.
 //
 // * `item` is the thing to put on the list, it can be a pointer to anything.
-template <class Item>
+template < class Item >
 void
-List<Item>::Append(Item item)
+List < Item > ::Append(Item item)
 {
-    ListNode *element = new ListNode(item, 0);
+    ListNode * element = new
+      ListNode(item, 0);
 
     if (IsEmpty()) {
         first = element;
-        last = element;
-    } else {  // Put it after last.
+        last  = element;
+    } else { // Put it after last.
         last->next = element;
-        last = element;
+        last       = element;
     }
 }
 
@@ -152,39 +163,41 @@ List<Item>::Append(Item item)
 ///
 /// * `item` is the thing to put on the list, it can be a pointer to
 ///   anything.
-template <class Item>
+template < class Item >
 void
-List<Item>::Prepend(Item item)
+List < Item > ::Prepend(Item item)
 {
-    ListNode *element = new ListNode(item, 0);
+    ListNode * element = new
+      ListNode(item, 0);
 
     if (IsEmpty()) {
         first = element;
-        last = element;
-    } else {  // Put it before first.
+        last  = element;
+    } else { // Put it before first.
         element->next = first;
-        first = element;
+        first         = element;
     }
 }
 
 /// Remove the first `item` from the front of the list.
 ///
 /// Returns a pointer to removed item, `Item()` if nothing on the list.
-template <class Item>
+template < class Item >
 Item
-List<Item>::Pop()
+List < Item > ::Pop()
 {
     // Same as `SortedPop`, but ignore the key.
     return SortedPop(nullptr);
 }
 
-template <class Item>
+template < class Item >
 void
-List<Item>::Remove(Item item)
+List < Item > ::Remove(Item item)
 {
-    for (ListNode *ptr = first, *prev_ptr = nullptr;
-         ptr != nullptr;
-         prev_ptr = ptr, ptr = ptr->next) {
+    for (ListNode * ptr = first, * prev_ptr = nullptr;
+      ptr != nullptr;
+      prev_ptr = ptr, ptr = ptr->next)
+    {
         if (item == ptr->item) {
             if (prev_ptr) {
                 prev_ptr->next = ptr->next;
@@ -205,34 +218,34 @@ List<Item>::Remove(Item item)
 /// one element at a time.
 ///
 /// * `func` is the procedure to apply to each element of the list.
-template <class Item>
+template < class Item >
 void
-List<Item>::Apply(void (*func)(Item))
+List < Item > ::Apply(void (*func)(Item))
 {
     ASSERT(func != nullptr);
 
-    for (ListNode *ptr = first; ptr != nullptr; ptr = ptr->next) {
-       func(ptr->item);
+    for (ListNode * ptr = first; ptr != nullptr; ptr = ptr->next) {
+        func(ptr->item);
     }
 }
 
-template <class Item>
-Item*
-List<Item>::GetFirst(bool (*func)(Item))
+template < class Item >
+Item
+* List < Item > ::GetFirst(bool (*func)(Item))
 {
     ASSERT(func != nullptr);
 
-    for (ListNode *ptr = first; ptr != nullptr; ptr = ptr->next) {
-       if(func(ptr->item))return &(ptr->item);
+    for (ListNode * ptr = first; ptr != nullptr; ptr = ptr->next) {
+        if (func(ptr->item)) return &(ptr->item);
     }
     return NULL;
 }
 
-template <class Item>
+template < class Item >
 bool
-List<Item>::Has(Item item) const
+List < Item > ::Has(Item item) const
 {
-    for (ListNode *ptr = first; ptr != nullptr; ptr = ptr->next) {
+    for (ListNode * ptr = first; ptr != nullptr; ptr = ptr->next) {
         if (item == ptr->item) {
             return true;
         }
@@ -241,9 +254,9 @@ List<Item>::Has(Item item) const
 }
 
 /// Returns true if the list is empty (has no items).
-template <class Item>
+template < class Item >
 bool
-List<Item>::IsEmpty() const
+List < Item > ::IsEmpty() const
 {
     return first == nullptr;
 }
@@ -258,29 +271,30 @@ List<Item>::IsEmpty() const
 /// * `item` is the thing to put on the list, it can be a pointer to
 ///   anything.
 /// * `sortKey` is the priority of the item.
-template <class Item>
+template < class Item >
 void
-List<Item>::SortedInsert(Item item, int sortKey)
+List < Item > ::SortedInsert(Item item, int sortKey)
 {
-    ListNode *element = new ListNode(item, sortKey);
+    ListNode * element = new
+      ListNode(item, sortKey);
 
-    if (IsEmpty()) {  // If list is empty, put.
+    if (IsEmpty()) { // If list is empty, put.
         first = element;
-        last = element;
+        last  = element;
     } else if (sortKey < first->key) {
         // Item goes on front of list.
         element->next = first;
-        first = element;
-    } else {  // Look for first elt in list bigger than item.
-        for (ListNode *ptr = first; ptr->next != nullptr; ptr = ptr->next) {
+        first         = element;
+    } else { // Look for first elt in list bigger than item.
+        for (ListNode * ptr = first; ptr->next != nullptr; ptr = ptr->next) {
             if (sortKey < ptr->next->key) {
                 element->next = ptr->next;
-                ptr->next = element;
+                ptr->next     = element;
                 return;
             }
         }
-        last->next = element;  // Item goes at end of list.
-        last = element;
+        last->next = element; // Item goes at end of list.
+        last       = element;
     }
 }
 
@@ -293,19 +307,19 @@ List<Item>::SortedInsert(Item item, int sortKey)
 ///
 /// * `keyPtr` is a pointer to the location in which to store the priority of
 ///   the removed item.
-template <class Item>
+template < class Item >
 Item
-List<Item>::SortedPop(int *keyPtr)
+List < Item > ::SortedPop(int * keyPtr)
 {
-    ListNode *element = first;
+    ListNode * element = first;
 
     if (IsEmpty())
         return Item();
 
     Item thing = first->item;
-    if (first == last) {  // List had one item, now has none.
+    if (first == last) { // List had one item, now has none.
         first = nullptr;
-        last = nullptr;
+        last  = nullptr;
     } else {
         first = element->next;
     }
@@ -315,4 +329,4 @@ List<Item>::SortedPop(int *keyPtr)
     return thing;
 }
 
-#endif
+#endif /* ifndef NACHOS_LIB_LIST__HH */

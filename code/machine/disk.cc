@@ -22,13 +22,13 @@
 /// disk, to make it less likely we will accidentally treat a useful file
 /// as a disk (which would probably trash the file's contents).
 static const unsigned MAGIC_NUMBER = 0x456789AB;
-static const unsigned MAGIC_SIZE = sizeof (int);
+static const unsigned MAGIC_SIZE   = sizeof(int);
 
 static const unsigned DISK_SIZE = MAGIC_SIZE + NUM_SECTORS * SECTOR_SIZE;
 
 /// dummy procedure because we cannot take a pointer of a member function
 static void
-DiskDone(void *arg)
+DiskDone(void * arg)
 {
     ASSERT(arg != nullptr);
     ((Disk *) arg)->HandleInterrupt();
@@ -42,7 +42,7 @@ DiskDone(void *arg)
 /// * `callWhenDone` is an interrupt handler to be called when disk
 ///   read/write request completes.
 /// * `callArg` is an argument to pass the interrupt handler.
-Disk::Disk(const char *name, VoidFunctionPtr callWhenDone, void *callArg)
+Disk::Disk(const char * name, VoidFunctionPtr callWhenDone, void * callArg)
 {
     ASSERT(name != nullptr);
     ASSERT(callWhenDone != nullptr);
@@ -57,18 +57,18 @@ Disk::Disk(const char *name, VoidFunctionPtr callWhenDone, void *callArg)
     bufferInit = 0;
 
     fileno = OpenForReadWrite(name, false);
-    if (fileno >= 0) {  // File exists, check magic number.
+    if (fileno >= 0) { // File exists, check magic number.
         Read(fileno, (char *) &magicNum, MAGIC_SIZE);
         ASSERT(magicNum == MAGIC_NUMBER);
-    } else {            // File does not exist, create it.
-        fileno = OpenForWrite(name);
+    } else { // File does not exist, create it.
+        fileno   = OpenForWrite(name);
         magicNum = MAGIC_NUMBER;
         WriteFile(fileno, (char *) &magicNum, MAGIC_SIZE);
-          // Write magic number.
+        // Write magic number.
 
         // Need to write at end of file, so that reads will not return EOF.
-        Lseek(fileno, DISK_SIZE - sizeof (int), 0);
-        WriteFile(fileno, (char *) &tmp, sizeof (int));
+        Lseek(fileno, DISK_SIZE - sizeof(int), 0);
+        WriteFile(fileno, (char *) &tmp, sizeof(int));
     }
     active = false;
 }
@@ -81,17 +81,17 @@ Disk::~Disk()
 
 /// Dump the data in a disk read/write request, for debugging.
 static void
-PrintSector(bool writing, unsigned sector, const char *data)
+PrintSector(bool writing, unsigned sector, const char * data)
 {
     ASSERT(data != nullptr);
 
-    int *p = (int *) data;
+    int * p = (int *) data;
 
     if (writing)
         printf("Writing sector: %u\n", sector);
     else
         printf("Reading sector: %u\n", sector);
-    for (unsigned i = 0; i < SECTOR_SIZE / sizeof (int); i++)
+    for (unsigned i = 0; i < SECTOR_SIZE / sizeof(int); i++)
         printf("%X ", p[i]);
     printf("\n");
 }
@@ -111,13 +111,13 @@ PrintSector(bool writing, unsigned sector, const char *data)
 /// * `data` are the bytes to be written, the buffer to hold the incoming
 ///   bytes.
 void
-Disk::ReadRequest(unsigned sectorNumber, char *data)
+Disk::ReadRequest(unsigned sectorNumber, char * data)
 {
     ASSERT(data != nullptr);
 
     int ticks = ComputeLatency(sectorNumber, false);
 
-    ASSERT(!active);  // only one request at a time
+    ASSERT(!active); // only one request at a time
     ASSERT(sectorNumber >= 0 && sectorNumber < NUM_SECTORS);
 
     DEBUG('d', "Reading from sector %u\n", sectorNumber);
@@ -133,7 +133,7 @@ Disk::ReadRequest(unsigned sectorNumber, char *data)
 }
 
 void
-Disk::WriteRequest(unsigned sectorNumber, const char *data)
+Disk::WriteRequest(unsigned sectorNumber, const char * data)
 {
     ASSERT(data != nullptr);
 
@@ -177,20 +177,20 @@ Diff(unsigned a, unsigned b)
 /// Disk seeks at one track per `SEEK_TIME` ticks (cf. `stats.hh`) and
 /// rotates at one sector per `ROTATION_TIME` ticks.
 unsigned
-Disk::TimeToSeek(unsigned newSector, unsigned *rotation)
+Disk::TimeToSeek(unsigned newSector, unsigned * rotation)
 {
     ASSERT(rotation != nullptr);
 
     unsigned newTrack = newSector / SECTORS_PER_TRACK;
     unsigned oldTrack = lastSector / SECTORS_PER_TRACK;
-    unsigned seek = Diff(newTrack, oldTrack) * SEEK_TIME;
-      // How long will seek take?
+    unsigned seek     = Diff(newTrack, oldTrack) * SEEK_TIME;
+    // How long will seek take?
     unsigned over = (stats->totalTicks + seek) % ROTATION_TIME;
-      // Will we be in the middle of a sector when we finish the seek?
+    // Will we be in the middle of a sector when we finish the seek?
 
     *rotation = 0;
-    if (over > 0)  // If so, need to round up to next full sector.
-       *rotation = ROTATION_TIME - over;
+    if (over > 0) // If so, need to round up to next full sector.
+        *rotation = ROTATION_TIME - over;
     return seek;
 }
 
@@ -228,20 +228,21 @@ Disk::ComputeLatency(unsigned newSector, bool writing)
     unsigned seek      = TimeToSeek(newSector, &rotation);
     unsigned timeAfter = stats->totalTicks + seek + rotation;
 
-#ifndef NOTRACKBUF  // Turn this on if you do not want the track buffer
-                    // stuff.
+    #ifndef NOTRACKBUF // Turn this on if you do not want the track buffer
+                       // stuff.
     // Check if track buffer applies.
-    if (!writing && seek == 0
-        && (timeAfter - bufferInit) / ROTATION_TIME
-           > ModuloDiff(newSector, bufferInit / ROTATION_TIME)) {
+    if (!writing && seek == 0 &&
+      (timeAfter - bufferInit) / ROTATION_TIME
+      > ModuloDiff(newSector, bufferInit / ROTATION_TIME))
+    {
         DEBUG('d', "Request latency = %u\n", ROTATION_TIME);
         return ROTATION_TIME;
-          // Time to transfer sector from the track buffer.
+        // Time to transfer sector from the track buffer.
     }
-#endif
+    #endif // ifndef NOTRACKBUF
 
     rotation += ModuloDiff(newSector, timeAfter / ROTATION_TIME)
-                * ROTATION_TIME;
+      * ROTATION_TIME;
 
     DEBUG('d', "Request latency = %u\n", seek + rotation + ROTATION_TIME);
     return seek + rotation + ROTATION_TIME;

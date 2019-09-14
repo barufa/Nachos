@@ -21,18 +21,18 @@
 /// Dummy functions because C++ is weird about pointers to member functions.
 
 static void
-ConsoleReadPoll(void *c)
+ConsoleReadPoll(void * c)
 {
     ASSERT(c != nullptr);
-    Console *console = (Console *) c;
+    Console * console = (Console *) c;
     console->CheckCharAvail();
 }
 
 static void
-ConsoleWriteDone(void *c)
+ConsoleWriteDone(void * c)
 {
     ASSERT(c != nullptr);
-    Console *console = (Console *) c;
+    Console * console = (Console *) c;
     console->WriteDone();
 }
 
@@ -46,9 +46,9 @@ ConsoleWriteDone(void *c)
 ///   from the keyboard.
 /// * `writeDone` is the interrupt handler called when a character has been
 ///   output, so that it is ok to request the next char be output.
-Console::Console(const char *readFile, const char *writeFile,
-        VoidFunctionPtr readAvail,
-        VoidFunctionPtr writeDone, void *callArg)
+Console::Console(const char * readFile, const char * writeFile,
+  VoidFunctionPtr readAvail,
+  VoidFunctionPtr writeDone, void * callArg)
 {
     ASSERT(readAvail != nullptr);
     ASSERT(writeDone != nullptr);
@@ -72,7 +72,7 @@ Console::Console(const char *readFile, const char *writeFile,
 
     // Start polling for incoming packets.
     interrupt->Schedule(ConsoleReadPoll, this,
-                        CONSOLE_TIME, CONSOLE_READ_INT);
+      CONSOLE_TIME, CONSOLE_READ_INT);
 }
 
 /// Clean up console emulation.
@@ -91,14 +91,14 @@ Console::~Console()
 /// character has been grabbed out of the buffer by the Nachos kernel).
 /// Invoke the “read” interrupt handler, once the character has been put into
 /// the buffer.
-    void
+void
 Console::CheckCharAvail()
 {
     char c;
 
     // Schedule the next time to poll for a packet.
     interrupt->Schedule(ConsoleReadPoll, this,
-            CONSOLE_TIME, CONSOLE_READ_INT);
+      CONSOLE_TIME, CONSOLE_READ_INT);
 
     // Do nothing if character is already buffered, or none to be read.
     if (incoming != EOF || !PollFile(readFileNo))
@@ -127,6 +127,7 @@ char
 Console::GetChar()
 {
     char ch = incoming;
+
     incoming = EOF;
     return ch;
 }
@@ -137,8 +138,8 @@ void
 Console::PutChar(char ch)
 {
     ASSERT(!putBusy);
-    WriteFile(writeFileNo, &ch, sizeof (char));
+    WriteFile(writeFileNo, &ch, sizeof(char));
     putBusy = true;
     interrupt->Schedule(ConsoleWriteDone, this,
-                        CONSOLE_TIME, CONSOLE_WRITE_INT);
+      CONSOLE_TIME, CONSOLE_WRITE_INT);
 }

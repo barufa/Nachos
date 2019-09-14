@@ -10,7 +10,7 @@
 #include "machine/machine.hh"
 
 
-class Debugger : public SingleStepper {
+class Debugger: public SingleStepper {
 public:
     Debugger();
 
@@ -19,7 +19,8 @@ public:
     /// Invoke the user program debugger.
     ///
     /// Returns whether to continue single-stepping or not.
-    virtual bool Step();
+    virtual bool
+    Step();
 
 private:
     static const unsigned BUFFER_SIZE = 80;
@@ -27,9 +28,9 @@ private:
     char buffer[BUFFER_SIZE];
     DebuggerCommandManager manager;
     int previousRegisters[NUM_TOTAL_REGS];
-    unsigned runUntilTime;  ///< Drop back into the debugger when simulated
-                            ///< time reaches this value.
+    unsigned runUntilTime; ///< Drop back into the debugger when simulated
+    ///< time reaches this value.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_USERPROG_DEBUGGER__HH */

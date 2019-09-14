@@ -120,10 +120,10 @@ Bitmap::Print() const
 ///
 /// * `file` is the place to read the bitmap from.
 void
-Bitmap::FetchFrom(OpenFile *file)
+Bitmap::FetchFrom(OpenFile * file)
 {
     ASSERT(file != nullptr);
-    file->ReadAt((char *) map, numWords * sizeof (unsigned), 0);
+    file->ReadAt((char *) map, numWords * sizeof(unsigned), 0);
 }
 
 /// Store the contents of a bitmap to a Nachos file.
@@ -132,8 +132,8 @@ Bitmap::FetchFrom(OpenFile *file)
 ///
 /// * `file` is the place to write the bitmap to.
 void
-Bitmap::WriteBack(OpenFile *file) const
+Bitmap::WriteBack(OpenFile * file) const
 {
     ASSERT(file != nullptr);
-    file->WriteAt((char *) map, numWords * sizeof (unsigned), 0);
+    file->WriteAt((char *) map, numWords * sizeof(unsigned), 0);
 }

@@ -38,29 +38,30 @@ IsThreadStatus(ThreadStatus s)
 /// `Thread::Fork`.
 ///
 /// * `threadName` is an arbitrary string, useful for debugging.
-Thread::Thread(const char *threadName,bool j_flag,int _priority)
+Thread::Thread(const char * threadName, bool j_flag, int _priority)
 {
-    name      = threadName;
-    stackTop  = nullptr;
-    stack     = nullptr;
-    status    = JUST_CREATED;
-    join_flag = j_flag;
-    priority  = _priority;
+    name              = threadName;
+    stackTop          = nullptr;
+    stack             = nullptr;
+    status            = JUST_CREATED;
+    join_flag         = j_flag;
+    priority          = _priority;
     original_priority = _priority;
-    dead = NULL;
-    DEBUG('e',"Thread constructor starting with join_flag=%d - name=%s\n", j_flag,name);
-    if(join_flag){
+    dead              = NULL;
+    DEBUG('e', "Thread constructor starting with join_flag=%d - name=%s\n",
+      j_flag, name);
+    if (join_flag) {
         dead = new Port("Join_Port");
     }
 
-#ifdef USER_PROGRAM
+    #ifdef USER_PROGRAM
     space = nullptr;
-	if(processTable)
-		pid = processTable->Add(this);
-	DescriptorTable = new Table<OpenFile*>();
-	DescriptorTable->Add(NULL);//Adding CONSOLE_INPUT
-	DescriptorTable->Add(NULL);//Adding CONSOLE_OUTPUT
-#endif
+    if (processTable)
+        pid = processTable->Add(this);
+    DescriptorTable = new Table<OpenFile *>();
+    DescriptorTable->Add(NULL);// Adding CONSOLE_INPUT
+    DescriptorTable->Add(NULL);// Adding CONSOLE_OUTPUT
+    #endif
 }
 
 /// De-allocate a thread.
@@ -79,15 +80,15 @@ Thread::~Thread()
     if (stack != nullptr)
         DeallocBoundedArray((char *) stack, STACK_SIZE * sizeof *stack);
 
-#ifdef USER_PROGRAM
-	if(processTable)
-		processTable->Remove(pid);
-	for(int fd=0;!DescriptorTable->IsEmpty() && fd<100;fd++){
-		delete DescriptorTable->Remove(fd);
-	}
-	delete DescriptorTable;
-	delete space;
-#endif
+    #ifdef USER_PROGRAM
+    if (processTable)
+        processTable->Remove(pid);
+    for (int fd = 0; !DescriptorTable->IsEmpty() && fd < 100; fd++) {
+        delete DescriptorTable->Remove(fd);
+    }
+    delete DescriptorTable;
+    delete space;
+    #endif
 }
 
 /// Invoke `(*func)(arg)`, allowing caller and callee to execute
@@ -107,23 +108,23 @@ Thread::~Thread()
 /// * `func` is the procedure to run concurrently.
 /// * `arg` is a single argument to be passed to the procedure.
 void
-Thread::Fork(VoidFunctionPtr func, void *arg)
+Thread::Fork(VoidFunctionPtr func, void * arg)
 {
     ASSERT(func != nullptr);
 
-#ifdef HOST_x86_64
+    #ifdef HOST_x86_64
     DEBUG('t', "Forking thread \"%s\" with func = 0x%lX, arg = %ld\n",
-          name, (HostMemoryAddress) func, arg);
-#else
+      name, (HostMemoryAddress) func, arg);
+    #else
     DEBUG('t', "Forking thread \"%s\" with func = 0x%X, arg = %d\n",
-          name, (HostMemoryAddress) func, arg);
-#endif
+      name, (HostMemoryAddress) func, arg);
+    #endif
 
     StackAllocate(func, arg);
 
     IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-    scheduler->ReadyToRun(this);  // `ReadyToRun` assumes that interrupts
-                                  // are disabled!
+    scheduler->ReadyToRun(this); // `ReadyToRun` assumes that interrupts
+                                 // are disabled!
     interrupt->SetLevel(oldLevel);
 }
 
@@ -200,34 +201,36 @@ Thread::Finish(int ret)
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 
-    DEBUG('t',"Finishing thread \"%s\"\n", GetName());
+    DEBUG('t', "Finishing thread \"%s\"\n", GetName());
 
-    if(join_flag){
+    if (join_flag) {
         dead->Send(ret);
         delete dead;
     }
 
     threadToBeDestroyed = currentThread;
-    Sleep();  // Invokes `SWITCH`.
+    Sleep(); // Invokes `SWITCH`.
     // Not reached.
 }
 
 int
 Thread::Join()
 {
-    if(join_flag)
-    {
-        DEBUG('e',"The Thread::Join method is joining - name=%s\n",currentThread->GetName());
-        DEBUG('t', "%s is waiting \"%s\" to finishes\n", currentThread->GetName(),GetName());
+    if (join_flag) {
+        DEBUG('e', "The Thread::Join method is joining - name=%s\n",
+          currentThread->GetName());
+        DEBUG('t', "%s is waiting \"%s\" to finishes\n",
+          currentThread->GetName(), GetName());
         int msm;
         dead->Receive(&msm);
-		//con delete dead aca me aseguro de que viva hasta que main termine de usarlo
-        //el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
-        //~ delete dead;
-		return msm;
+        // con delete dead aca me aseguro de que viva hasta que main termine de usarlo
+        // el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
+        // ~ delete dead;
+        return msm;
     }
-	return 0;
+    return 0;
 }
+
 /// Relinquish the CPU if any other thread is ready to run.
 ///
 /// If so, put the thread on the end of the ready list, so that it will
@@ -252,7 +255,7 @@ Thread::Yield()
 
     DEBUG('t', "Yielding thread \"%s\"\n", GetName());
 
-    Thread *nextThread = scheduler->FindNextToRun();
+    Thread * nextThread = scheduler->FindNextToRun();
     if (nextThread != nullptr) {
         scheduler->ReadyToRun(this);
         scheduler->Run(nextThread);
@@ -283,13 +286,13 @@ Thread::Sleep()
 
     DEBUG('t', "Sleeping thread \"%s\"\n", GetName());
 
-    Thread *nextThread;
+    Thread * nextThread;
     status = BLOCKED;
     while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
-        interrupt->Idle();  // No one to run, wait for an interrupt.
+        interrupt->Idle(); // No one to run, wait for an interrupt.
     }
 
-    scheduler->Run(nextThread);  // Returns when we have been signalled.
+    scheduler->Run(nextThread); // Returns when we have been signalled.
 }
 
 /// ThreadFinish, InterruptEnable
@@ -320,15 +323,15 @@ InterruptEnable()
 /// * `func` is the procedure to be forked.
 /// * `arg` is the parameter to be passed to the procedure.
 void
-Thread::StackAllocate(VoidFunctionPtr func, void *arg)
+Thread::StackAllocate(VoidFunctionPtr func, void * arg)
 {
     ASSERT(func != nullptr);
 
     stack = (HostMemoryAddress *) AllocBoundedArray(STACK_SIZE
-                                                    * sizeof *stack);
+        * sizeof *stack);
 
     // i386 & MIPS & SPARC stack works from high addresses to low addresses.
-    stackTop = stack + STACK_SIZE - 4;  // -4 to be on the safe side!
+    stackTop = stack + STACK_SIZE - 4; // -4 to be on the safe side!
 
     // the 80386 passes the return address on the stack.  In order for
     // `SWITCH` to go to `ThreadRoot` when we switch to this thread, the
@@ -346,7 +349,7 @@ Thread::StackAllocate(VoidFunctionPtr func, void *arg)
 }
 
 #ifdef USER_PROGRAM
-#include "machine/machine.hh"
+# include "machine/machine.hh"
 
 /// Save the CPU state of a user program on a context switch.
 ///
@@ -373,40 +376,43 @@ Thread::RestoreUserState()
 }
 
 OpenFileId
-Thread::AddFile(OpenFile * file){
-	DEBUG('a',"%s: Adding a file\n",currentThread->GetName());
-	ASSERT(file!=NULL);
-	return DescriptorTable->Add(file);
+Thread::AddFile(OpenFile * file)
+{
+    DEBUG('a', "%s: Adding a file\n", currentThread->GetName());
+    ASSERT(file != NULL);
+    return DescriptorTable->Add(file);
 }
 
 OpenFile *
-Thread::GetFile(OpenFileId fId){
+Thread::GetFile(OpenFileId fId)
+{
+    ASSERT(DescriptorTable->HasKey(fId));
 
-	ASSERT(DescriptorTable->HasKey(fId));
-
-	return DescriptorTable->Get(fId);
+    return DescriptorTable->Get(fId);
 }
 
 bool
-Thread::IsOpenFile(OpenFileId fId){
-	return DescriptorTable->HasKey(fId);
+Thread::IsOpenFile(OpenFileId fId)
+{
+    return DescriptorTable->HasKey(fId);
 }
 
 OpenFile *
-Thread::RemoveFile(OpenFileId fId){
-	DEBUG('a',"%s: removing a file\n",currentThread->GetName());
-	return DescriptorTable->Remove(fId);
+Thread::RemoveFile(OpenFileId fId)
+{
+    DEBUG('a', "%s: removing a file\n", currentThread->GetName());
+    return DescriptorTable->Remove(fId);
 }
 
 void
-Thread::ResetTable(){
-	DEBUG('a',"%s: reset descriptortable\n",currentThread->GetName());
-	delete DescriptorTable;
-	DescriptorTable = new Table<OpenFile*>();
-	// DescriptorTable->Add(0);//Adding CONSOLE_INPUT
-	// DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
-	// ASSERT(DescriptorTable->Size()==2);
-	return;
+Thread::ResetTable()
+{
+    DEBUG('a', "%s: reset descriptortable\n", currentThread->GetName());
+    delete DescriptorTable;
+    DescriptorTable = new Table<OpenFile *>();
+    // DescriptorTable->Add(0);//Adding CONSOLE_INPUT
+    // DescriptorTable->Add(1);//Adding CONSOLE_OUTPUT
+    // ASSERT(DescriptorTable->Size()==2);
 }
 
-#endif
+#endif // ifdef USER_PROGRAM

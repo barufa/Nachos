@@ -10,8 +10,8 @@
 #include "preemptive.hh"
 
 #ifdef USER_PROGRAM
-#include "userprog/debugger.hh"
-#include "userprog/exception.hh"
+# include "userprog/debugger.hh"
+# include "userprog/exception.hh"
 #endif
 
 /// This defines *all* of the global data structures used by Nachos.
@@ -19,40 +19,42 @@
 /// These are all initialized and de-allocated by this file.
 
 int NumPages = 0;
-Thread *currentThread;        ///< The thread we are running now.
-Thread *threadToBeDestroyed;  ///< The thread that just finished.
-Scheduler *scheduler;         ///< The ready list.
-Interrupt *interrupt;         ///< Interrupt status.
-Statistics *stats;            ///< Performance metrics.
-Timer *timer;                 ///< The hardware timer device, for invoking
-                              ///< context switches.
+Thread * currentThread;       ///< The thread we are running now.
+Thread * threadToBeDestroyed; ///< The thread that just finished.
+Scheduler * scheduler;        ///< The ready list.
+Interrupt * interrupt;        ///< Interrupt status.
+Statistics * stats;           ///< Performance metrics.
+Timer * timer;                ///< The hardware timer device, for invoking
+///< context switches.
 
 // 2007, Jose Miguel Santos Espino
-PreemptiveScheduler *preemptiveScheduler = nullptr;
-const long long DEFAULT_TIME_SLICE = 50000;
+PreemptiveScheduler * preemptiveScheduler = nullptr;
+const long long DEFAULT_TIME_SLICE        = 50000;
 
 #ifdef FILESYS_NEEDED
-FileSystem *fileSystem;
+FileSystem * fileSystem;
 #endif
 
 #ifdef FILESYS
-SynchDisk *synchDisk;
+SynchDisk * synchDisk;
+FileTable * filetable;
 #endif
 
-#ifdef USER_PROGRAM  // Requires either *FILESYS* or *FILESYS_STUB*.
-Machine *machine;  ///< User program memory and registers.
+#ifdef USER_PROGRAM // Requires either *FILESYS* or *FILESYS_STUB*.
+Machine * machine;  ///< User program memory and registers.
 SynchConsole * synchConsole;
-Bitmap *bitmap;
-Table<Thread*> * processTable;
+Bitmap * bitmap;
+Table<Thread *> * processTable;
 CoreMap * coremap;
 #endif
 
 #ifdef NETWORK
-PostOffice *postOffice;
+PostOffice * postOffice;
 #endif
 
 // External definition, to allow us to take a pointer to this function.
-extern void Cleanup();
+extern void
+Cleanup();
 
 /// Interrupt handler for the timer device.
 ///
@@ -69,7 +71,7 @@ extern void Cleanup();
 /// * `dummy` is because every interrupt handler takes one argument, whether
 ///   it needs it or not.
 static void
-TimerInterruptHandler(void *dummy)
+TimerInterruptHandler(void * dummy)
 {
     if (interrupt->GetStatus() != IDLE_MODE)
         interrupt->YieldOnReturn();
@@ -88,44 +90,44 @@ TimerInterruptHandler(void *dummy)
 ///   Example:
 ///       nachos -d +  ->  argv = {"nachos", "-d", "+"}
 void
-Initialize(int argc, char **argv)
+Initialize(int argc, char ** argv)
 {
     ASSERT(argc == 0 || argv != nullptr);
 
     int argCount;
-    const char *debugArgs = "";
-    bool randomYield = false;
+    const char * debugArgs = "";
+    bool randomYield       = false;
 
     // 2007, Jose Miguel Santos Espino
     bool preemptiveScheduling = false;
     long long timeSlice;
 
-#ifdef USER_PROGRAM
-    bool debugUserProg = false;  // Single step user program.
-#endif
-#ifdef FILESYS_NEEDED
-    bool format = false;  // Format disk.
-#endif
-#ifdef NETWORK
-    double rely = 1;  // Network reliability.
-    int netname = 0;  // UNIX socket name.
-#endif
+    #ifdef USER_PROGRAM
+    bool debugUserProg = false; // Single step user program.
+    #endif
+    #ifdef FILESYS_NEEDED
+    bool format = false; // Format disk.
+    #endif
+    #ifdef NETWORK
+    double rely = 1; // Network reliability.
+    int netname = 0; // UNIX socket name.
+    #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
         argCount = 1;
         if (!strcmp(*argv, "-d")) {
-            if (argc == 1)
-                debugArgs = "+";  // Turn on all debug flags.
-            else {
+            if (argc == 1) {
+                debugArgs = "+"; // Turn on all debug flags.
+            } else {
                 debugArgs = *(argv + 1);
-                argCount = 2;
+                argCount  = 2;
             }
         } else if (!strcmp(*argv, "-rs")) {
             ASSERT(argc > 1);
-            RandomInit(atoi(*(argv + 1)));  // Initialize pseudo-random
-                                            // number generator.
+            RandomInit(atoi(*(argv + 1))); // Initialize pseudo-random
+                                           // number generator.
             randomYield = true;
-            argCount = 2;
+            argCount    = 2;
         }
         // 2007, Jose Miguel Santos Espino
         else if (!strcmp(*argv, "-p")) {
@@ -133,33 +135,33 @@ Initialize(int argc, char **argv)
             if (argc == 1) {
                 timeSlice = DEFAULT_TIME_SLICE;
             } else {
-                timeSlice = atoi(*(argv+1));
-                argCount = 2;
+                timeSlice = atoi(*(argv + 1));
+                argCount  = 2;
             }
         }
-#ifdef USER_PROGRAM
+        #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-s"))
             debugUserProg = true;
-#endif
-#ifdef FILESYS_NEEDED
+        #endif
+        #ifdef FILESYS_NEEDED
         if (!strcmp(*argv, "-f"))
             format = true;
-#endif
-#ifdef NETWORK
+        #endif
+        #ifdef NETWORK
         if (!strcmp(*argv, "-n")) {
             ASSERT(argc > 1);
-            rely = atof(*(argv + 1));
+            rely     = atof(*(argv + 1));
             argCount = 2;
         } else if (!strcmp(*argv, "-id")) {
             ASSERT(argc > 1);
-            netname = atoi(*(argv + 1));
+            netname  = atoi(*(argv + 1));
             argCount = 2;
         }
-#endif
+        #endif
     }
 
     debug.SetFlags(debugArgs);  // Initialize `DEBUG` messages.
-    stats = new Statistics;     // Collect statistics.
+    stats     = new Statistics; // Collect statistics.
     interrupt = new Interrupt;  // Start up interrupt handling.
     scheduler = new Scheduler;  // Initialize the ready queue.
     if (randomYield)            // Start the timer (if needed).
@@ -174,7 +176,7 @@ Initialize(int argc, char **argv)
     currentThread->SetStatus(RUNNING);
 
     interrupt->Enable();
-    CallOnUserAbort(Cleanup);  // If user hits ctl-C...
+    CallOnUserAbort(Cleanup); // If user hits ctl-C...
 
     // Jose Miguel Santos Espino, 2007
     if (preemptiveScheduling) {
@@ -182,30 +184,31 @@ Initialize(int argc, char **argv)
         preemptiveScheduler->SetUp(timeSlice);
     }
 
-#ifdef USER_PROGRAM
-    Debugger *d = debugUserProg ? new Debugger : nullptr;
-    machine = new Machine(d);  // This must come first.
-	  synchConsole = new SynchConsole("Console");
-    bitmap = new Bitmap(NUM_PHYS_PAGES-1);
-    coremap = new CoreMap();
-	processTable = new Table<Thread *>;
-	if (!timer)
+    #ifdef USER_PROGRAM
+    Debugger * d = debugUserProg ? new Debugger : nullptr;
+    machine      = new Machine(d); // This must come first.
+    synchConsole = new SynchConsole("Console");
+    bitmap       = new Bitmap(NUM_PHYS_PAGES - 1);
+    coremap      = new CoreMap();
+    processTable = new Table<Thread *>;
+    if (!timer)
         timer = new Timer(TimerInterruptHandler, 0, randomYield);
     SetExceptionHandlers();
-#endif
+    #endif
 
-#ifdef FILESYS
+    #ifdef FILESYS
     synchDisk = new SynchDisk("DISK");
-#endif
+    filetable = new FileTable;
+    #endif
 
-#ifdef FILESYS_NEEDED
+    #ifdef FILESYS_NEEDED
     fileSystem = new FileSystem(format);
-#endif
+    #endif
 
-#ifdef NETWORK
+    #ifdef NETWORK
     postOffice = new PostOffice(netname, rely, 10);
-#endif
-}
+    #endif
+} // Initialize
 
 /// Nachos is halting.  De-allocate global data structures.
 void
@@ -216,24 +219,25 @@ Cleanup()
     // 2007, Jose Miguel Santos Espino
     delete preemptiveScheduler;
 
-#ifdef NETWORK
+    #ifdef NETWORK
     delete postOffice;
-#endif
+    #endif
 
-#ifdef USER_PROGRAM
+    #ifdef USER_PROGRAM
     delete machine;
-	delete synchConsole;
-  	delete bitmap;
-	delete processTable;
-#endif
+    delete synchConsole;
+    delete bitmap;
+    delete processTable;
+    #endif
 
-#ifdef FILESYS_NEEDED
+    #ifdef FILESYS_NEEDED
     delete fileSystem;
-#endif
+    #endif
 
-#ifdef FILESYS
+    #ifdef FILESYS
     delete synchDisk;
-#endif
+    delete filetable;
+    #endif
 
     delete timer;
     delete scheduler;

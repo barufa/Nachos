@@ -15,15 +15,14 @@
 /// Initialize performance metrics to zero, at system startup.
 Statistics::Statistics()
 {
-    totalTicks = idleTicks = systemTicks = userTicks = 0;
-    numDiskReads = numDiskWrites = 0;
+    totalTicks          = idleTicks = systemTicks = userTicks = 0;
+    numDiskReads        = numDiskWrites = 0;
     numConsoleCharsRead = numConsoleCharsWritten = 0;
-    numPacketsSent = numPacketsRecvd = 0;
-    numPageFaults = numPageSearchs = numsPageHits = 0;
-#ifdef DFS_TICKS_FIX
+    numPacketsSent      = numPacketsRecvd = 0;
+    numPageFaults       = numPageSearchs = numsPageHits = 0;
+    #ifdef DFS_TICKS_FIX
     tickResets = 0;
-#endif
-
+    #endif
 }
 
 /// Print performance metrics, when we have finished everything at system
@@ -31,18 +30,19 @@ Statistics::Statistics()
 void
 Statistics::Print()
 {
-#ifdef DFS_TICKS_FIX
+    #ifdef DFS_TICKS_FIX
     if (tickResets != 0)
         printf("WARNING: the tick counter was reset %lu times; the following"
-               " statistics may be invalid.\n\n", tickResets);
-#endif
+          " statistics may be invalid.\n\n", tickResets);
+    #endif
     printf("Ticks: total %u, idle %u, system %u, user %u\n",
-           totalTicks, idleTicks, systemTicks, userTicks);
+      totalTicks, idleTicks, systemTicks, userTicks);
     printf("Disk I/O: reads %u, writes %u\n", numDiskReads, numDiskWrites);
     printf("Console I/O: reads %u, writes %u\n",
-           numConsoleCharsRead, numConsoleCharsWritten);
+      numConsoleCharsRead, numConsoleCharsWritten);
     printf("Network I/O: packets received %u, sent %u\n",
-           numPacketsRecvd, numPacketsSent);
-    printf("Paging: searchs %u, hits %u, faults %u\n", numPageSearchs,numsPageHits,numPageFaults);
-    printf("Hit Ratio: %.2f\n", (float)numsPageHits/(float)numPageSearchs);
+      numPacketsRecvd, numPacketsSent);
+    printf("Paging: searchs %u, hits %u, faults %u\n", numPageSearchs,
+      numsPageHits, numPageFaults);
+    printf("Hit Ratio: %.2f\n", (float) numsPageHits / (float) numPageSearchs);
 }

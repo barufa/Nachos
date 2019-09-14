@@ -40,9 +40,9 @@ class Console {
 public:
 
     /// Initialize the hardware console device.
-    Console(const char *readFile, const char *writeFile,
-            VoidFunctionPtr readAvail, VoidFunctionPtr writeDone,
-            void *callArg);
+    Console(const char * readFile, const char * writeFile,
+      VoidFunctionPtr readAvail, VoidFunctionPtr writeDone,
+      void * callArg);
 
     /// Clean up console emulation.
     ~Console();
@@ -51,32 +51,36 @@ public:
 
     /// Write `ch` to the console display, and return immediately.
     /// `writeHandler` is called when the I/O completes.
-    void PutChar(char ch);
+    void
+    PutChar(char ch);
 
     /// Poll the console input.  If a char is available, return it.
     /// Otherwise, return EOF.  `readHandler` is called whenever there is a
     /// char to be gotten.
-    char GetChar();
+    char
+    GetChar();
 
     // Internal emulation routines -- DO NOT call these.
     // Internal routines to signal I/O completion.
 
-    void WriteDone();
-    void CheckCharAvail();
+    void
+    WriteDone();
+    void
+    CheckCharAvail();
 
-  private:
-    int readFileNo;  ///< UNIX file emulating the keyboard.
-    int writeFileNo;  ///< UNIX file emulating the display.
-    VoidFunctionPtr writeHandler;  ///< Interrupt handler to call when the
-                                   ///< `PutChar` I/O completes.
-    VoidFunctionPtr readHandler;  ///< Interrupt handler to call when a
-                                  ///< character arrives from the keyboard.
-    void *handlerArg;  ///< argument to be passed to the interrupt handlers.
-    bool putBusy;  ///< Is a `PutChar` operation in progress?  If so, you
-                   ///< cannot do another one!
-    char incoming;  ///< Contains the character to be read, if there is one
-                    ///< available.  Otherwise contains EOF.
+private:
+    int readFileNo;               ///< UNIX file emulating the keyboard.
+    int writeFileNo;              ///< UNIX file emulating the display.
+    VoidFunctionPtr writeHandler; ///< Interrupt handler to call when the
+    ///< `PutChar` I/O completes.
+    VoidFunctionPtr readHandler; ///< Interrupt handler to call when a
+    ///< character arrives from the keyboard.
+    void * handlerArg; ///< argument to be passed to the interrupt handlers.
+    bool putBusy;      ///< Is a `PutChar` operation in progress?  If so, you
+    ///< cannot do another one!
+    char incoming; ///< Contains the character to be read, if there is one
+    ///< available.  Otherwise contains EOF.
 };
 
 
-#endif  // CONSOLE_H
+#endif // CONSOLE_H

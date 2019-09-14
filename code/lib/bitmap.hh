@@ -48,36 +48,45 @@ public:
     ~Bitmap();
 
     /// Set the “nth” bit.
-    void Mark(unsigned which);
+    void
+    Mark(unsigned which);
 
     /// Clear the “nth” bit.
-    void Clear(unsigned which);
+    void
+    Clear(unsigned which);
 
     /// Is the “nth” bit set?
-    bool Test(unsigned which) const;
+    bool
+    Test(unsigned which) const;
 
     /// Return the index of a clear bit, and as a side effect, set the bit.
     ///
     /// If no bits are clear, return -1.
-    int Find();
+    int
+    Find();
 
     /// Return the number of clear bits.
-    unsigned CountClear() const;
-    unsigned CountNotClear() const;
+    unsigned
+    CountClear() const;
+    unsigned
+    CountNotClear() const;
     /// Print contents of bitmap.
-    void Print() const;
+    void
+    Print() const;
 
     /// Fetch contents from disk.
     ///
     /// Note: this is not needed until the *FILESYS* assignment, when we will
     /// need to read and write the bitmap to a file.
-    void FetchFrom(OpenFile *file);
+    void
+    FetchFrom(OpenFile * file);
 
     /// Write contents to disk.
     ///
     /// Note: this is not needed until the *FILESYS* assignment, when we will
     /// need to read and write the bitmap to a file.
-    void WriteBack(OpenFile *file) const;
+    void
+    WriteBack(OpenFile * file) const;
 
 private:
 
@@ -89,9 +98,8 @@ private:
     unsigned numWords;
 
     /// Bit storage.
-    unsigned *map;
-
+    unsigned * map;
 };
 
 
-#endif
+#endif /* ifndef NACHOS_LIB_BITMAP__HH */

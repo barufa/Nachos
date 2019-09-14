@@ -16,29 +16,33 @@
 static uint32_t
 WordToHost(uint32_t word)
 {
-#ifdef HOST_IS_BIG_ENDIAN
+    #ifdef HOST_IS_BIG_ENDIAN
     uint32_t result;
     result  = (word >> 24) & 0x000000ff;
-    result |= (word >>  8) & 0x0000ff00;
-    result |= (word <<  8) & 0x00ff0000;
+    result |= (word >> 8) & 0x0000ff00;
+    result |= (word << 8) & 0x00ff0000;
     result |= (word << 24) & 0xff000000;
     return result;
-#else
+
+    #else
     return word;
-#endif
+
+    #endif
 }
 
 static uint16_t
 ShortToHost(uint16_t shortword)
 {
-#if HOST_IS_BIG_ENDIAN
-     uint16_t result;
-     result  = (shortword << 8) & 0xff00;
-     result |= (shortword >> 8) & 0x00ff;
-     return result;
-#else
-     return shortword;
-#endif
+    #if HOST_IS_BIG_ENDIAN
+    uint16_t result;
+    result  = (shortword << 8) & 0xff00;
+    result |= (shortword >> 8) & 0x00ff;
+    return result;
+
+    #else
+    return shortword;
+
+    #endif
 }
 
 #define FAIL(rv, s)         \
@@ -49,22 +53,22 @@ ShortToHost(uint16_t shortword)
     }
 
 bool
-CoffReaderLoad(coffReaderData *d, FILE *f, char **error)
+CoffReaderLoad(coffReaderData * d, FILE * f, char ** error)
 {
     assert(f != NULL);
     assert(d != NULL);
 
     // Read in the file header and check the magic number.
-    coffFileHeader *fh = &d->fileH;
+    coffFileHeader * fh = &d->fileH;
     if (fread(fh, sizeof *fh, 1, f) != 1)
         FAIL(false, "File is too short");
-    fh->magic = ShortToHost(fh->magic);
+    fh->magic     = ShortToHost(fh->magic);
     fh->nSections = ShortToHost(fh->nSections);
     if (fh->magic != COFF_MIPSELMAGIC)
         FAIL(false, "File is not a MIPSEL COFF file");
 
     // Read in the optional header and check the magic number.
-    coffOptHeader *oh = &d->optH;
+    coffOptHeader * oh = &d->optH;
     if (fread(oh, sizeof *oh, 1, f) != 1)
         FAIL(false, "File is too short");
     oh->magic = ShortToHost(oh->magic);
@@ -80,7 +84,7 @@ CoffReaderLoad(coffReaderData *d, FILE *f, char **error)
         FAIL(false, "File is too short");
 
     for (unsigned i = 0; i < nsh; i++) {
-        coffSectionHeader *sh = &d->sections[i];
+        coffSectionHeader * sh = &d->sections[i];
         sh->physAddr   = WordToHost(sh->physAddr);
         sh->size       = WordToHost(sh->size);
         sh->sectionPtr = WordToHost(sh->sectionPtr);
@@ -88,21 +92,21 @@ CoffReaderLoad(coffReaderData *d, FILE *f, char **error)
 
     d->current = 0;
     return true;
-}
+} /* CoffReaderLoad */
 
 void
-CoffReaderUnload(coffReaderData *d)
+CoffReaderUnload(coffReaderData * d)
 {
     assert(d != NULL);
     assert(d->sections != NULL);
-      // Avoid unloading from an empty structure.
+    // Avoid unloading from an empty structure.
 
     free(d->sections);
     d->sections = NULL;
 }
 
 coffSectionHeader *
-CoffReaderNextSection(coffReaderData *d)
+CoffReaderNextSection(coffReaderData * d)
 {
     assert(d != NULL);
     assert(d->sections != NULL);
@@ -111,6 +115,7 @@ CoffReaderNextSection(coffReaderData *d)
     if (d->current == d->fileH.nSections) {
         d->current = 0;
         return NULL;
-    } else
+    } else {
         return &d->sections[d->current++];
+    }
 }

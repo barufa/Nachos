@@ -30,12 +30,11 @@
 ///
 /// * `debugName` is an arbitrary name, useful for debugging.
 /// * `initialValue` is the initial value of the semaphore.
-Semaphore::Semaphore(const char *debugName, int initialValue)
+Semaphore::Semaphore(const char * debugName, int initialValue)
 {
     name  = debugName;
     value = initialValue;
     queue = new List<Thread *>;
-
 }
 
 /// De-allocate semaphore, when no longer needed.
@@ -63,15 +62,16 @@ void
 Semaphore::P()
 {
     IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-      // Disable interrupts.
-    DEBUG('s',"%s hace P en %s\n",currentThread->GetName(),name);
-    while (value == 0) {  // Semaphore not available.
-        queue->Append(currentThread);  // So go to sleep.
+
+    // Disable interrupts.
+    DEBUG('s', "%s hace P en %s\n", currentThread->GetName(), name);
+    while (value == 0) {              // Semaphore not available.
+        queue->Append(currentThread); // So go to sleep.
         currentThread->Sleep();
     }
-    value--;  // Semaphore available, consume its value.
+    value--; // Semaphore available, consume its value.
 
-    interrupt->SetLevel(oldLevel);  // Re-enable interrupts.
+    interrupt->SetLevel(oldLevel); // Re-enable interrupts.
 }
 
 /// Increment semaphore value, waking up a waiter if necessary.
@@ -83,12 +83,14 @@ void
 Semaphore::V()
 {
     IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
-    DEBUG('s',"%s hace V en %s\n",currentThread->GetName(),name);
 
-    Thread *thread = queue->Pop();
-    if (thread != nullptr)
+    DEBUG('s', "%s hace V en %s\n", currentThread->GetName(), name);
+
+    Thread * thread = queue->Pop();
+    if (thread != nullptr) {
         // Make thread ready, consuming the `V` immediately.
         scheduler->ReadyToRun(thread);
+    }
     value++;
 
     interrupt->SetLevel(oldLevel);
@@ -99,10 +101,10 @@ Semaphore::V()
 /// Note -- without a correct implementation of `Condition::Wait`, the test
 /// case in the network assignment will not work!
 
-Lock::Lock(const char *debugName)
+Lock::Lock(const char * debugName)
 {
-    name = debugName;
-    lock = new Semaphore(name,1);
+    name   = debugName;
+    lock   = new Semaphore(name, 1);
     thread = NULL;
 }
 
@@ -121,23 +123,21 @@ void
 Lock::Acquire()
 {
     ASSERT(!IsHeldByCurrentThread());
-    if(thread!=NULL)
-    {
-        if(thread->GetPriority() < currentThread->GetPriority())
-        {
+    if (thread != NULL) {
+        if (thread->GetPriority() < currentThread->GetPriority()) {
             thread->SetPriority(currentThread->GetPriority());
         }
     }
     lock->P();
     thread = currentThread;
-    DEBUG('l',"%s acquires the lock %s\n",thread->GetName(),name);
+    DEBUG('l', "%s acquires the lock %s\n", thread->GetName(), name);
 }
 
 void
 Lock::Release()
 {
     ASSERT(IsHeldByCurrentThread());
-    DEBUG('l',"%s releases the lock %s\n",thread->GetName(),name);
+    DEBUG('l', "%s releases the lock %s\n", thread->GetName(), name);
     thread = NULL;
     currentThread->RestoreOriginalPriority();
     lock->V();
@@ -146,24 +146,24 @@ Lock::Release()
 bool
 Lock::IsHeldByCurrentThread() const
 {
-    return thread==currentThread;
+    return thread == currentThread;
 }
 
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-Condition::Condition(const char *debugName, Lock *conditionLock)
+Condition::Condition(const char * debugName, Lock * conditionLock)
 {
-    name = debugName;
+    name      = debugName;
     condition = conditionLock;
-    internal = new Lock("Internal_Lock_Condition");
+    internal  = new Lock("Internal_Lock_Condition");
     q_threads = new List<Semaphore *>;
 }
 
 Condition::~Condition()
 {
     internal->Acquire();
-    while(!q_threads->IsEmpty()){
+    while (!q_threads->IsEmpty()) {
         Semaphore * f = q_threads->Pop();
         f->V();
         delete f;
@@ -182,10 +182,11 @@ void
 Condition::Wait()
 {
     ASSERT(condition->IsHeldByCurrentThread());
-    Semaphore  *f = new Semaphore("Semaforo_de_cond",0);
+    Semaphore * f = new Semaphore("Semaforo_de_cond", 0);
     q_threads->Append(f);
     condition->Release();
-    DEBUG('c',"Thread %s waiting on condition %s",currentThread->GetName(),name);
+    DEBUG('c', "Thread %s waiting on condition %s",
+      currentThread->GetName(), name);
     f->P();
     condition->Acquire();
 }
@@ -194,9 +195,10 @@ void
 Condition::Signal()
 {
     internal->Acquire();
-    DEBUG('c',"Thread %s sends a signal in condition %s",currentThread->GetName(),name);
-    if(!q_threads->IsEmpty()){
-        Semaphore * f = q_threads->Pop();//Borra elemento
+    DEBUG('c', "Thread %s sends a signal in condition %s",
+      currentThread->GetName(), name);
+    if (!q_threads->IsEmpty()) {
+        Semaphore * f = q_threads->Pop();// Borra elemento
         f->V();
     }
     internal->Release();
@@ -206,26 +208,26 @@ void
 Condition::Broadcast()
 {
     internal->Acquire();
-    DEBUG('c',"Thread %s broadcast in condition %s",currentThread->GetName(),name);
-    while(!q_threads->IsEmpty()){
+    DEBUG('c', "Thread %s broadcast in condition %s",
+      currentThread->GetName(), name);
+    while (!q_threads->IsEmpty()) {
         Semaphore * f = q_threads->Pop();
         f->V();
     }
     internal->Release();
 }
 
-
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 
-Port::Port(const char *debugName)
+Port::Port(const char * debugName)
 {
     name = debugName;
     internal_lock     = new Lock("Internal_port_lock");
     cond_new_receiver = new Condition("Receiver_condition", internal_lock);
-    cond_message = new Condition("Message_condition", internal_lock);
-    buffer_flag  = false; //true=>buffer not empty
-    get_out_flag = false;
+    cond_message      = new Condition("Message_condition", internal_lock);
+    buffer_flag       = false; // true=>buffer not empty
+    get_out_flag      = false;
     buffer      = 0;
     num_tot     = 0;
     num_receive = 0;
@@ -247,62 +249,68 @@ Port::GetName() const
 void
 Port::Send(int msg)
 {
-    DEBUG('p', "%s: The thread %s wants to send: %d\n",name, currentThread->GetName(), msg);
+    DEBUG('p', "%s: The thread %s wants to send: %d\n", name,
+      currentThread->GetName(), msg);
 
     internal_lock->Acquire();
     num_tot++;
 
-    while(num_receive<=0)
-    {
-        DEBUG('p', "%s: The thread %s is waiting for a receiver\n",name,currentThread->GetName());
+    while (num_receive <= 0) {
+        DEBUG('p', "%s: The thread %s is waiting for a receiver\n", name,
+          currentThread->GetName());
         cond_new_receiver->Wait();
-        if(get_out_flag){
-            DEBUG('p',"The thread %s is leaving the port\n",currentThread->GetName());
-            //Si soy el ultimo elimino el lock
+        if (get_out_flag) {
+            DEBUG('p', "The thread %s is leaving the port\n",
+              currentThread->GetName());
+            // Si soy el ultimo elimino el lock
             num_tot--;
-            if(num_tot==0)delete internal_lock;
+            if (num_tot == 0) delete internal_lock;
             else internal_lock->Release();
             return;
         }
     }
 
-    buffer = msg;
+    buffer      = msg;
     buffer_flag = true;
     cond_message->Signal();
-    DEBUG('p', "%s: The thread %s sent: %d\n",name, currentThread->GetName(), msg);
+    DEBUG('p', "%s: The thread %s sent: %d\n", name,
+      currentThread->GetName(), msg);
     num_tot--;
     internal_lock->Release();
 }
 
 void
-Port::Receive(int *msg)
+Port::Receive(int * msg)
 {
-    ASSERT(msg!=NULL);
+    ASSERT(msg != NULL);
     internal_lock->Acquire();
-    DEBUG('p', "%s: The thread %s wants to receive a message\n",name, currentThread->GetName());
+    DEBUG('p', "%s: The thread %s wants to receive a message\n", name,
+      currentThread->GetName());
     num_tot++;
     num_receive++;
     cond_new_receiver->Signal();
 
-    while(!buffer_flag)
-    {
-        DEBUG('p', "%s: The thread %s is waiting for a message\n",name,currentThread->GetName());
+    while (!buffer_flag) {
+        DEBUG('p', "%s: The thread %s is waiting for a message\n", name,
+          currentThread->GetName());
         cond_message->Wait();
-        if(get_out_flag){
-            DEBUG('p',"The thread %s is leaving the port\n",currentThread->GetName());
-            *msg=-1;
+        if (get_out_flag) {
+            DEBUG('p', "The thread %s is leaving the port\n",
+              currentThread->GetName());
+            *msg = -1;
             num_tot--;
-            //Si soy el ultimo elimino el lock
-            if(num_tot==0)delete internal_lock;
+            // Si soy el ultimo elimino el lock
+            if (num_tot == 0) delete internal_lock;
             else internal_lock->Release();
             return;
         }
     }
 
-    *msg = buffer;
+    *msg        = buffer;
     buffer_flag = false;
     num_receive--;
-    DEBUG('p', "%s: The thread %s received: %d\n",name, currentThread->GetName(), *msg);
+    DEBUG('p', "%s: The thread %s received: %d\n", name,
+      currentThread->GetName(), *msg);
     num_tot--;
     internal_lock->Release();
 }

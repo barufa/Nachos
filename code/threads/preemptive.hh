@@ -17,18 +17,18 @@ class PreemptiveScheduler {
 public:
 
     PreemptiveScheduler()
-    {}
+    { }
 
     ~PreemptiveScheduler()
-    {}
+    { }
 
     /// Set up time slicing between kernel threads.
     ///
     /// * `timeSliceLength` is the time slice duration, measured in native
     ///   x86 machine instructions.
-    void SetUp(unsigned long timeSliceLength);
-
+    void
+    SetUp(unsigned long timeSliceLength);
 };
 
 
-#endif
+#endif /* ifndef NACHOS_THREADS_PREEMPTIVE__HH */

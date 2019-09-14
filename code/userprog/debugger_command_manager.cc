@@ -14,13 +14,13 @@ typedef DebuggerCommandManager DCM;
 static const char SEPARATOR[] = " ";
 
 const char *
-DCM::FetchArg(char **args)
+DCM::FetchArg(char ** args)
 {
     return strtok_r(nullptr, SEPARATOR, args);
 }
 
 bool
-DCM::AddCommand(const char *name, CommandFunc f, void *extra)
+DCM::AddCommand(const char * name, CommandFunc f, void * extra)
 {
     ASSERT(name != nullptr);
     ASSERT(f != nullptr);
@@ -46,11 +46,11 @@ DCM::SetUnknown(UnknownFunc f)
 }
 
 DCM::RunResult
-DCM::Run(char *line)
+DCM::Run(char * line)
 {
     // Extract the command name from the line.
-    char *saved;
-    const char *name = strtok_r(line, SEPARATOR, &saved);
+    char * saved;
+    const char * name = strtok_r(line, SEPARATOR, &saved);
 
     // If the line is empty...
     if (name == nullptr) {

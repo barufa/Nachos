@@ -1,4 +1,3 @@
-
 /// Synchronization primitives
 ///
 /// Data structures for synchronizing threads.
@@ -43,30 +42,32 @@ public:
     /// Constructor: give an initial value to the semaphore.
     ///
     /// Set initial value.
-    Semaphore(const char *debugName, int initialValue);
+    Semaphore(const char * debugName, int initialValue);
 
     ~Semaphore();
 
     /// For debugging.
-    const char *GetName() const;
+    const char *
+    GetName() const;
 
     /// The only public operations on the semaphore.
     ///
     /// Both of them must be *atomic*.
-    void P();
-    void V();
+    void
+    P();
+    void
+    V();
 
 private:
 
     /// For debugging.
-    const char *name;
+    const char * name;
 
     /// Semaphore value, it is always `>= 0`.
     int value;
 
     /// Queue of threads waiting on `P` because the value is zero.
-    List<Thread *> *queue;
-
+    List < Thread * > *queue;
 };
 
 /// This class defines a “lock”.
@@ -84,29 +85,33 @@ class Lock {
 public:
 
     /// Constructor: set up the lock as free.
-    Lock(const char *debugName);
+    Lock(const char * debugName);
 
     ~Lock();
 
     /// For debugging.
-    const char *GetName() const;
+    const char *
+    GetName() const;
 
     /// Operations on the lock.
     ///
     /// Both must be *atomic*.
-    void Acquire();
-    void Release();
+    void
+    Acquire();
+    void
+    Release();
 
     /// Returns `true` if the current thread is the one that possesses the
     /// lock.
     ///
     /// Useful for checks in `Release` and in condition variables.
-    bool IsHeldByCurrentThread() const;
+    bool
+    IsHeldByCurrentThread() const;
 
 private:
 
     /// For debugging.
-    const char *name;
+    const char * name;
     Semaphore * lock;
     Thread * thread;
     // Add other needed fields here.
@@ -148,59 +153,65 @@ class Condition {
 public:
 
     // Constructor: indicate which lock the condition variable belongs to.
-    Condition(const char *debugName, Lock *conditionLock);
+    Condition(const char * debugName, Lock * conditionLock);
 
     ~Condition();
 
-    const char *GetName() const;
+    const char *
+    GetName() const;
 
     /// The three operations on condition variables.
     ///
     /// The thread that invokes any of these operations must hold the
     /// corresponding lock; otherwise an error must occur.
 
-    void Wait();
-        //Libera el conditionLock
-        //Se pone a dormir con un lock que agregado a la cola
-    void Signal();
-        //Despierta el primer hilo de la cola
-    void Broadcast();
-        //Despirta todos los hilos de la cola
+    void
+    Wait();
+    // Libera el conditionLock
+    // Se pone a dormir con un lock que agregado a la cola
+    void
+    Signal();
+    // Despierta el primer hilo de la cola
+    void
+    Broadcast();
+    // Despirta todos los hilos de la cola
 
 private:
 
-    const char *name;
-    List<Semaphore *> * q_threads;
+    const char * name;
+    List < Semaphore * > *q_threads;
     Lock * condition;
     Lock * internal;
     // Other needed fields are to be added here.
 };
 
 
-//Definition of Port class
+// Definition of Port class
 class Port {
-
 public:
 
-    Port(const char *debugName);
+    Port(const char * debugName);
     ~Port();
-    const char *GetName() const;
+    const char *
+    GetName() const;
 
-    //Waits until Receive is called
-    //and copies the message into the buffer of Receive
-    void Send(int message);
+    // Waits until Receive is called
+    // and copies the message into the buffer of Receive
+    void
+    Send(int message);
 
-    //Waits until a message is sent to its buffer and returns it
-    void Receive(int *message);
+    // Waits until a message is sent to its buffer and returns it
+    void
+    Receive(int * message);
 
 private:
 
-    const char *name;
-    int buffer,num_receive,num_tot;
-    bool buffer_flag,get_out_flag;
-    Lock *internal_lock;
-    Condition *cond_new_receiver;
-    Condition *cond_message;
+    const char * name;
+    int buffer, num_receive, num_tot;
+    bool buffer_flag, get_out_flag;
+    Lock * internal_lock;
+    Condition * cond_new_receiver;
+    Condition * cond_message;
 };
 
-#endif
+#endif /* ifndef NACHOS_THREADS_SYNCH__HH */

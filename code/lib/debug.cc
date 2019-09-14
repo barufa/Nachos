@@ -26,11 +26,12 @@ Debug::Debug()
 bool
 Debug::IsEnabled(char flag) const
 {
-    if (flags != nullptr)
-        return strchr(flags, flag) != 0
-               || strchr(flags, '+') != 0;
-    else
+    if (flags != nullptr) {
+        return strchr(flags, flag) != 0 ||
+               strchr(flags, '+') != 0;
+    } else {
         return false;
+    }
 }
 
 const char *
@@ -40,20 +41,20 @@ Debug::GetFlags() const
 }
 
 void
-Debug::SetFlags(const char *new_flags)
+Debug::SetFlags(const char * new_flags)
 {
     flags = new_flags;
 }
 
 void
-Debug::Print(char flag, const char *format, ...) const
+Debug::Print(char flag, const char * format, ...) const
 {
     ASSERT(format != nullptr);
 
     if (!IsEnabled(flag))
         return;
 
-    //CAMBIO STDERR por STDOUT
+    // CAMBIO STDERR por STDOUT
     fprintf(stdout, "[%c] ", flag);
 
     va_list ap;
@@ -66,7 +67,7 @@ Debug::Print(char flag, const char *format, ...) const
 }
 
 void
-Debug::PrintCont(char flag, const char *format, ...) const
+Debug::PrintCont(char flag, const char * format, ...) const
 {
     ASSERT(format != nullptr);
 

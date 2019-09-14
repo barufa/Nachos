@@ -11,7 +11,8 @@
 /// Exception handlers are the entry points into the Nachos kernel.  They
 /// are called when a user program is executing, and either does a system
 /// call, or generates an addressing or arithmetic exception.
-void SetExceptionHandlers();
+void
+SetExceptionHandlers();
 
 
-#endif
+#endif /* ifndef NACHOS_USERPROG_EXCEPTION__HH */

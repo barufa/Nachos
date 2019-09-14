@@ -10,7 +10,6 @@
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
-
 #include "open_file.hh"
 #include "file_header.hh"
 #include "threads/system.hh"
@@ -20,8 +19,9 @@
 /// memory while the file is open.
 ///
 /// * `sector` is the location on disk of the file header for this file.
-OpenFile::OpenFile(int sector)
+OpenFile::OpenFile(int _sector)
 {
+    sector = _sector;
     hdr = new FileHeader;
     hdr->FetchFrom(sector);
     seekPosition = 0;
@@ -30,6 +30,14 @@ OpenFile::OpenFile(int sector)
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
+#ifdef FILESYS
+	Filenode* node = filetable->find(sector);
+	if(node != nullptr){
+		node->users--;
+		if(node->remove && node->users == 0)
+			fileSystem->Remove(node->name);
+	}
+#endif
     delete hdr;
 }
 
@@ -56,7 +64,7 @@ OpenFile::Seek(unsigned position)
 /// * `numBytes` is the number of bytes to transfer.
 
 int
-OpenFile::Read(char *into, unsigned numBytes)
+OpenFile::Read(char * into, unsigned numBytes)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
@@ -67,7 +75,7 @@ OpenFile::Read(char *into, unsigned numBytes)
 }
 
 int
-OpenFile::Write(const char *into, unsigned numBytes)
+OpenFile::Write(const char * into, unsigned numBytes)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
@@ -103,31 +111,74 @@ OpenFile::Write(const char *into, unsigned numBytes)
 ///   read/written.
 
 int
-OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position)
+OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
+{
+	Filenode* node = filetable->find(sector);
+	if(node!=nullptr){
+		node->Can_Read->P();
+		node->lectores++;
+		if(node->lectores==1)//Bloqueo escritura
+			node->Can_Write->P();
+		node->Can_Read->V();
+	}
+
+	int ret = Internal_ReadAt(into,numBytes,position);
+
+	if(node!=nullptr){
+		node->Can_Read->P();
+		node->lectores--;
+		if(node->lectores==0)//Desbloqueo escritura
+			node->Can_Write->V();
+		node->Can_Read->V();
+	}
+
+	return ret;
+}
+
+int
+OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
+{
+	Filenode* node = filetable->find(sector);
+	if(node!=nullptr){
+		node->Can_Write->P();
+	}
+
+	int ret = Internal_WriteAt(from,numBytes,position);
+
+	if(node!=nullptr){
+		node->Can_Write->V();
+	}
+
+	return ret;
+}
+
+int
+OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
 
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;
-    char *buf;
+    char * buf;
 
     if (position >= fileLength)
         return 0;  // Check request.
+
     if (position + numBytes > fileLength)
         numBytes = fileLength - position;
     DEBUG('f', "Reading %u bytes at %u, from file of length %u.\n",
-          numBytes, position, fileLength);
+      numBytes, position, fileLength);
 
     firstSector = DivRoundDown(position, SECTOR_SIZE);
-    lastSector = DivRoundDown(position + numBytes - 1, SECTOR_SIZE);
-    numSectors = 1 + lastSector - firstSector;
+    lastSector  = DivRoundDown(position + numBytes - 1, SECTOR_SIZE);
+    numSectors  = 1 + lastSector - firstSector;
 
     // Read in all the full and partial sectors that we need.
     buf = new char [numSectors * SECTOR_SIZE];
     for (unsigned i = firstSector; i <= lastSector; i++)
         synchDisk->ReadSector(hdr->ByteToSector(i * SECTOR_SIZE),
-                              &buf[(i - firstSector) * SECTOR_SIZE]);
+          &buf[(i - firstSector) * SECTOR_SIZE]);
 
     // Copy the part we want.
     memcpy(into, &buf[position - firstSector * SECTOR_SIZE], numBytes);
@@ -135,8 +186,9 @@ OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position)
     return numBytes;
 }
 
+// Agregar los locks y demas
 int
-OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
+OpenFile::Internal_WriteAt(const char * from, unsigned numBytes, unsigned position)
 {
     ASSERT(from != nullptr);
     ASSERT(numBytes > 0);
@@ -144,14 +196,15 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
-    char *buf;
+    char * buf;
 
     if (position >= fileLength)
         return 0;  // Check request.
+
     if (position + numBytes > fileLength)
         numBytes = fileLength - position;
     DEBUG('f', "Writing %u bytes at %u, from file of length %u.\n",
-          numBytes, position, fileLength);
+      numBytes, position, fileLength);
 
     firstSector = DivRoundDown(position, SECTOR_SIZE);
     lastSector  = DivRoundDown(position + numBytes - 1, SECTOR_SIZE);
@@ -164,10 +217,11 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
 
     // Read in first and last sector, if they are to be partially modified.
     if (!firstAligned)
-        ReadAt(buf, SECTOR_SIZE, firstSector * SECTOR_SIZE);
-    if (!lastAligned && (firstSector != lastSector || firstAligned))
-        ReadAt(&buf[(lastSector - firstSector) * SECTOR_SIZE],
-               SECTOR_SIZE, lastSector * SECTOR_SIZE);
+        Internal_ReadAt(buf, SECTOR_SIZE, firstSector * SECTOR_SIZE);
+    if (!lastAligned && (firstSector != lastSector || firstAligned)) {
+        Internal_ReadAt(&buf[(lastSector - firstSector) * SECTOR_SIZE],
+          SECTOR_SIZE, lastSector * SECTOR_SIZE);
+    }
 
     // Copy in the bytes we want to change.
     memcpy(&buf[position - firstSector * SECTOR_SIZE], from, numBytes);
@@ -175,10 +229,10 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
     // Write modified sectors back.
     for (unsigned i = firstSector; i <= lastSector; i++)
         synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
-                               &buf[(i - firstSector) * SECTOR_SIZE]);
+          &buf[(i - firstSector) * SECTOR_SIZE]);
     delete [] buf;
     return numBytes;
-}
+} // OpenFile::WriteAt
 
 /// Return the number of bytes in the file.
 unsigned

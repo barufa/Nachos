@@ -27,4 +27,4 @@ public:
 };
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_DIRECTORYENTRY__HH */

@@ -33,11 +33,11 @@ CheckEndian()
     check.charWord[2] = 3;
     check.charWord[3] = 4;
 
-#ifdef HOST_IS_BIG_ENDIAN
+    #ifdef HOST_IS_BIG_ENDIAN
     ASSERT(check.intWord == 0x01020304);
-#else
+    #else
     ASSERT(check.intWord == 0x04030201);
-#endif
+    #endif
 }
 
 /// Initialize the simulation of user program execution.
@@ -45,7 +45,7 @@ CheckEndian()
 /// * `st` -- pointer to an object that performs single stepping, for
 ///   dropping into it after each user instruction is executed; if null,
 ///   execute normally, without single stepping.
-Machine::Machine(SingleStepper *st)
+Machine::Machine(SingleStepper * st)
 {
     for (unsigned i = 0; i < NUM_TOTAL_REGS; i++)
         registers[i] = 0;
@@ -81,7 +81,7 @@ void
 Machine::WriteRegister(unsigned num, int value)
 {
     ASSERT(num < NUM_TOTAL_REGS);
-    //DEBUG('m', "WriteRegister %u, value %d\n", num, value);
+    // DEBUG('m', "WriteRegister %u, value %d\n", num, value);
 
     // Register 0 never changes its value: it is always 0.
     if (num != 0)
@@ -89,9 +89,10 @@ Machine::WriteRegister(unsigned num, int value)
 }
 
 bool
-Machine::ReadMem(unsigned addr, unsigned size, int *value)
+Machine::ReadMem(unsigned addr, unsigned size, int * value)
 {
     ExceptionType e = mmu.ReadMem(addr, size, value);
+
     if (e != NO_EXCEPTION) {
         RaiseException(e, addr);
         return false;
@@ -103,6 +104,7 @@ bool
 Machine::WriteMem(unsigned addr, unsigned size, int value)
 {
     ExceptionType e = mmu.WriteMem(addr, size, value);
+
     if (e != NO_EXCEPTION) {
         RaiseException(e, addr);
         return false;
@@ -120,13 +122,13 @@ void
 Machine::RaiseException(ExceptionType et, unsigned badVAddr)
 {
     ASSERT(IsExceptionType(et));
-    ASSERT(handlers[et] != nullptr);  // There must be a handler associated.
+    ASSERT(handlers[et] != nullptr); // There must be a handler associated.
 
     DEBUG('m', "Exception: %s\n", ExceptionTypeToString(et));
 
-    //ASSERT(interrupt->GetStatus() == USER_MODE);
+    // ASSERT(interrupt->GetStatus() == USER_MODE);
     registers[BAD_VADDR_REG] = badVAddr;
-    DelayedLoad(0, 0);  // Finish anything in progress.
+    DelayedLoad(0, 0); // Finish anything in progress.
 
     // Call the associated handler with interrupts enabled in system mode.
     interrupt->SetStatus(SYSTEM_MODE);

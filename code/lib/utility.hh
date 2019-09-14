@@ -16,8 +16,8 @@
 
 /// Miscellaneous useful routines.
 
-//#define min(a, b)  (((a) < (b)) ? (a) : (b))
-//#define max(a, b)  (((a) > (b)) ? (a) : (b))
+// #define min(a, b)  (((a) < (b)) ? (a) : (b))
+// #define max(a, b)  (((a) > (b)) ? (a) : (b))
 
 /// Typedef for host memory references, expressed in numerical (integer)
 /// form.
@@ -30,14 +30,14 @@ typedef unsigned int HostMemoryAddress;
 
 /// Divide and either round up or down.
 
-template <typename T>
+template < typename T >
 inline T
 DivRoundDown(T n, T s)
 {
     return n / s;
 }
 
-template <typename T>
+template < typename T >
 inline T
 DivRoundUp(T n, T s)
 {
@@ -55,9 +55,9 @@ DivRoundUp(T n, T s)
 ///
 /// This is used by `Thread::Fork` and for interrupt handlers, as well as a
 /// couple of other places.
-typedef void (*VoidFunctionPtr)(void *arg);
+typedef void (* VoidFunctionPtr)(void * arg);
 
-typedef void (*VoidNoArgFunctionPtr)();
+typedef void (* VoidNoArgFunctionPtr)();
 
 
 // Include interface that isolates us from the host machine system library.
@@ -68,8 +68,8 @@ typedef void (*VoidNoArgFunctionPtr)();
 /// Global object for debug output.
 extern Debug debug;
 
-#define DEBUG       (debug.Print)
-#define DEBUG_CONT  (debug.PrintCont)
+#define DEBUG      (debug.Print)
+#define DEBUG_CONT (debug.PrintCont)
 
 /// If `condition` is false, print a message and dump core.
 ///
@@ -80,12 +80,12 @@ extern Debug debug;
 #define ASSERT(condition)                                                 \
     if (!(condition)) {                                                   \
         fprintf(stderr, "\nAssertion failed!\n"                           \
-                        "\tExpression: `%s`\n"                            \
-                        "\tLocation: file `%s`, line %u\n",               \
-                #condition, __FILE__, __LINE__);                          \
+          "\tExpression: `%s`\n"                            \
+          "\tLocation: file `%s`, line %u\n",               \
+          #condition, __FILE__, __LINE__);                          \
         fflush(stderr);                                                   \
         abort();                                                          \
     }
 
 
-#endif
+#endif /* ifndef NACHOS_LIB_UTILITY__HH */

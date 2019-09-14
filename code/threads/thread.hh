@@ -42,10 +42,10 @@
 #include "lib/utility.hh"
 
 #ifdef USER_PROGRAM
-#include "machine/machine.hh"
-#include "userprog/address_space.hh"
-#include "lib/table.hh"
-#include "userprog/syscall.h"
+# include "machine/machine.hh"
+# include "userprog/address_space.hh"
+# include "lib/table.hh"
+# include "userprog/syscall.h"
 #endif
 
 class Port;
@@ -90,7 +90,7 @@ private:
     // THEY MUST be in this position for `SWITCH` to work.
 
     /// The current stack pointer.
-    HostMemoryAddress *stackTop;
+    HostMemoryAddress * stackTop;
 
     /// All registers except for `stackTop`.
     HostMemoryAddress machineState[MACHINE_STATE_SIZE];
@@ -98,7 +98,7 @@ private:
 public:
 
     /// Initialize a `Thread`.
-    Thread(const char *debugName,bool join_flag=false,int _priority = 20);
+    Thread(const char * debugName, bool join_flag = false, int _priority = 20);
 
     /// Deallocate a Thread.
     ///
@@ -109,33 +109,45 @@ public:
     /// Basic thread operations.
 
     /// Make thread run `(*func)(arg)`.
-    void Fork(VoidFunctionPtr func, void *arg);
+    void
+    Fork(VoidFunctionPtr func, void * arg);
 
-    int Join();
+    int
+    Join();
 
     /// Relinquish the CPU if any other thread is runnable.
-    void Yield();
+    void
+    Yield();
 
     /// Put the thread to sleep and relinquish the processor.
-    void Sleep();
+    void
+    Sleep();
 
     /// The thread is done executing.
-    void Finish(int ret=1);
+    void
+    Finish(int ret = 1);
 
     /// Check if thread has overflowed its stack.
-    void CheckOverflow() const;
+    void
+    CheckOverflow() const;
 
-    void SetStatus(ThreadStatus st);
+    void
+    SetStatus(ThreadStatus st);
 
-    const char *GetName() const;
+    const char *
+    GetName() const;
 
-    int GetPriority();
+    int
+    GetPriority();
 
-    void SetPriority(int _priority);
+    void
+    SetPriority(int _priority);
 
-    void RestoreOriginalPriority();
+    void
+    RestoreOriginalPriority();
 
-    void Print() const;
+    void
+    Print() const;
 
     bool join_flag;
 
@@ -145,72 +157,82 @@ private:
     /// Bottom of the stack.
     ///
     /// Null if this is the main thread.  (If null, do not deallocate stack.)
-    HostMemoryAddress *stack;
+    HostMemoryAddress * stack;
 
     /// Ready, running or blocked.
     ThreadStatus status;
 
-    const char *name;
+    const char * name;
     Port * dead;
     int priority;
     int original_priority;
     /// Allocate a stack for thread.  Used internally by `Fork`.
-    void StackAllocate(VoidFunctionPtr func, void *arg);
+    void
+    StackAllocate(VoidFunctionPtr func, void * arg);
 
-#ifdef USER_PROGRAM
+    #ifdef USER_PROGRAM
     /// User-level CPU register state.
     ///
     /// A thread running a user program actually has *two* sets of CPU
     /// registers -- one for its state while executing user code, one for its
     /// state while executing kernel code.
     int userRegisters[NUM_TOTAL_REGS];
-    //Filedescriptors table
-    Table <OpenFile*> * DescriptorTable;
+    // Filedescriptors table
+    Table < OpenFile * > *DescriptorTable;
 
 public:
 
     // Save user-level register state.
-    void SaveUserState();
+    void
+    SaveUserState();
 
     // Restore user-level register state.
-    void RestoreUserState();
+    void
+    RestoreUserState();
 
     // User code this thread is running.
-    AddressSpace *space;
+    AddressSpace * space;
 
-    //Process Id.
+    // Process Id.
     int pid;
-    //Add a file to the Table
-    OpenFileId AddFile(OpenFile * file);
+    // Add a file to the Table
+    OpenFileId
+    AddFile(OpenFile * file);
 
-    //Return OpenFile * from the table
-    OpenFile * GetFile(OpenFileId fId);
+    // Return OpenFile * from the table
+    OpenFile *
+    GetFile(OpenFileId fId);
 
-    //Check if the file exist in the table
-    bool IsOpenFile(OpenFileId fId);
+    // Check if the file exist in the table
+    bool
+    IsOpenFile(OpenFileId fId);
 
-    //Remove a file from the table
-    OpenFile * RemoveFile(OpenFileId fId);
+    // Remove a file from the table
+    OpenFile *
+    RemoveFile(OpenFileId fId);
 
-    //Reset the table
-    void ResetTable();
+    // Reset the table
+    void
+    ResetTable();
 
-#endif
+    #endif /* ifdef USER_PROGRAM */
 };
 
 /// Magical machine-dependent routines, defined in `switch.s`.
 
 extern "C" {
-    /// First frame on thread execution stack.
-    ///
-    /// 1. Enable interrupts.
-    /// 2. Call `func`.
-    /// 3. (When func returns, if ever) call `ThreadFinish`.
-    void ThreadRoot();
+/// First frame on thread execution stack.
+///
+/// 1. Enable interrupts.
+/// 2. Call `func`.
+/// 3. (When func returns, if ever) call `ThreadFinish`.
+void
+ThreadRoot();
 
-    // Stop running `oldThread` and start running `newThread`.
-    void SWITCH(Thread *oldThread, Thread *newThread);
+// Stop running `oldThread` and start running `newThread`.
+void
+SWITCH(Thread * oldThread, Thread * newThread);
 }
 
 
-#endif
+#endif /* ifndef NACHOS_THREADS_THREAD__HH */

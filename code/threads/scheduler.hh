@@ -28,23 +28,26 @@ public:
     ~Scheduler();
 
     /// Thread can be dispatched.
-    void ReadyToRun(Thread *thread);
+    void
+    ReadyToRun(Thread * thread);
 
     /// Dequeue first thread on the ready list, if any, and return thread.
-    Thread *FindNextToRun();
+    Thread *
+    FindNextToRun();
 
     /// Cause `nextThread` to start running.
-    void Run(Thread *nextThread);
+    void
+    Run(Thread * nextThread);
 
     // Print contents of ready list.
-    void Print();
+    void
+    Print();
 
 private:
 
     // Queue of queue of threads that are ready to run, but not running.
-    List<Thread*> * readyList[3];
-
+    List < Thread * > *readyList[3];
 };
 
 
-#endif
+#endif /* ifndef NACHOS_THREADS_SCHEDULER__HH */

@@ -36,36 +36,44 @@ public:
 
     /// Initialize a file header, including allocating space on disk for the
     /// file data.
-    bool Allocate(Bitmap *bitMap, unsigned fileSize);
+    bool
+    Allocate(Bitmap * bitMap, unsigned fileSize);
 
     /// De-allocate this file's data blocks.
-    void Deallocate(Bitmap *bitMap);
+    void
+    Deallocate(Bitmap * bitMap);
 
     /// Initialize file header from disk.
-    void FetchFrom(unsigned sectorNumber);
+    void
+    FetchFrom(unsigned sectorNumber);
 
     /// Write modifications to file header back to disk.
-    void WriteBack(unsigned sectorNumber);
+    void
+    WriteBack(unsigned sectorNumber);
 
     /// Convert a byte offset into the file to the disk sector containing the
     /// byte.
-    unsigned ByteToSector(unsigned offset);
+    unsigned
+    ByteToSector(unsigned offset);
 
     /// Return the length of the file in bytes
-    unsigned FileLength() const;
+    unsigned
+    FileLength() const;
 
     /// Print the contents of the file.
-    void Print();
+    void
+    Print();
 
     /// Get the raw file header structure.
     ///
     /// NOTE: this should only be used by routines that operating on the file
     /// system at a low level.
-    const RawFileHeader *GetRaw() const;
+    const RawFileHeader *
+    GetRaw() const;
 
 private:
     RawFileHeader raw;
 };
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_FILEHEADER__HH */

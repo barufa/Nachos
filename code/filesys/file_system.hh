@@ -39,46 +39,52 @@
 #include "open_file.hh"
 
 
-#ifdef FILESYS_STUB  // Temporarily implement file system calls as calls to
-                     // UNIX, until the real file system implementation is
-                     // available.
+#ifdef FILESYS_STUB // Temporarily implement file system calls as calls to
+                    // UNIX, until the real file system implementation is
+                    // available.
 class FileSystem {
 public:
 
-    FileSystem(bool format) {}
+    FileSystem(bool format){ }
 
-    ~FileSystem() {}
+    ~FileSystem(){ }
 
-    bool Create(const char *name, unsigned initialSize)
+    bool
+    Create(const char * name, unsigned initialSize)
     {
         ASSERT(name != nullptr);
 
         int fileDescriptor = OpenForWrite(name);
         if (fileDescriptor == -1)
             return false;
+
         Close(fileDescriptor);
         return true;
     }
 
-    OpenFile *Open(const char *name)
+    OpenFile *
+    Open(const char * name)
     {
         ASSERT(name != nullptr);
 
         int fileDescriptor = OpenForReadWrite(name, false);
         if (fileDescriptor == -1)
             return nullptr;
-        return new OpenFile(fileDescriptor);
+
+        return new
+               OpenFile(fileDescriptor);
     }
 
-    bool Remove(const char *name)
+    bool
+    Remove(const char * name)
     {
         ASSERT(name != nullptr);
         return Unlink(name) == 0;
     }
-
 };
 
-#else  // FILESYS
+#else // FILESYS
+
 class FileSystem {
 public:
 
@@ -92,31 +98,37 @@ public:
     ~FileSystem();
 
     /// Create a file (UNIX `creat`).
-    bool Create(const char *name, unsigned initialSize);
+    bool
+    Create(const char * name, unsigned initialSize);
 
     /// Open a file (UNIX `open`).
-    OpenFile *Open(const char *name);
+    OpenFile *
+    Open(const char * name);
 
     /// Delete a file (UNIX `unlink`).
-    bool Remove(const char *name);
+    bool
+    Remove(const char * name);
 
     /// List all the files in the file system.
-    void List();
+    void
+    List();
 
     /// Check the filesystem.
-    bool Check();
+    bool
+    Check();
 
     /// List all the files and their contents.
-    void Print();
+    void
+    Print();
 
 private:
-    OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
-                            ///< file.
-    OpenFile *directoryFile;  ///< “Root” directory -- list of file names,
-                              ///< represented as a file.
+    OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
+    ///< file.
+    OpenFile * directoryFile; ///< “Root” directory -- list of file names,
+							  ///< represented as a file.
 };
 
-#endif
+#endif /* ifdef FILESYS_STUB */
 
 
-#endif
+#endif /* ifndef NACHOS_FILESYS_FILESYSTEM__HH */

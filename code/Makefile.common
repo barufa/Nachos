@@ -147,6 +147,7 @@ FILESYS_HDR = ../filesys/directory.hh       \
               ../filesys/raw_directory.hh   \
               ../filesys/raw_file_header.hh \
               ../filesys/synch_disk.hh      \
+              ../filesys/filetable.hh       \
               ../machine/disk.hh
 FILESYS_SRC = ../filesys/directory.cc   \
               ../filesys/file_header.cc \
@@ -154,6 +155,7 @@ FILESYS_SRC = ../filesys/directory.cc   \
               ../filesys/fs_test.cc     \
               ../filesys/open_file.cc   \
               ../filesys/synch_disk.cc  \
+              ../filesys/filetable.cc   \
               ../machine/disk.cc
 FILESYS_OBJ = directory.o   \
               file_header.o \
@@ -161,6 +163,7 @@ FILESYS_OBJ = directory.o   \
               fs_test.o     \
               open_file.o   \
               synch_disk.o  \
+              filetable.o   \
               disk.o
 
 NETWORK_HDR = ../network/post.hh \

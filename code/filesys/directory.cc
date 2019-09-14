@@ -34,7 +34,7 @@
 Directory::Directory(unsigned size)
 {
     ASSERT(size > 0);
-    raw.table = new DirectoryEntry [size];
+    raw.table     = new DirectoryEntry [size];
     raw.tableSize = size;
     for (unsigned i = 0; i < raw.tableSize; i++)
         raw.table[i].inUse = false;
@@ -50,22 +50,22 @@ Directory::~Directory()
 ///
 /// * `file` is file containing the directory contents.
 void
-Directory::FetchFrom(OpenFile *file)
+Directory::FetchFrom(OpenFile * file)
 {
     ASSERT(file != nullptr);
     file->ReadAt((char *) raw.table,
-                 raw.tableSize * sizeof (DirectoryEntry), 0);
+      raw.tableSize * sizeof(DirectoryEntry), 0);
 }
 
 /// Write any modifications to the directory back to disk.
 ///
 /// * `file` is a file to contain the new directory contents.
 void
-Directory::WriteBack(OpenFile *file)
+Directory::WriteBack(OpenFile * file)
 {
     ASSERT(file != nullptr);
     file->WriteAt((char *) raw.table,
-                  raw.tableSize * sizeof (DirectoryEntry), 0);
+      raw.tableSize * sizeof(DirectoryEntry), 0);
 }
 
 /// Look up file name in directory, and return its location in the table of
@@ -73,15 +73,16 @@ Directory::WriteBack(OpenFile *file)
 ///
 /// * `name` is the file name to look up.
 int
-Directory::FindIndex(const char *name)
+Directory::FindIndex(const char * name)
 {
     ASSERT(name != nullptr);
 
     for (unsigned i = 0; i < raw.tableSize; i++)
-        if (raw.table[i].inUse
-              && !strncmp(raw.table[i].name, name, FILE_NAME_MAX_LEN))
+        if (raw.table[i].inUse &&
+          !strncmp(raw.table[i].name, name, FILE_NAME_MAX_LEN))
             return i;
-    return -1;  // name not in directory
+
+    return -1; // name not in directory
 }
 
 /// Look up file name in directory, and return the disk sector number where
@@ -90,13 +91,14 @@ Directory::FindIndex(const char *name)
 ///
 /// * `name` is the file name to look up.
 int
-Directory::Find(const char *name)
+Directory::Find(const char * name)
 {
     ASSERT(name != nullptr);
 
     int i = FindIndex(name);
     if (i != -1)
         return raw.table[i].sector;
+
     return -1;
 }
 
@@ -107,7 +109,7 @@ Directory::Find(const char *name)
 /// * `name` is the name of the file being added.
 /// * `newSector` is the disk sector containing the added file's header.
 bool
-Directory::Add(const char *name, int newSector)
+Directory::Add(const char * name, int newSector)
 {
     ASSERT(name != nullptr);
 
@@ -121,7 +123,7 @@ Directory::Add(const char *name, int newSector)
             raw.table[i].sector = newSector;
             return true;
         }
-    return false;  // no space.  Fix when we have extensible files.
+    return false; // no space.  Fix when we have extensible files.
 }
 
 /// Remove a file name from the directory.   Return true if successful;
@@ -129,13 +131,14 @@ Directory::Add(const char *name, int newSector)
 ///
 /// * `name` is the file name to be removed.
 bool
-Directory::Remove(const char *name)
+Directory::Remove(const char * name)
 {
     ASSERT(name != nullptr);
 
     int i = FindIndex(name);
     if (i == -1)
         return false;  // name not in directory
+
     raw.table[i].inUse = false;
     return true;
 }
@@ -154,15 +157,15 @@ Directory::List() const
 void
 Directory::Print() const
 {
-    FileHeader *hdr = new FileHeader;
+    FileHeader * hdr = new FileHeader;
 
     printf("Directory contents:\n");
     for (unsigned i = 0; i < raw.tableSize; i++)
         if (raw.table[i].inUse) {
             printf("\nDirectory entry.\n"
-                   "    Name: %s\n"
-                   "    Sector: %u\n",
-                   raw.table[i].name, raw.table[i].sector);
+              "    Name: %s\n"
+              "    Sector: %u\n",
+              raw.table[i].name, raw.table[i].sector);
             hdr->FetchFrom(raw.table[i].sector);
             hdr->Print();
         }

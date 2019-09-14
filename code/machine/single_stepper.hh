@@ -6,8 +6,9 @@
 class SingleStepper {
 public:
     /// Returns whether to continue single-stepping or no.
-    virtual bool Step() = 0;
+    virtual bool
+    Step() = 0;
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_SINGLESTEPPER__HH */

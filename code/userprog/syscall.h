@@ -19,18 +19,18 @@
 /// Used by the stubs to tell the kernel which system call is being asked
 /// for.
 
-#define SC_HALT     0
-#define SC_EXIT     1
-#define SC_EXEC     2
-#define SC_JOIN     3
-#define SC_FORK     4
-#define SC_YIELD    5
-#define SC_CREATE  10
-#define SC_REMOVE  11
-#define SC_OPEN    12
-#define SC_CLOSE   13
-#define SC_READ    14
-#define SC_WRITE   15
+#define SC_HALT   0
+#define SC_EXIT   1
+#define SC_EXEC   2
+#define SC_JOIN   3
+#define SC_FORK   4
+#define SC_YIELD  5
+#define SC_CREATE 10
+#define SC_REMOVE 11
+#define SC_OPEN   12
+#define SC_CLOSE  13
+#define SC_READ   14
+#define SC_WRITE  15
 
 
 #ifndef IN_ASM
@@ -45,25 +45,29 @@
 /// system call entry point in exception.cc.
 
 /// Stop Nachos, and print out performance stats.
-void Halt();//
+void
+Halt();     //
 
 
 /// Address space control operations: `Exit`, `Exec`, and `Join`.
 
 /// This user program is done (`status = 0` means exited normally).
-void Exit(int status);//
+void
+Exit(int status);     //
 
 /// A unique identifier for an executing user program (address space).
 typedef int SpaceId;
 
 /// Run the executable, stored in the Nachos file `name`, and return the
 /// address space identifier.
-SpaceId Exec(char *name, char **argv, int joinable);
+SpaceId
+Exec(char * name, char ** argv, int joinable);
 
 /// Only return once the the user program `id` has finished.
 ///
 /// Return the exit status.
-int Join(SpaceId id);//
+int
+Join(SpaceId id);    //
 
 
 /// User-level thread operations: `Fork` and `Yield`.  To allow multiple
@@ -71,11 +75,13 @@ int Join(SpaceId id);//
 
 /// Fork a thread to run a procedure (`func`) in the *same* address space as
 /// the current thread.
-void Fork(void (*func)(void));
+void
+Fork(void (* func)(void));
 
 /// Yield the CPU to another runnable thread, whether in this address space
 /// or not.
-void Yield();
+void
+Yield();
 
 
 /// File system operations: `Create`, `Open`, `Read`, `Write`, `Close`.
@@ -95,21 +101,25 @@ typedef int OpenFileId;
 /// Read and Write can be used directly on these, without first opening the
 /// console device.
 
-#define CONSOLE_INPUT   0
-#define CONSOLE_OUTPUT  1
-#define ENDCHAR         0
+# define CONSOLE_INPUT  0
+# define CONSOLE_OUTPUT 1
+# define ENDCHAR        0
 /// Create a Nachos file, with `name`.
-void Create(const char *name);//
+void
+Create(const char * name);    //
 
 /// Remove the Nachos file named `name`.
-int Remove(const char *name);
+int
+Remove(const char * name);
 
 /// Open the Nachos file `name`, and return an `OpenFileId` that can be used
 /// to read and write to the file.
-OpenFileId Open(const char *name);//
+OpenFileId
+Open(const char * name);          //
 
 /// Write `size` bytes from `buffer` to the open file.
-void Write(const char *buffer, int size, OpenFileId id);//
+void
+Write(const char * buffer, int size, OpenFileId id);    //
 
 /// Read `size` bytes from the open file into `buffer`.
 ///
@@ -117,13 +127,15 @@ void Write(const char *buffer, int size, OpenFileId id);//
 /// enough, or if it is an I/O device, and there are not enough characters to
 /// read, return whatever is available (for I/O devices, you should always
 /// wait until you can return at least one character).
-int Read(char *buffer, int size, OpenFileId id);//
+int
+Read(char * buffer, int size, OpenFileId id);   //
 
 /// Close the file, we are done reading and writing to it.
-void Close(OpenFileId id);//
+void
+Close(OpenFileId id);     //
 
 
-#endif
+#endif // ifndef IN_ASM
 
 
-#endif
+#endif // ifndef NACHOS_USERPROG_SYSCALL__H

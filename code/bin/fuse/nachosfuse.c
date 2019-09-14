@@ -32,39 +32,39 @@
 
 
 #ifndef NACHOS
-#error "The `NACHOS` macro is not defined.  Compile with `make`."
+# error "The `NACHOS` macro is not defined.  Compile with `make`."
 #endif
-#define NACHOS_LS             NACHOS " -ls"
-#define NACHOS_PR             NACHOS " -pr"
-#define MAX_PATH_LENGTH       1024
-#define MAX_NACHOS_PR_LENGTH  (sizeof NACHOS_PR + MAX_PATH_LENGTH + 2)
+#define NACHOS_LS            NACHOS " -ls"
+#define NACHOS_PR            NACHOS " -pr"
+#define MAX_PATH_LENGTH      1024
+#define MAX_NACHOS_PR_LENGTH (sizeof NACHOS_PR + MAX_PATH_LENGTH + 2)
 
 static int
-do_getattr(const char *path, struct stat *st)
+do_getattr(const char * path, struct stat * st)
 {
     fprintf(stderr, "[getattr] %s\n", path);
 
     time_t t = time(NULL);
 
-    st->st_uid = getuid();
-    st->st_gid = getgid();
+    st->st_uid   = getuid();
+    st->st_gid   = getgid();
     st->st_atime = t;
     st->st_mtime = t;
     if (strcmp(path, "/") == 0) {
-        st->st_mode = S_IFDIR | 0755;
+        st->st_mode  = S_IFDIR | 0755;
         st->st_nlink = 2;
     } else {
-        st->st_mode = S_IFREG | 0644;
+        st->st_mode  = S_IFREG | 0644;
         st->st_nlink = 1;
-        st->st_size = 1024;
+        st->st_size  = 1024;
     }
 
     return 0;
 }
 
 static int
-do_readdir(const char *path, void *buffer, fuse_fill_dir_t fill,
-           off_t offset, struct fuse_file_info *fi)
+do_readdir(const char * path, void * buffer, fuse_fill_dir_t fill,
+  off_t offset, struct fuse_file_info * fi)
 {
     fprintf(stderr, "[readdir] %s\n", path);
 
@@ -75,7 +75,7 @@ do_readdir(const char *path, void *buffer, fuse_fill_dir_t fill,
         return 0;
 
     // Invoke Nachos.
-    FILE *f = popen(NACHOS_LS, "r");
+    FILE * f = popen(NACHOS_LS, "r");
     if (f == NULL) {
         perror(NACHOS);
         exit(1);
@@ -83,16 +83,17 @@ do_readdir(const char *path, void *buffer, fuse_fill_dir_t fill,
 
     // Read lines.  Each line represents an entry in the directory, until an
     // empty line is found.
-    char *line = NULL;
+    char * line = NULL;
     size_t n, capacity = 0;
     while (n = getline(&line, &capacity, f)) {
-        if (n == 1 && line[0] == '\n')
+        if (n == 1 && line[0] == '\n') {
             // Stop when the first empty line is found.  The directory
             // listing ends here.  Only messages from the simulated machine
             // follow.
             break;
-        line[n - 1] = '\0';  // Replace the delimiter (newline) by a null
-                             // character.
+        }
+        line[n - 1] = '\0'; // Replace the delimiter (newline) by a null
+                            // character.
         fprintf(stderr, "    %s\n", line);
         (*fill)(buffer, line, NULL, 0);
     }
@@ -101,42 +102,43 @@ do_readdir(const char *path, void *buffer, fuse_fill_dir_t fill,
     if (line != NULL)
         free(line);
     return 0;
-}
+} /* do_readdir */
 
 static int
-do_read(const char *path, char *buffer, size_t size, off_t offset,
-        struct fuse_file_info *fi)
+do_read(const char * path, char * buffer, size_t size, off_t offset,
+  struct fuse_file_info * fi)
 {
     fprintf(stderr, "[read] %s\n"
-                    "    size: %zu, start: %zu\n",
-            path, size, offset);
+      "    size: %zu, start: %zu\n",
+      path, size, offset);
 
     // Prepare command string for invoking Nachos.
     char command[MAX_NACHOS_PR_LENGTH];
     int rv = snprintf(command, MAX_NACHOS_PR_LENGTH,
-                      "%s %s", NACHOS_PR, path + 1);
-      // Discard leading slash in path, because Nachos does not like it.
+        "%s %s", NACHOS_PR, path + 1);
+    // Discard leading slash in path, because Nachos does not like it.
     if (rv < 0 || rv >= MAX_NACHOS_PR_LENGTH) {
         perror(path);
         return -1;
     }
 
     // Invoke Nachos.
-    FILE *f = popen(command, "r");
+    FILE * f = popen(command, "r");
     if (f == NULL) {
         perror(NACHOS);
         exit(1);
     }
 
     // Read lines.
-    char *line = NULL;
+    char * line = NULL;
     size_t i, n, capacity = 0;
     for (i = 0; n = getline(&line, &capacity, f); i += n) {
-        if (n == 1 && line[0] == '\n')
+        if (n == 1 && line[0] == '\n') {
             // Stop when the first empty line is found.  The directory
             // listing ends here.  Only messages from the simulated machine
             // follow.
             break;
+        }
         memcpy(buffer + i, line, n);
         if (n > size)
             break;
@@ -146,7 +148,7 @@ do_read(const char *path, char *buffer, size_t size, off_t offset,
     if (line != NULL)
         free(line);
     return i;
-}
+} /* do_read */
 
 static const struct fuse_operations OPERATIONS = {
     .getattr = do_getattr,
@@ -155,7 +157,7 @@ static const struct fuse_operations OPERATIONS = {
 };
 
 int
-main(int argc, char *argv[])
+main(int argc, char * argv[])
 {
     return fuse_main(argc, argv, &OPERATIONS, NULL);
 }

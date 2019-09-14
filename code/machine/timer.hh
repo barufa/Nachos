@@ -30,24 +30,25 @@ public:
 
     /// Initialize the timer, to call the interrupt handler `timerHandler`
     /// every time slice.
-    Timer(VoidFunctionPtr timerHandler, void *callArg, bool doRandom);
+    Timer(VoidFunctionPtr timerHandler, void * callArg, bool doRandom);
 
-    ~Timer() {}
+    ~Timer(){ }
 
     /// Internal routines to the timer emulation -- DO NOT call these.
 
     /// Called internally when the hardware timer generates an interrupt.
-    void TimerExpired();
+    void
+    TimerExpired();
 
     /// Figure out when the timer will generate its next interrupt.
-    int TimeOfNextInterrupt();
+    int
+    TimeOfNextInterrupt();
 
 private:
-    bool randomize;  ///< Set if we need to use a random timeout delay.
-    VoidFunctionPtr handler;  ///< Timer interrupt handler.
-    void *arg;  ///< Argument to pass to interrupt handler.
-
+    bool randomize;          ///< Set if we need to use a random timeout delay.
+    VoidFunctionPtr handler; ///< Timer interrupt handler.
+    void * arg;              ///< Argument to pass to interrupt handler.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_TIMER__HH */

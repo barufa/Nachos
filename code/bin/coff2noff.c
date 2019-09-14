@@ -37,12 +37,12 @@
 #include <string.h>
 
 
-#define ReadStructOrDie(f, s)  ReadOrDie(f, (char *) &(s), sizeof (s))
+#define ReadStructOrDie(f, s) ReadOrDie(f, (char *) &(s), sizeof(s))
 
-static char *outFileName = NULL;
+static char * outFileName = NULL;
 
 static void
-Die(const char *format, ...)
+Die(const char * format, ...)
 {
     assert(format != NULL);
 
@@ -58,7 +58,7 @@ Die(const char *format, ...)
 
 /// Read and check for error.
 static void
-ReadOrDie(FILE *f, char *buffer, size_t numBytes)
+ReadOrDie(FILE * f, char * buffer, size_t numBytes)
 {
     assert(f != NULL);
     assert(buffer != NULL);
@@ -69,7 +69,7 @@ ReadOrDie(FILE *f, char *buffer, size_t numBytes)
 
 /// Write and check for error.
 static void
-WriteOrDie(FILE *f, const char *buffer, size_t numBytes)
+WriteOrDie(FILE * f, const char * buffer, size_t numBytes)
 {
     assert(f != NULL);
     assert(buffer != NULL);
@@ -79,17 +79,17 @@ WriteOrDie(FILE *f, const char *buffer, size_t numBytes)
 }
 
 void
-main(int argc, char *argv[])
+main(int argc, char * argv[])
 {
-    FILE      *in, *out;
-    int        inNoffFile;
-    unsigned   numSections, i;
-    char      *buffer;
+    FILE * in, * out;
+    int inNoffFile;
+    unsigned numSections, i;
+    char * buffer;
     noffHeader noffH;
 
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <coffFileName> <noffFileName>\n",
-                argv[0]);
+          argv[0]);
         exit(1);
     }
 
@@ -109,7 +109,7 @@ main(int argc, char *argv[])
     outFileName = argv[2];
 
     /// Load the COFF file.
-    char *errorS;
+    char * errorS;
     coffReaderData d;
     if (!CoffReaderLoad(&d, in, &errorS))
         Die(errorS);
@@ -122,18 +122,19 @@ main(int argc, char *argv[])
     noffH.uninitData.size = 0;
 
     /// Copy the segments in.
-    CoffSection *sc;
+    CoffSection * sc;
     inNoffFile = sizeof noffH;
     fseek(out, inNoffFile, SEEK_SET);
     printf("Translating COFF sections into NOFF:\n");
     while ((sc = CoffReaderNextSection(&d)) != NULL) {
         CoffSectionPrint(sc);
-        if (CoffSectionEmpty(sc))
+        if (CoffSectionEmpty(sc)) {
             // Do nothing!
             continue;
+        }
 
         size_t addr = CoffSectionAddr(sc);
-        char *name = CoffSectionName(sc);
+        char * name = CoffSectionName(sc);
         size_t size = CoffSectionSize(sc);
 
         if (!strcmp(name, ".text")) {
@@ -145,8 +146,9 @@ main(int argc, char *argv[])
             WriteOrDie(out, buffer, size);
             free(buffer);
             inNoffFile += size;
-        } else if (!strcmp(name, ".data")
-                     || !strcmp(name, ".rdata")) {
+        } else if (!strcmp(name, ".data") ||
+          !strcmp(name, ".rdata"))
+        {
             /// Need to check if we have both `.data` and `.rdata` -- make
             /// sure one or the other is empty!
             if (noffH.initData.size != 0)
@@ -163,8 +165,8 @@ main(int argc, char *argv[])
             /// Need to check if we have both `.bss` and `.sbss` -- make sure
             /// they are contiguous.
             if (noffH.uninitData.size != 0) {
-                if (addr == noffH.uninitData.virtualAddr +
-                            noffH.uninitData.size)
+                if (addr == noffH.uninitData.virtualAddr
+                  + noffH.uninitData.size)
                     Die("Cannot handle both bss and sbss");
                 noffH.uninitData.size += size;
             } else {
@@ -172,16 +174,16 @@ main(int argc, char *argv[])
                 noffH.uninitData.size        = size;
             }
             // We do not need to copy the uninitialized data!
-        } else if (!strcmp(name, ".comment"))
+        } else if (!strcmp(name, ".comment")) {
             // Ignore.  This section contains build information.
             ;
-        else if (!strcmp(name, ".pdr"))
+        } else if (!strcmp(name, ".pdr")) {
             // Ignore.  This section is for debugging.
             //
             // For more information, see:
             // * https://gdb-patches.sourceware.narkive.com/3bt9szEg/rfa-mips-use-pdr-sections-generated-by-gas
             ;
-        else if (!strcmp(name, ".reginfo"))
+        } else if (!strcmp(name, ".reginfo")) {
             // Ignore.  This section is specific to the System V MIPS ABI and
             // nothing really uses it.
             //
@@ -192,9 +194,10 @@ main(int argc, char *argv[])
             // * Discussion in the linux-mips mailing list.
             //     https://www.linux-mips.org/archives/linux-mips/2002-12/msg00190.html
             ;
-        else
-            //Die("Unknown segment type: `%s`", name);
+        } else {
+            // Die("Unknown segment type: `%s`", name);
             printf("WARNING: ignoring segment type \"%s\".\n", name);
+        }
 
         free(name);
     }
@@ -204,4 +207,4 @@ main(int argc, char *argv[])
     fclose(in);
     fclose(out);
     exit(0);
-}
+} /* main */

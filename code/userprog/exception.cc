@@ -51,7 +51,7 @@ DefaultHandler(ExceptionType et)
     int exceptionArg = machine->ReadRegister(2);
 
     fprintf(stderr, "Unexpected user mode exception: %s, arg %d.\n",
-            ExceptionTypeToString(et), exceptionArg);
+      ExceptionTypeToString(et), exceptionArg);
     ASSERT(false);
 }
 
@@ -72,248 +72,256 @@ DefaultHandler(ExceptionType et)
 /// And do not forget to increment the program counter before returning. (Or
 /// else you will loop making the same system call forever!)
 
-void machine_ret(int r){
-	machine->WriteRegister(2,r);
+void
+machine_ret(int r)
+{
+    machine->WriteRegister(2, r);
 }
 
-void run_program(void * arg){
+void
+run_program(void * arg)
+{
+    currentThread->space->InitRegisters();
+    currentThread->space->RestoreState();
 
-  currentThread->space->InitRegisters();
-  currentThread->space->RestoreState();
+    int * args = WriteArgs((char **) arg);
+    int argc   = args[0];
+    int argv   = args[1];
 
-  int *args = WriteArgs((char **)arg);
-	int argc = args[0];
-	int argv = args[1];
-
-	DEBUG('e',"argc = %d - argv = %d in run_program\n",argc,argv);
+    DEBUG('e', "argc = %d - argv = %d in run_program\n", argc, argv);
 
 
-  	machine->WriteRegister(4,argc);
-  	machine->WriteRegister(5,argv);
+    machine->WriteRegister(4, argc);
+    machine->WriteRegister(5, argv);
 
-	machine->Run();
+    machine->Run();
 }
 
 static void
 SyscallHandler(ExceptionType _et)
 {
-    int scid = machine->ReadRegister(2);//r2
-	int arg1 = machine->ReadRegister(4);//r4
-    int arg2 = machine->ReadRegister(5);//r5
-    int arg3 = machine->ReadRegister(6);//r6
+    int scid = machine->ReadRegister(2);// r2
+    int arg1 = machine->ReadRegister(4);// r4
+    int arg2 = machine->ReadRegister(5);// r5
+    int arg3 = machine->ReadRegister(6);// r6
 
     switch (scid) {
-        case SC_HALT:{//Codeado
-			DEBUG('a', "Calling SC_HALT.\n");
+        case SC_HALT: {// Codeado
+            DEBUG('a', "Calling SC_HALT.\n");
             DEBUG('a', "Shutdown, initiated by user program.\n");
             interrupt->Halt();
             break;
-		}
-        case SC_CREATE:{//Codeado
-			DEBUG('a', "Calling SC_CREATE\n");
-			int filenameAddr = arg1;
+        }
+        case SC_CREATE: {// Codeado
+            DEBUG('a', "Calling SC_CREATE\n");
+            int filenameAddr = arg1;
             if (filenameAddr == 0)
                 DEBUG('a', "Error: address to filename string is null.\n");
 
             char filename[FILE_NAME_MAX_LEN + 1];
-            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
-                DEBUG('a', "Error: filename string too long (maximum is %u bytes).\n",
-                      FILE_NAME_MAX_LEN);
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename)) {
+                DEBUG('a',
+                  "Error: filename string too long (maximum is %u bytes).\n",
+                  FILE_NAME_MAX_LEN);
+            }
             DEBUG('a', "Open requested for file `%s`.\n", filename);
-			machine_ret(fileSystem->Create(filename, 0));
+            machine_ret(fileSystem->Create(filename, 0));
             break;
         }
-		case SC_WRITE:{//Codedado
-			DEBUG('a', "Calling SC_WRITE.\n");
-			int buffer    = arg1;
-			int size      = arg2;
-			OpenFileId id = arg3;
-			int r         = -1;
+        case SC_WRITE: {// Codedado
+            DEBUG('a', "Calling SC_WRITE.\n");
+            int buffer    = arg1;
+            int size      = arg2;
+            OpenFileId id = arg3;
+            int r         = -1;
 
-			ASSERT(buffer);
-			if(size<=0)break;
+            ASSERT(buffer);
+            if (size <= 0) break;
 
-			switch (id) {
-				case CONSOLE_OUTPUT:{//STDOUT
-					char * bff = new char[size+1];
-					ReadBufferFromUser(buffer,bff,size);
-					r = synchConsole->PutString(bff,size);
-					delete bff;
-					break;
-				}
-				default:{
-					if(currentThread->IsOpenFile(id)){
-						OpenFile * file = currentThread->GetFile(id);
-						char * bff = new char[size];
-						ReadBufferFromUser(buffer,bff,size);
-						r = file->Write(bff,size);
-						delete bff;
-					}
-					break;
-				}
-			}
-			machine_ret(r);
-			break;
-		}
-		case SC_OPEN:{//Codeado
-			DEBUG('a', "Calling SC_OPEN.\n");
-			int nameaddr = arg1;
-			int r        = -1;
+            switch (id) {
+                case CONSOLE_OUTPUT: {// STDOUT
+                    char * bff = new char[size + 1];
+                    ReadBufferFromUser(buffer, bff, size);
+                    r = synchConsole->PutString(bff, size);
+                    delete bff;
+                    break;
+                }
+                default: {
+                    if (currentThread->IsOpenFile(id)) {
+                        OpenFile * file = currentThread->GetFile(id);
+                        char * bff      = new char[size];
+                        ReadBufferFromUser(buffer, bff, size);
+                        r = file->Write(bff, size);
+                        delete bff;
+                    }
+                    break;
+                }
+            }
+            machine_ret(r);
+            break;
+        }
+        case SC_OPEN: {// Codeado
+            DEBUG('a', "Calling SC_OPEN.\n");
+            int nameaddr = arg1;
+            int r        = -1;
 
-			char * filename = new char[FILE_NAME_MAX_LEN+1];
-			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN)){
-				OpenFile * file = fileSystem->Open(filename);
-				r = currentThread->AddFile(file);
-			}
+            char * filename = new char[FILE_NAME_MAX_LEN + 1];
+            if (ReadStringFromUser(nameaddr, filename, FILE_NAME_MAX_LEN)) {
+                OpenFile * file = fileSystem->Open(filename);
+                r = currentThread->AddFile(file);
+            }
 
-			machine_ret(r);
-			break;
-		}
-		case SC_CLOSE:{//Codeado
-			DEBUG('a', "Calling SC_CLOSE.\n");
-			int fid = machine->ReadRegister(4);
-			int r   = -1;
-			DEBUG('a', "Close requested for id %u.\n", fid);
-			if(currentThread->IsOpenFile(fid)){
-				OpenFile* file = currentThread->RemoveFile(fid);
-				delete file;
-			}
-			machine_ret(r);
-		    break;
-		}
-		case SC_EXIT:{//Codeado
-			DEBUG('A', "Calling SC_EXIT.\n");
-			currentThread->Finish(arg1);
-			DEBUG('A', "Retorno Finish.\n");
-			machine_ret(arg1);
-			break;
-		}
-		case SC_JOIN:{//Codeado
-			DEBUG('a', "Calling SC_JOIN.\n");
-			SpaceId id = arg1;
-			if(!(processTable->HasKey(id))){
-				DEBUG('a', "Invalid pid %d.\n",id);
-				break;
-			}
-			DEBUG('e',"The userland/program is joining\n");
-			int r = (processTable->Get(id))->Join();
-			machine_ret(r);
-			break;
-		}
-		case SC_EXEC:{//Codeado
+            machine_ret(r);
+            break;
+        }
+        case SC_CLOSE: {// Codeado
+            DEBUG('a', "Calling SC_CLOSE.\n");
+            int fid = machine->ReadRegister(4);
+            int r   = -1;
+            DEBUG('a', "Close requested for id %u.\n", fid);
+            if (currentThread->IsOpenFile(fid)) {
+                OpenFile * file = currentThread->RemoveFile(fid);
+                delete file;
+            }
+            machine_ret(r);
+            break;
+        }
+        case SC_EXIT: {// Codeado
+            DEBUG('A', "Calling SC_EXIT.\n");
+            currentThread->Finish(arg1);
+            DEBUG('A', "Retorno Finish.\n");
+            machine_ret(arg1);
+            break;
+        }
+        case SC_JOIN: {// Codeado
+            DEBUG('a', "Calling SC_JOIN.\n");
+            SpaceId id = arg1;
+            if (!(processTable->HasKey(id))) {
+                DEBUG('a', "Invalid pid %d.\n", id);
+                break;
+            }
+            DEBUG('e', "The userland/program is joining\n");
+            int r = (processTable->Get(id))->Join();
+            machine_ret(r);
+            break;
+        }
+        case SC_EXEC: {// Codeado
+            DEBUG('a', "Calling SC_EXEC.\n\n");
+            int nameaddr    = arg1;
+            int r           = -1;
+            void * argvs    = (void *) SaveArgs(arg2);
+            char * filename = new char[FILE_NAME_MAX_LEN + 1];
 
-			DEBUG('a', "Calling SC_EXEC.\n\n");
-      		int nameaddr = arg1;
-			int r        = -1;
-      		void * argvs  = (void *)SaveArgs(arg2);
-      		char * filename = new char[FILE_NAME_MAX_LEN+1];
+            if (ReadStringFromUser(nameaddr, filename, FILE_NAME_MAX_LEN)) {
+                DEBUG('e', "Opening %s file to execute\n", filename);
+                DEBUG('e', "The program is executing with join_flag=%d\n",
+                  arg3);
+                OpenFile * executable = fileSystem->Open(filename);
+                Thread * newThread    = new Thread("Child_Thread", arg3);
+                newThread->space = new AddressSpace(executable);
+                r = newThread->pid;
+                newThread->Fork(run_program, argvs);
+            }
+            machine_ret(r);
+            break;
+        }
+        case SC_READ: {// Codeado
+            DEBUG('a', "Calling SC_READ.\n");
+            int buffer    = arg1;
+            int size      = arg2;
+            OpenFileId id = arg3;
+            int r         = -1;
 
-			if(ReadStringFromUser(nameaddr,filename,FILE_NAME_MAX_LEN))
-			{
-				DEBUG('e', "Opening %s file to execute\n",filename);
-				DEBUG('e',"The program is executing with join_flag=%d\n",arg3);
-				OpenFile *executable  = fileSystem->Open(filename);
-				Thread * newThread    = new Thread("Child_Thread",arg3);
-				newThread->space      = new AddressSpace(executable);
-				r = newThread->pid;
-				newThread->Fork(run_program,argvs);
-			}
-			machine_ret(r);
-			break;
-		}
-		case SC_READ:{//Codeado
-			DEBUG('a', "Calling SC_READ.\n");
-			int buffer    = arg1;
-			int size      = arg2;
-			OpenFileId id = arg3;
-			int r         = -1;
+            ASSERT(buffer);
+            ASSERT(0 < size);
 
-			ASSERT(buffer);
-			ASSERT(0<size);
-
-			switch (id) {
-				case CONSOLE_INPUT:{
-					  char * bff = new char[size+1];
-			          r = synchConsole->GetString(bff,size);
-			          WriteBufferToUser(buffer,bff,r);
-			          DEBUG('a', "Read: %s[%d]\n",bff,r);
-					delete bff;
-					break;
-				}
-				default:{
-					if(currentThread->IsOpenFile(id)){
-						OpenFile * file = currentThread->GetFile(id);
-						char * bff = new char[size];
-						memset(bff,0,size);
-						r = file->Read(bff,size);
-						WriteBufferToUser(buffer,bff,r);
-						DEBUG('a', "Read: %s",bff);
-						delete bff;
-					}
-					break;
-				}
-			}
-			machine_ret(r);
-			break;
-		}
-		case SC_REMOVE:{//Codeado
-			DEBUG('a', "Calling SC_REMOVE\n");
-			int filenameAddr = arg1;
+            switch (id) {
+                case CONSOLE_INPUT: {
+                    char * bff = new char[size + 1];
+                    r = synchConsole->GetString(bff, size);
+                    WriteBufferToUser(buffer, bff, r);
+                    DEBUG('a', "Read: %s[%d]\n", bff, r);
+                    delete bff;
+                    break;
+                }
+                default: {
+                    if (currentThread->IsOpenFile(id)) {
+                        OpenFile * file = currentThread->GetFile(id);
+                        char * bff      = new char[size];
+                        memset(bff, 0, size);
+                        r = file->Read(bff, size);
+                        WriteBufferToUser(buffer, bff, r);
+                        DEBUG('a', "Read: %s", bff);
+                        delete bff;
+                    }
+                    break;
+                }
+            }
+            machine_ret(r);
+            break;
+        }
+        case SC_REMOVE: {// Codeado
+            DEBUG('a', "Calling SC_REMOVE\n");
+            int filenameAddr = arg1;
             if (filenameAddr == 0)
                 DEBUG('a', "Error: address to filename string is null.\n");
 
             char filename[FILE_NAME_MAX_LEN + 1];
-            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename))
-                DEBUG('a', "Error: filename string too long (maximum is %u bytes).\n",
-                      FILE_NAME_MAX_LEN);
-			machine_ret(fileSystem->Remove(filename));
-			break;
-		}
-		case SC_FORK:{
-			DEBUG('a', "Calling SC_FORK.\n");
-			break;
-		}
-		case SC_YIELD:{
-			DEBUG('a', "Calling SC_YIELD.\n");
-			break;
-		}
-        default:{
-			fprintf(stderr, "Unexpected system call: id %d.\n", scid);
-			ASSERT(false);
-		}
+            if (!ReadStringFromUser(filenameAddr, filename, sizeof filename)) {
+                DEBUG('a',
+                  "Error: filename string too long (maximum is %u bytes).\n",
+                  FILE_NAME_MAX_LEN);
+            }
+            machine_ret(fileSystem->Remove(filename));
+            break;
+        }
+        case SC_FORK: {
+            DEBUG('a', "Calling SC_FORK.\n");
+            break;
+        }
+        case SC_YIELD: {
+            DEBUG('a', "Calling SC_YIELD.\n");
+            break;
+        }
+        default: {
+            fprintf(stderr, "Unexpected system call: id %d.\n", scid);
+            ASSERT(false);
+        }
     }
 
     IncrementPC();
+} // SyscallHandler
+
+static void
+Page_Fault_Handler(ExceptionType _et)
+{
+    // buscar en la pageTable, y insertar en la TBL
+    unsigned vpn = machine->ReadRegister(BAD_VADDR_REG) / PAGE_SIZE;
+
+    if (!currentThread->space->Update_TLB(vpn)) {
+        currentThread->Finish(-1);
+    }
+    DEBUG('w', "Saliendo de Page_Fault_Handler\n");
 }
 
 static void
-Page_Fault_Handler(ExceptionType _et){
-  //buscar en la pageTable, y insertar en la TBL
-  unsigned vpn = machine->ReadRegister(BAD_VADDR_REG)/PAGE_SIZE;
-  if(!currentThread->space->Update_TLB(vpn)){
-	  currentThread->Finish(-1);
-  }
-  DEBUG('w',"Saliendo de Page_Fault_Handler\n");
+Read_Only_Handler(ExceptionType _et)
+{
+    DEBUG('w', "Read only exception\n");
+    currentThread->Finish();
 }
-
-static void
-Read_Only_Handler(ExceptionType _et){
-  DEBUG('w',"Read only exception\n");
-  currentThread->Finish();
-}
-
 
 /// By default, only system calls have their own handler.  All other
 /// exception types are assigned the default handler.
 void
 SetExceptionHandlers()
 {
-    machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
-    machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
-    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &Page_Fault_Handler);
-    machine->SetHandler(READ_ONLY_EXCEPTION,     &Read_Only_Handler);
-    machine->SetHandler(BUS_ERROR_EXCEPTION,     &DefaultHandler);
+    machine->SetHandler(NO_EXCEPTION, &DefaultHandler);
+    machine->SetHandler(SYSCALL_EXCEPTION, &SyscallHandler);
+    machine->SetHandler(PAGE_FAULT_EXCEPTION, &Page_Fault_Handler);
+    machine->SetHandler(READ_ONLY_EXCEPTION, &Read_Only_Handler);
+    machine->SetHandler(BUS_ERROR_EXCEPTION, &DefaultHandler);
     machine->SetHandler(ADDRESS_ERROR_EXCEPTION, &DefaultHandler);
-    machine->SetHandler(OVERFLOW_EXCEPTION,      &DefaultHandler);
+    machine->SetHandler(OVERFLOW_EXCEPTION, &DefaultHandler);
     machine->SetHandler(ILLEGAL_INSTR_EXCEPTION, &DefaultHandler);
 }

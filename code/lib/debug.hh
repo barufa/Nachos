@@ -34,10 +34,12 @@ public:
     Debug();
 
     /// Is this debug flag enabled?
-    bool IsEnabled(char flag) const;
+    bool
+    IsEnabled(char flag) const;
 
     /// Get the current flags.
-    const char *GetFlags() const;
+    const char *
+    GetFlags() const;
 
     /// Set debug flags to indicate which debug messages to print.
     ///
@@ -48,24 +50,27 @@ public:
     ///
     /// * `new_flags` is a string of characters for whose debug messages are
     ///   to be enabled.
-    void SetFlags(const char *new_flags);
+    void
+    SetFlags(const char * new_flags);
 
     /// Print a debug message if `flag` is enabled.
     ///
     /// Like `printf`, only with an extra argument on the front.
     ///
     /// Put a flag prefix along with the message.
-    void Print(char flag, const char *format, ...) const;
+    void
+    Print(char flag, const char * format, ...) const;
 
     /// Same as `Print` but avoid printing the flag prefix.
     ///
     /// Useful for splitting a call for a `Print` line into multiple calls.
-    void PrintCont(char flag, const char *format, ...) const;
+    void
+    PrintCont(char flag, const char * format, ...) const;
 
 private:
     /// String that controls which debug messages are printed.
-    const char *flags;
+    const char * flags;
 };
 
 
-#endif
+#endif /* ifndef NACHOS_LIB_DEBUG__HH */

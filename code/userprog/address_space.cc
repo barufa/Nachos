@@ -22,17 +22,17 @@
 #include "threads/system.hh"
 
 
-unsigned AddressSpace::last_page=0;
-unsigned AddressSpace::next_id=0;
+unsigned AddressSpace::last_page = 0;
+unsigned AddressSpace::next_id   = 0;
 // Valores altos para usar como flags
 const unsigned NOT_ASSIGNED = 4294967295;
-const unsigned IN_SWAP = 4294967294;
+const unsigned IN_SWAP      = 4294967294;
 
 /// Do little endian to big endian conversion on the bytes in the object file
 /// header, in case the file was generated on a little endian machine, and we
 /// are re now running on a big endian machine.
 static void
-SwapHeader(noffHeader *noffH)
+SwapHeader(noffHeader * noffH)
 {
     ASSERT(noffH != nullptr);
 
@@ -70,38 +70,38 @@ AddressSpace::AddressSpace(OpenFile * _executable)
 
     executable->ReadAt((char *) &noffH, sizeof noffH, 0);
     if (noffH.noffMagic != NOFF_MAGIC &&
-          WordToHost(noffH.noffMagic) == NOFF_MAGIC)
+      WordToHost(noffH.noffMagic) == NOFF_MAGIC)
         SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFF_MAGIC);
 
     unsigned size = noffH.code.size + noffH.initData.size
-                    + noffH.uninitData.size + USER_STACK_SIZE;
+      + noffH.uninitData.size + USER_STACK_SIZE;
     // We need to increase the size to leave room for the stack.
     numPages = DivRoundUp(size, PAGE_SIZE);
-    size = numPages * PAGE_SIZE;
+    size     = numPages * PAGE_SIZE;
 
     DEBUG('z', "Initializing address space, num pages %u, size %u\n",
-          numPages, size);
-    
+      numPages, size);
+
     NumPages = numPages;
 
     // First, set up the translation.
     pageTable = new TranslationEntry[numPages];
     for (unsigned i = 0; i < numPages; i++) {
-	    pageTable[i].physicalPage = NOT_ASSIGNED;
+        pageTable[i].physicalPage = NOT_ASSIGNED;
         pageTable[i].virtualPage  = i;
         pageTable[i].valid        = false;
-        pageTable[i].use          = false;
-        pageTable[i].dirty        = false;
-        pageTable[i].readOnly     = false;
+        pageTable[i].use      = false;
+        pageTable[i].dirty    = false;
+        pageTable[i].readOnly = false;
         // If the code segment was entirely on a separate page, we could
         // set its pages to be read-only.
     }
     // Create swap
     swap_id = new char[20];
-    sprintf(swap_id,"swap.%u",AddressSpace::next_id);
+    sprintf(swap_id, "swap.%u", AddressSpace::next_id);
     fileSystem->Remove(swap_id);
-    fileSystem->Create(swap_id,numPages*PAGE_SIZE);
+    fileSystem->Create(swap_id, numPages * PAGE_SIZE);
     swap = fileSystem->Open(swap_id);
     ASSERT(swap);
     AddressSpace::next_id = (AddressSpace::next_id + 1) % 4096;
@@ -110,16 +110,16 @@ AddressSpace::AddressSpace(OpenFile * _executable)
 /// Deallocate an address space.
 AddressSpace::~AddressSpace()
 {
-	DEBUG('w',"Liberando %u paginas\n",numPages);
-	for(unsigned page=0;page<numPages;page++){
-		unsigned ppn = pageTable[page].physicalPage;
-		if(ppn!=IN_SWAP && ppn!=NOT_ASSIGNED)
-		    bitmap->Clear(pageTable[page].physicalPage);
-	}
+    DEBUG('w', "Liberando %u paginas\n", numPages);
+    for (unsigned page = 0; page < numPages; page++) {
+        unsigned ppn = pageTable[page].physicalPage;
+        if (ppn != IN_SWAP && ppn != NOT_ASSIGNED)
+            bitmap->Clear(pageTable[page].physicalPage);
+    }
     fileSystem->Remove(swap_id);
     coremap->clean_space(this);
-	delete [] pageTable;
-	delete [] swap_id;
+    delete [] pageTable;
+    delete [] swap_id;
 }
 
 /// Set the initial values for the user-level register set.
@@ -145,76 +145,84 @@ AddressSpace::InitRegisters()
     // allocated the stack; but subtract off a bit, to make sure we do not
     // accidentally reference off the end!
     machine->WriteRegister(STACK_REG, numPages * PAGE_SIZE - 16);
-    DEBUG('a', "Initializing stack register to %u\n",
-          numPages * PAGE_SIZE - 16);
+    DEBUG('a', "Initializing stack register to %u\n", numPages * PAGE_SIZE - 16);
 }
 
 bool
-AddressSpace::LoadPage(unsigned vpn){
-	if(!pageTable[vpn].valid){
-		// Asigno una pagina en memoria
-		DEBUG('w',"\tbitmap size: %u\n\tcoremap size: %u\n",bitmap->CountNotClear(),coremap->length());
-		int next_page = bitmap->Find();
-		if(next_page<0){
-			coremap->freepage();
-			next_page = bitmap->Find();
-		}
-		ASSERT(next_page>=0);
-		DEBUG('W',"Cargando Pagina %u en %d\n",vpn,next_page);
-		if(swap_find(vpn)){
-			DEBUG('W',"Cargando desde swap\n");
-			load_page(vpn,next_page);
-		} else {
-			DEBUG('W',"Cargando desde archivo\n");
-			pageTable[vpn].physicalPage = next_page;
-			// Copio la informacion a la pagina
-			char * mainMemory = machine->GetMMU()->mainMemory;
-			uint32_t code_begin   = noffH.code.virtualAddr;
-			uint32_t code_end     = noffH.code.virtualAddr + noffH.code.size;
-			uint32_t data_begin   = noffH.initData.virtualAddr;
-			uint32_t data_end     = noffH.initData.virtualAddr + noffH.initData.size;
-			uint32_t VirtualAddr  = pageTable[vpn].virtualPage * PAGE_SIZE;
-			uint32_t PhysicalAddr = pageTable[vpn].physicalPage * PAGE_SIZE;
-			uint32_t inFileAddr = 0;
-			if(code_begin <= VirtualAddr && VirtualAddr <= code_end){
-				inFileAddr = noffH.code.inFileAddr + (VirtualAddr - code_begin);
-			}else if(data_begin <= VirtualAddr && VirtualAddr <= data_end){
-				inFileAddr = noffH.initData.inFileAddr + (VirtualAddr - data_begin);
-			}
-			memset(&mainMemory[PhysicalAddr],0,PAGE_SIZE);
-			executable->ReadAt(&(mainMemory[PhysicalAddr]), PAGE_SIZE, inFileAddr);
-			pageTable[vpn].valid = true;
-	    }
-	    coremap->store(vpn,this);
-	}
-	return pageTable[vpn].valid;
+AddressSpace::LoadPage(unsigned vpn)
+{
+    if (!pageTable[vpn].valid) {
+        // Asigno una pagina en memoria
+        DEBUG('w', "\tbitmap size: %u\n\tcoremap size: %u\n",
+          bitmap->CountNotClear(), coremap->length());
+        int next_page = bitmap->Find();
+        if (next_page < 0) {
+            coremap->freepage();
+            next_page = bitmap->Find();
+        }
+        ASSERT(next_page >= 0);
+        DEBUG('W', "Cargando Pagina %u en %d\n", vpn, next_page);
+        if (swap_find(vpn)) {
+            DEBUG('W', "Cargando desde swap\n");
+            load_page(vpn, next_page);
+        } else {
+            DEBUG('W', "Cargando desde archivo\n");
+            pageTable[vpn].physicalPage = next_page;
+            // Copio la informacion a la pagina
+            char * mainMemory   = machine->GetMMU()->mainMemory;
+            uint32_t code_begin = noffH.code.virtualAddr;
+            uint32_t code_end   = noffH.code.virtualAddr + noffH.code.size;
+            uint32_t data_begin = noffH.initData.virtualAddr;
+            uint32_t data_end   = noffH.initData.virtualAddr + noffH.initData.size;
+            uint32_t VirtualAddr  = pageTable[vpn].virtualPage * PAGE_SIZE;
+            uint32_t PhysicalAddr = pageTable[vpn].physicalPage * PAGE_SIZE;
+            uint32_t inFileAddr   = 0;
+            if (code_begin <= VirtualAddr && VirtualAddr <= code_end) {
+                inFileAddr = noffH.code.inFileAddr + (VirtualAddr - code_begin);
+            } else if (data_begin <= VirtualAddr && VirtualAddr <= data_end) {
+                inFileAddr = noffH.initData.inFileAddr
+                  + (VirtualAddr - data_begin);
+            }
+            memset(&mainMemory[PhysicalAddr], 0, PAGE_SIZE);
+            executable->ReadAt(&(mainMemory[PhysicalAddr]), PAGE_SIZE,
+              inFileAddr);
+            pageTable[vpn].valid = true;
+        }
+        coremap->store(vpn, this);
+    }
+    return pageTable[vpn].valid;
 }
 
 bool
-AddressSpace::Update_TLB(unsigned vpn){
-  // Verificar que la vpn sea valida
-  if(numPages <= vpn){
-	  DEBUG('W',"VPN=%u invalida\n",vpn);
-	  ASSERT(numPages > vpn);
-  }
-  DEBUG('W',"Agrego %u(%u) a la TLB %s\n",vpn,pageTable[vpn].physicalPage,pageTable[vpn].valid? "y es valida":"y no es valida");
-  // Cargo la pagina en memoria
-  if(!LoadPage(vpn)){
-	  DEBUG('w',"LoadPage retorno false para %u\n",vpn);
-  }
-  // Busco pagina victima en TLB
-  unsigned next = (AddressSpace::last_page++)%TLB_SIZE;
-  unsigned next_vpn = machine->GetMMU()->Get_Entry(next).virtualPage;
+AddressSpace::Update_TLB(unsigned vpn)
+{
+    // Verificar que la vpn sea valida
+    if (numPages <= vpn) {
+        DEBUG('W', "VPN=%u invalida\n", vpn);
+        ASSERT(numPages > vpn);
+    }
+    DEBUG('W', "Agrego %u(%u) a la TLB %s\n", vpn, pageTable[vpn].physicalPage,
+      pageTable[vpn].valid ? "y es valida" : "y no es valida");
+    // Cargo la pagina en memoria
+    if (!LoadPage(vpn)) {
+        DEBUG('w', "LoadPage retorno false para %u\n", vpn);
+    }
+    // Busco pagina victima en TLB
+    unsigned next     = (AddressSpace::last_page++) % TLB_SIZE;
+    unsigned next_vpn = machine->GetMMU()->Get_Entry(next).virtualPage;
 
-  // Guardo la pagina victima en memoria y actualizo la tlb
-  if(machine->GetMMU()->Get_Entry(next).valid){
-	pageTable[next_vpn] = machine->GetMMU()->Get_Entry(next);
-  }
-  machine->GetMMU()->Set_Entry(pageTable[vpn],next);
-  coremap->access(pageTable[vpn].physicalPage);
-  DEBUG('W',"Swapeando %d(%d) con %d(%d)\n",vpn,pageTable[vpn].physicalPage,next_vpn,pageTable[next_vpn].physicalPage);
-  DEBUG('Z',"Valor 4(%d) %s\n",pageTable[4].physicalPage,pageTable[4].valid? "y es valida":"y no es valida");
-  return true;
+    // Guardo la pagina victima en memoria y actualizo la tlb
+    if (machine->GetMMU()->Get_Entry(next).valid) {
+        pageTable[next_vpn] = machine->GetMMU()->Get_Entry(next);
+    }
+    machine->GetMMU()->Set_Entry(pageTable[vpn], next);
+    coremap->access(pageTable[vpn].physicalPage);
+    DEBUG('W', "Swapeando %d(%d) con %d(%d)\n", vpn,
+      pageTable[vpn].physicalPage, next_vpn,
+      pageTable[next_vpn].physicalPage);
+    DEBUG('Z', "Valor 4(%d) %s\n", pageTable[4].physicalPage,
+      pageTable[4].valid ? "y es valida" : "y no es valida");
+    return true;
 }
 
 /// On a context switch, save any machine state, specific to this address
@@ -224,7 +232,7 @@ AddressSpace::Update_TLB(unsigned vpn){
 void
 AddressSpace::SaveState()
 {
-  machine->GetMMU()->Get_TLB(pageTable,numPages);
+    machine->GetMMU()->Get_TLB(pageTable, numPages);
 }
 
 /// On a context switch, restore the machine state so that this address space
@@ -234,47 +242,49 @@ AddressSpace::SaveState()
 void
 AddressSpace::RestoreState()
 {
-    machine->GetMMU()->Set_TLB(pageTable,numPages);
+    machine->GetMMU()->Set_TLB(pageTable, numPages);
 }
 
 void
 AddressSpace::save_page(unsigned vpn)
 {
-	
-	TranslationEntry * page = &pageTable[vpn];
-	
-	for(unsigned i=0;i<TLB_SIZE;i++){
-		if(machine->GetMMU()->Get_Entry(i).virtualPage == vpn){
-			*page = machine->GetMMU()->Get_Entry(i);
-			page->valid = false;
-			machine->GetMMU()->Set_Entry(*page,i);
-			break;
-		}
-	}
-    char * mainMemory = machine->GetMMU()->mainMemory;
-    uint32_t PhysicalAddr = page->physicalPage * PAGE_SIZE;
-    swap->WriteAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn*PAGE_SIZE);
+    TranslationEntry * page = &pageTable[vpn];
 
-	DEBUG('W',"Enviando %u a swap con %x\n",vpn,((int *)mainMemory)[PhysicalAddr]);
+    for (unsigned i = 0; i < TLB_SIZE; i++) {
+        if (machine->GetMMU()->Get_Entry(i).virtualPage == vpn) {
+            *page       = machine->GetMMU()->Get_Entry(i);
+            page->valid = false;
+            machine->GetMMU()->Set_Entry(*page, i);
+            break;
+        }
+    }
+    char * mainMemory     = machine->GetMMU()->mainMemory;
+    uint32_t PhysicalAddr = page->physicalPage * PAGE_SIZE;
+    swap->WriteAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
+
+    DEBUG('W', "Enviando %u a swap con %x\n", vpn,
+      ((int *) mainMemory)[PhysicalAddr]);
 
     bitmap->Clear(page->physicalPage);
-    memset(&mainMemory[PhysicalAddr],0,PAGE_SIZE);
-    page->valid = false;
+    memset(&mainMemory[PhysicalAddr], 0, PAGE_SIZE);
+    page->valid        = false;
     page->physicalPage = IN_SWAP;
 }
 
 void
-AddressSpace::load_page(unsigned vpn,unsigned ppn)
+AddressSpace::load_page(unsigned vpn, unsigned ppn)
 {
     ASSERT(swap_find(vpn));
-    char * mainMemory = machine->GetMMU()->mainMemory;
+    char * mainMemory     = machine->GetMMU()->mainMemory;
     uint32_t PhysicalAddr = ppn * PAGE_SIZE;
-    swap->ReadAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn*PAGE_SIZE);
+    swap->ReadAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
 
-    pageTable[vpn].valid = true;
+    pageTable[vpn].valid        = true;
     pageTable[vpn].virtualPage  = vpn;
     pageTable[vpn].physicalPage = ppn;
-    DEBUG('W',"Traigo de swap %u(%u) con %x\n",vpn,ppn,((int *)mainMemory)[PhysicalAddr]);
+
+    DEBUG('W', "Traigo de swap %u(%u) con %x\n", vpn, ppn,
+      ((int *) mainMemory)[PhysicalAddr]);
 }
 
 bool

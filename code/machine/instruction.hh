@@ -20,20 +20,22 @@ class Instruction {
 public:
 
     /// Decode the binary representation of the instruction.
-    void Decode();
+    void
+    Decode();
 
     /// Retrieve the register number referred to in an instruction.
-    int RegFromType(RegType reg) const;
+    int
+    RegFromType(RegType reg) const;
 
-    unsigned value;  //< Binary representation of the instruction.
+    unsigned value; // < Binary representation of the instruction.
 
-    unsigned char opCode;  ///< Type of instruction.  This is NOT the same as
-                           ///< the opcode field from the instruction: see
-                           ///< defs in `encoding.hh`.
-    unsigned char rs, rt, rd;  ///< Three registers from instruction.
-    int extra;  ///< Immediate or target or shamt field or offset.
-                ///< Immediates are sign-extended.
+    unsigned char opCode; ///< Type of instruction.  This is NOT the same as
+    ///< the opcode field from the instruction: see
+    ///< defs in `encoding.hh`.
+    unsigned char rs, rt, rd; ///< Three registers from instruction.
+    int extra;                ///< Immediate or target or shamt field or offset.
+    ///< Immediates are sign-extended.
 };
 
 
-#endif
+#endif /* ifndef NACHOS_MACHINE_INSTRUCTION__HH */
