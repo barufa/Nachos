@@ -10,15 +10,20 @@
 #include "machine/disk.hh"
 
 
-static const unsigned NUM_DIRECT =
-  (SECTOR_SIZE - 2 * sizeof(int)) / sizeof(int);
+const unsigned NUM_DIRECT    = (SECTOR_SIZE - 4 * sizeof(int)) / sizeof(int);
 const unsigned MAX_FILE_SIZE = NUM_DIRECT * SECTOR_SIZE;
+// NUM_DIRECT = 30 Sectores puede ser direccionados
+// MAX_FILE_SIZE = 30 * 128 bytes posibles
+// Necesito 1024 sectores para direccionar 128 Kb
+// Si uso una indireccion 30 * 32 = 960 sectores(Aparentemente no son suficientes)
+// Si uso dos indirecciones 29 + 1 * 32 * 32 son suficientes
 
 struct RawFileHeader {
+    unsigned unrefSectors;
     unsigned numBytes;                ///< Number of bytes in the file.
     unsigned numSectors;              ///< Number of data sectors in the file.
     unsigned dataSectors[NUM_DIRECT]; ///< Disk sector numbers for each data
-    ///< block in the file.
+    /// block in the file.
 };
 
 

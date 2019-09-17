@@ -22,7 +22,7 @@
 OpenFile::OpenFile(int _sector)
 {
     sector = _sector;
-    hdr = new FileHeader;
+    hdr    = new FileHeader;
     hdr->FetchFrom(sector);
     seekPosition = 0;
 }
@@ -30,14 +30,14 @@ OpenFile::OpenFile(int _sector)
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
-#ifdef FILESYS
-	Filenode* node = filetable->find(sector);
-	if(node != nullptr){
-		node->users--;
-		if(node->remove && node->users == 0)
-			fileSystem->Remove(node->name);
-	}
-#endif
+    #ifdef FILESYS
+    Filenode * node = filetable->find(sector);
+    if (node != nullptr) {
+        node->users--;
+        if (node->remove && node->users == 0)
+            fileSystem->Remove(node->name);
+    }
+    #endif
     delete hdr;
 }
 
@@ -113,43 +113,45 @@ OpenFile::Write(const char * into, unsigned numBytes)
 int
 OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 {
-	Filenode* node = filetable->find(sector);
-	if(node!=nullptr){
-		node->Can_Read->P();
-		node->lectores++;
-		if(node->lectores==1)//Bloqueo escritura
-			node->Can_Write->P();
-		node->Can_Read->V();
-	}
+    Filenode * node = filetable->find(sector);
 
-	int ret = Internal_ReadAt(into,numBytes,position);
+    if (node != nullptr) {
+        node->Can_Read->P();
+        node->lectores++;
+        if (node->lectores == 1) // Bloqueo escritura
+            node->Can_Write->P();
+        node->Can_Read->V();
+    }
 
-	if(node!=nullptr){
-		node->Can_Read->P();
-		node->lectores--;
-		if(node->lectores==0)//Desbloqueo escritura
-			node->Can_Write->V();
-		node->Can_Read->V();
-	}
+    int ret = Internal_ReadAt(into, numBytes, position);
 
-	return ret;
+    if (node != nullptr) {
+        node->Can_Read->P();
+        node->lectores--;
+        if (node->lectores == 0) // Desbloqueo escritura
+            node->Can_Write->V();
+        node->Can_Read->V();
+    }
+
+    return ret;
 }
 
 int
 OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
 {
-	Filenode* node = filetable->find(sector);
-	if(node!=nullptr){
-		node->Can_Write->P();
-	}
+    Filenode * node = filetable->find(sector);
 
-	int ret = Internal_WriteAt(from,numBytes,position);
+    if (node != nullptr) {
+        node->Can_Write->P();
+    }
 
-	if(node!=nullptr){
-		node->Can_Write->V();
-	}
+    int ret = Internal_WriteAt(from, numBytes, position);
 
-	return ret;
+    if (node != nullptr) {
+        node->Can_Write->V();
+    }
+
+    return ret;
 }
 
 int
@@ -176,19 +178,23 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
 
     // Read in all the full and partial sectors that we need.
     buf = new char [numSectors * SECTOR_SIZE];
-    for (unsigned i = firstSector; i <= lastSector; i++)
+    // Bitmap * freeMap = fileSystem->Get_freeMapFile();
+    // hdr->UpdateFreeMap(freeMap);//Necesario?
+    for (unsigned i = firstSector; i <= lastSector; i++) {
         synchDisk->ReadSector(hdr->ByteToSector(i * SECTOR_SIZE),
           &buf[(i - firstSector) * SECTOR_SIZE]);
-
+    }
+    // delete freeMap;
     // Copy the part we want.
     memcpy(into, &buf[position - firstSector * SECTOR_SIZE], numBytes);
     delete [] buf;
     return numBytes;
-}
+} // OpenFile::Internal_ReadAt
 
 // Agregar los locks y demas
 int
-OpenFile::Internal_WriteAt(const char * from, unsigned numBytes, unsigned position)
+OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
+  unsigned position)
 {
     ASSERT(from != nullptr);
     ASSERT(numBytes > 0);
@@ -227,9 +233,13 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes, unsigned positi
     memcpy(&buf[position - firstSector * SECTOR_SIZE], from, numBytes);
 
     // Write modified sectors back.
-    for (unsigned i = firstSector; i <= lastSector; i++)
+    // Bitmap * freeMap = fileSystem->Get_freeMapFile();
+    // hdr->UpdateFreeMap(freeMap);//Necesario?
+    for (unsigned i = firstSector; i <= lastSector; i++) {
         synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
           &buf[(i - firstSector) * SECTOR_SIZE]);
+    }
+    // delete freeMap;
     delete [] buf;
     return numBytes;
 } // OpenFile::WriteAt

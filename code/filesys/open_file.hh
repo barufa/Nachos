@@ -136,13 +136,11 @@ private:
     char * name;
     int sector;
 
-	int
+    int
     Internal_ReadAt(char * into, unsigned numBytes, unsigned position);
 
     int
     Internal_WriteAt(const char * from, unsigned numBytes, unsigned position);
-
-
 };
 
 #endif /* ifdef FILESYS_STUB */

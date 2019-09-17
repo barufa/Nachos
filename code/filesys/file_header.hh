@@ -16,7 +16,6 @@
 #include "raw_file_header.hh"
 #include "lib/bitmap.hh"
 
-
 /// The following class defines the Nachos "file header" (in UNIX terms, the
 /// “i-node”), describing where on disk to find all of the data in the file.
 /// The file header is organized as a simple table of pointers to data
@@ -37,7 +36,7 @@ public:
     /// Initialize a file header, including allocating space on disk for the
     /// file data.
     bool
-    Allocate(Bitmap * bitMap, unsigned fileSize);
+    Allocate(Bitmap * bitMap, unsigned fileSize = 0);
 
     /// De-allocate this file's data blocks.
     void

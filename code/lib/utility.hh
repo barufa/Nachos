@@ -13,12 +13,6 @@
 
 #include "debug.hh"
 
-
-/// Miscellaneous useful routines.
-
-// #define min(a, b)  (((a) < (b)) ? (a) : (b))
-// #define max(a, b)  (((a) > (b)) ? (a) : (b))
-
 /// Typedef for host memory references, expressed in numerical (integer)
 /// form.
 
@@ -42,6 +36,20 @@ inline T
 DivRoundUp(T n, T s)
 {
     return n / s + (n % s > 0 ? 1 : 0);
+}
+
+template < typename T >
+inline T
+min(T n, T s)
+{
+    return n < s ? n : s;
+}
+
+template < typename T >
+inline T
+max(T n, T s)
+{
+    return n > s ? n : s;
 }
 
 /// This declares the type `VoidFunctionPtr` to be a “pointer to a

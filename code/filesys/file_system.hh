@@ -125,7 +125,7 @@ private:
     OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
     ///< file.
     OpenFile * directoryFile; ///< “Root” directory -- list of file names,
-							  ///< represented as a file.
+    ///< represented as a file.
 };
 
 #endif /* ifdef FILESYS_STUB */

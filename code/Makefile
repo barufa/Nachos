@@ -51,3 +51,6 @@ print:
 polish: clean
 	@rm -f */Makefile.depends
 
+uncrustify:
+	export UNCRUSTIFY_CONFIG='../style-c-cpp.cfg'
+	find . \( -name "*.cpp" -o -name "*.c" -o -name "*.cc" -o -name "*.h" -o -name "*.hh" \) -exec uncrustify --no-backup {} +

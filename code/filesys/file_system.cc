@@ -47,9 +47,8 @@
 #include "directory_entry.hh"
 #include "file_header.hh"
 #include "threads/system.hh"
-#include "lib/bitmap.hh"
 #include "machine/disk.hh"
-
+#include "lib/bitmap.hh"
 
 /// Sectors containing the file headers for the bitmap of free sectors, and
 /// the directory of files.  These file headers are placed in well-known
@@ -62,7 +61,8 @@ static const unsigned DIRECTORY_SECTOR = 1;
 /// files that can be loaded onto the disk.
 static const unsigned FREE_MAP_FILE_SIZE  = NUM_SECTORS / BITS_IN_BYTE;
 static const unsigned NUM_DIR_ENTRIES     = 10;
-static const unsigned DIRECTORY_FILE_SIZE = sizeof(DirectoryEntry) * NUM_DIR_ENTRIES;
+static const unsigned DIRECTORY_FILE_SIZE = sizeof(DirectoryEntry)
+  * NUM_DIR_ENTRIES;
 
 /// Initialize the file system.  If `format == true`, the disk has nothing on
 /// it, and we need to initialize the disk to contain an empty directory, and
@@ -194,9 +194,7 @@ FileSystem::Create(const char * name, unsigned initialSize)
         sector = freeMap->Find(); // Find a sector to hold the file header.
         if (sector == -1) {
             success = false; // No free block for file header.
-        } else if (!directory->Add(name,
-          sector))
-        {
+        } else if (!directory->Add(name, sector)) {
             success = false; // No space in directory.
         } else {
             header = new FileHeader;
@@ -237,14 +235,14 @@ FileSystem::Open(const char * name)
     directory->FetchFrom(directoryFile);
     sector = directory->Find(name);
     if (sector >= 0) {// `name` was found in directory.
-		Filenode* node = filetable->find(sector);
-		if(node == nullptr)
-			node = filetable->add_file(name,sector);
-		if(node->remove == false){
-			node->users++;
-			openFile = new OpenFile(sector);
-		}
-	}
+        Filenode * node = filetable->find(sector);
+        if (node == nullptr)
+            node = filetable->add_file(name, sector);
+        if (node->remove == false) {
+            node->users++;
+            openFile = new OpenFile(sector);
+        }
+    }
     delete directory;
     return openFile; // Return null if not found.
 }
@@ -264,48 +262,48 @@ FileSystem::Open(const char * name)
 bool
 FileSystem::Remove(const char * name)
 {
-	ASSERT(name != nullptr);
+    ASSERT(name != nullptr);
 
-        Directory * directory;
-        int sector;
+    Directory * directory;
+    int sector;
 
-    	directory = new Directory(NUM_DIR_ENTRIES);
-        directory->FetchFrom(directoryFile);
-        sector = directory->Find(name);
-        if (sector < 0) {
-            delete directory;
-            return false; // file not found
-        }
-	//Si hay alguien usando el archivo, solo lo marco para eliminar
-	Filenode* node = filetable->find(sector);
-	if(node != nullptr && node->users != 0){
-		node->remove = true;
-	}else{
-		Bitmap * freeMap;
-		FileHeader * fileHeader;
+    directory = new Directory(NUM_DIR_ENTRIES);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name);
+    if (sector < 0) {
+        delete directory;
+        return false; // file not found
+    }
+    // Si hay alguien usando el archivo, solo lo marco para eliminar
+    Filenode * node = filetable->find(sector);
+    if (node != nullptr && node->users != 0) {
+        node->remove = true;
+    } else {
+        Bitmap * freeMap;
+        FileHeader * fileHeader;
 
-		fileHeader = new FileHeader;
-		fileHeader->FetchFrom(sector);
+        fileHeader = new FileHeader;
+        fileHeader->FetchFrom(sector);
 
-		freeMap = new Bitmap(NUM_SECTORS);
-		freeMap->FetchFrom(freeMapFile);
+        freeMap = new Bitmap(NUM_SECTORS);
+        freeMap->FetchFrom(freeMapFile);
 
-		fileHeader->Deallocate(freeMap); // Remove data blocks.
-		freeMap->Clear(sector);          // Remove header block.
+        fileHeader->Deallocate(freeMap); // Remove data blocks.
+        freeMap->Clear(sector);          // Remove header block.
 
-		freeMap->WriteBack(freeMapFile);     // Flush to disk.
-		directory->WriteBack(directoryFile); // Flush to disk.
-		directory->Remove(name);
+        freeMap->WriteBack(freeMapFile);     // Flush to disk.
+        directory->WriteBack(directoryFile); // Flush to disk.
+        directory->Remove(name);
 
-		filetable->remove(sector);
+        filetable->remove(sector);
 
-		delete fileHeader;
-		delete freeMap;
-	}
-	delete directory;
+        delete fileHeader;
+        delete freeMap;
+    }
+    delete directory;
 
-	return true;
-}
+    return true;
+} // FileSystem::Remove
 
 /// List all the files in the file system directory.
 void
