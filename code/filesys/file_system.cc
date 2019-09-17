@@ -531,3 +531,22 @@ FileSystem::Print()
     delete freeMap;
     delete directory;
 }
+
+bool
+FileSystem::Expand(unsigned sector, unsigned size)
+{
+    FileHeader * header = new FileHeader;
+    Bitmap * freeMap    = new Bitmap(NUM_SECTORS);
+    bool ret = false;
+
+    header->FetchFrom(sector);
+    freeMap->FetchFrom(freeMapFile);
+    if (header->Extend(freeMap, size)) {
+        freeMap->WriteBack(freeMapFile);
+        header->WriteBack(sector);
+        ret = true;
+    }
+    delete freeMap;
+    delete header;
+    return ret;
+}

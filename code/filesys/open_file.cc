@@ -207,8 +207,12 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
     if (position >= fileLength)
         return 0;  // Check request.
 
-    if (position + numBytes > fileLength)
-        numBytes = fileLength - position;
+    if (position + numBytes > fileLength) {
+        unsigned add_size = numBytes - (fileLength - position);
+        if (!fileSystem->Expand(sector, add_size)) {
+            numBytes = fileLength - position;
+        }
+    }
     DEBUG('f', "Writing %u bytes at %u, from file of length %u.\n",
       numBytes, position, fileLength);
 

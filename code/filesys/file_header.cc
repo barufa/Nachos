@@ -221,3 +221,70 @@ FileHeader::GetRaw() const
 {
     return &raw;
 }
+
+bool
+FileHeader::Extend(Bitmap * freeMap, unsigned size)
+{
+    // Retorno el bloque correspondiente(Si no lo tengo, lo creo)
+    unsigned new_sectors     = DivRoundUp(size, SECTOR_SIZE);
+    unsigned current_sectors = raw.numSectors;
+    unsigned total_sectors   = new_sectors;
+
+    if (current_sectors + new_sectors < NUM_DIRECT) {
+        if (raw.unrefSectors == NOT_ASSIGNED)
+            total_sectors++;
+        total_sectors += DivRoundUp(new_sectors, (unsigned) 32);
+    }
+
+    if (freeMap->CountClear() < total_sectors) {
+        return false;
+    }
+
+    for (unsigned i = current_sectors; i < NUM_DIRECT && 0 < new_sectors; i++) {
+        raw.dataSectors[i] = freeMap->Find();
+        new_sectors--;
+    }
+
+    if (new_sectors == 0) {
+        return true;
+    }
+
+    // raw.unrefSectors -> [p0|p2|...|p31]
+    //                      pN -> [b1|b2|...|b31]
+    //                             bN -> [Sector con informacion del archivo]
+    current_sectors -= NUM_DIRECT;
+    unsigned * unrf_lv1 = new unsigned[32];
+    unsigned * unrf_lv2 = new unsigned[32];
+    // Limpio los arreglos
+    for (unsigned i = 0; i < 32; i++) {
+        unrf_lv1[i] = unrf_lv2[i] = NOT_ASSIGNED;
+    }
+
+    // Leo raw.unrefSectors -> [p0|p2|...|p31] (si no existe lo creo)
+    if (raw.unrefSectors == NOT_ASSIGNED) {
+        raw.unrefSectors = freeMap->Find();
+    } else {
+        synchDisk->ReadSector(raw.unrefSectors, (char *) unrf_lv1);
+    }
+
+    for (unsigned i = current_sectors / 32; i < 32 && 0 < new_sectors; i++) {
+        if (unrf_lv1[i] == NOT_ASSIGNED) {
+            unrf_lv1[i] = freeMap->Find();
+            for (unsigned k = 0; k < 32; k++) {
+                unrf_lv2[k] = NOT_ASSIGNED;
+            }
+        } else {
+            synchDisk->ReadSector(unrf_lv1[i], (char *) unrf_lv2);
+        }
+        for (unsigned j = 0; j < 32 && 0 < new_sectors; j++) {
+            if (unrf_lv2[j] == NOT_ASSIGNED) {
+                unrf_lv2[j] = freeMap->Find();
+                new_sectors--;
+            }
+        }
+        synchDisk->WriteSector(unrf_lv1[i], (char *) unrf_lv2);
+    }
+    synchDisk->WriteSector(raw.unrefSectors, (char *) unrf_lv1);
+
+    return true;
+} // FileHeader::Extend

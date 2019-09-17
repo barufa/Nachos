@@ -121,6 +121,9 @@ public:
     void
     Print();
 
+    bool
+    Expand(unsigned sector, unsigned size);
+
 private:
     OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
     ///< file.

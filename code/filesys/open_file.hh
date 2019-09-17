@@ -133,8 +133,8 @@ public:
 private:
     FileHeader * hdr;      ///< Header for this file.
     unsigned seekPosition; ///< Current position within the file.
+    unsigned sector;
     char * name;
-    int sector;
 
     int
     Internal_ReadAt(char * into, unsigned numBytes, unsigned position);

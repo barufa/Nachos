@@ -63,6 +63,8 @@ public:
     void
     Print();
 
+    bool
+    Extend(Bitmap * bitMap, unsigned size);
     /// Get the raw file header structure.
     ///
     /// NOTE: this should only be used by routines that operating on the file
