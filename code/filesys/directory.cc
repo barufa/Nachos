@@ -36,14 +36,20 @@ Directory::Directory(unsigned size)
     ASSERT(size > 0);
     raw.table     = new DirectoryEntry [size];
     raw.tableSize = size;
-    for (unsigned i = 0; i < raw.tableSize; i++)
-        raw.table[i].inUse = false;
+	raw.used      = 0;
+    for (unsigned i = 0; i < size; i++){
+		raw.table[i].inUse = false;
+		raw.table[i].isDir = false;
+		raw.table[i].sector = NOT_ASSIGNED;
+	}
 }
 
 /// De-allocate directory data structure.
 Directory::~Directory()
 {
     delete [] raw.table;
+	raw.tableSize = 0;
+	raw.used      = 0;
 }
 
 /// Read the contents of the directory from disk.
@@ -64,8 +70,7 @@ void
 Directory::WriteBack(OpenFile * file)
 {
     ASSERT(file != nullptr);
-    file->WriteAt((char *) raw.table,
-      raw.tableSize * sizeof(DirectoryEntry), 0);
+    file->WriteAt((char *) raw.table, raw.tableSize * sizeof(DirectoryEntry), 0);
 }
 
 /// Look up file name in directory, and return its location in the table of
@@ -73,12 +78,13 @@ Directory::WriteBack(OpenFile * file)
 ///
 /// * `name` is the file name to look up.
 int
-Directory::FindIndex(const char * name)
+Directory::FindIndex(const char * name, bool isDir)
 {
     ASSERT(name != nullptr);
 
     for (unsigned i = 0; i < raw.tableSize; i++)
         if (raw.table[i].inUse &&
+			raw.table[i].isDir == isDir &&
           !strncmp(raw.table[i].name, name, FILE_NAME_MAX_LEN))
             return i;
 
@@ -91,11 +97,11 @@ Directory::FindIndex(const char * name)
 ///
 /// * `name` is the file name to look up.
 int
-Directory::Find(const char * name)
+Directory::Find(const char * name, bool isDir)
 {
     ASSERT(name != nullptr);
 
-    int i = FindIndex(name);
+    int i = FindIndex(name,isDir);
     if (i != -1)
         return raw.table[i].sector;
 
@@ -109,20 +115,43 @@ Directory::Find(const char * name)
 /// * `name` is the name of the file being added.
 /// * `newSector` is the disk sector containing the added file's header.
 bool
-Directory::Add(const char * name, int newSector)
+Directory::Add(const char * name, int newSector, bool isDir)
 {
     ASSERT(name != nullptr);
 
-    if (FindIndex(name) != -1)
-        return false;
+	printf("Agregando %s como %s\n",name,isDir? "Directorio":"Archivo");
 
-    for (unsigned i = 0; i < raw.tableSize; i++)
-        if (!raw.table[i].inUse) {
+    if (FindIndex(name, true) != -1 || FindIndex(name, false)!=-1){
+		return false;
+	}
+
+	if(raw.used==raw.tableSize){
+		//No space, add a new entry
+		DirectoryEntry * newTable = new DirectoryEntry [raw.tableSize+10];
+		for (unsigned i = 0; i < raw.tableSize + 10; i++){
+			if(i < raw.tableSize){
+				newTable[i] = raw.table[i];
+			}else{
+				newTable[i].inUse = false;
+				newTable[i].isDir = false;
+				newTable[i].sector = NOT_ASSIGNED;
+			}
+		}
+		delete raw.table;
+		raw.table = newTable;
+	}
+
+    for (unsigned i = 0; i < raw.tableSize; i++){
+		if (!raw.table[i].inUse) {
             raw.table[i].inUse = true;
+			raw.table[i].isDir = isDir;
             strncpy(raw.table[i].name, name, FILE_NAME_MAX_LEN);
             raw.table[i].sector = newSector;
+			raw.used++;
             return true;
         }
+	}
+
     return false; // no space.  Fix when we have extensible files.
 }
 
@@ -135,21 +164,47 @@ Directory::Remove(const char * name)
 {
     ASSERT(name != nullptr);
 
-    int i = FindIndex(name);
-    if (i == -1)
-        return false;  // name not in directory
+    int i = FindIndex(name,false);
+    if (i == -1){
+		i = FindIndex(name,true);
+	}
 
+	if (i == -1){
+		return false;  // name not in directory
+	}
+	raw.used--;
     raw.table[i].inUse = false;
+	raw.table[i].isDir = false;
+	raw.table[i].sector = NOT_ASSIGNED;
     return true;
 }
 
 /// List all the file names in the directory.
 void
-Directory::List() const
+Directory::Get_List(const char * ind) const
 {
-    for (unsigned i = 0; i < raw.tableSize; i++)
-        if (raw.table[i].inUse)
-            printf("%s\n", raw.table[i].name);
+
+	unsigned l = strlen(ind);
+	char * p = new char[l+2];
+	strncpy(p,ind,l);
+	p[l] = '\t';
+	p[l+1] = '\0';
+	DEBUG('F',"%sSize: %u\n",ind,raw.tableSize);
+    for (unsigned i = 0; i < raw.tableSize; i++){
+		DEBUG('F',"%sraw.table[%u].inUse = %s\n",ind,i,raw.table[i].inUse? "True":"False");
+		DEBUG('F',"%sraw.table[%u].isDir = %s\n",ind,i,raw.table[i].isDir? "True":"False");
+		if (raw.table[i].inUse){
+			printf("%s%s: %s\n",ind, raw.table[i].isDir? "Dir":"File", raw.table[i].name);
+			if(raw.table[i].isDir){
+				Directory * dir = new Directory;
+				OpenFile * dir_file = new OpenFile(raw.table[i].sector);
+				dir->FetchFrom(dir_file);
+				dir->Get_List(p);
+				delete dir_file;
+				delete dir;
+			}
+		}
+	}
 }
 
 /// List all the file names in the directory, their `FileHeader` locations,
@@ -158,23 +213,70 @@ void
 Directory::Print() const
 {
     FileHeader * hdr = new FileHeader;
-
+	Directory * dir  = new Directory(NUM_DIRECT);
+	printf("************************************\n");
     printf("Directory contents:\n");
-    for (unsigned i = 0; i < raw.tableSize; i++)
-        if (raw.table[i].inUse) {
-            printf("\nDirectory entry.\n"
-              "    Name: %s\n"
-              "    Sector: %u\n",
-              raw.table[i].name, raw.table[i].sector);
-            hdr->FetchFrom(raw.table[i].sector);
-            hdr->Print();
-        }
-    printf("\n");
+    for (unsigned i = 0; i < raw.tableSize; i++){
+		if (raw.table[i].inUse && !raw.table[i].isDir) {
+			printf("\nFile entry.\n"
+			"    Name: %s\n"
+			"    Sector: %u\n",
+			raw.table[i].name, raw.table[i].sector);
+			hdr->FetchFrom(raw.table[i].sector);
+			hdr->Print();
+		}
+		if (raw.table[i].inUse && raw.table[i].isDir){
+			printf("\nDir entry.\n"
+			"    Name: %s\n"
+			"    Sector: %u\n",
+			raw.table[i].name, raw.table[i].sector);
+			OpenFile * dir_file = new OpenFile(raw.table[i].sector);
+			dir->FetchFrom(dir_file);
+			dir->Print();
+			delete dir_file;
+		}
+	}
+    printf("************************************\n");
     delete hdr;
+	delete dir;
 }
 
 const RawDirectory *
 Directory::GetRaw() const
 {
     return &raw;
+}
+
+bool
+Directory::Empty() const
+{
+	for (unsigned i = 0; i < raw.tableSize; i++){
+		if (raw.table[i].inUse) {
+			return false;
+		}
+    }
+	return true;
+}
+
+void
+Directory::Clean(Bitmap * freeMap){
+
+    for (unsigned i = 0; i < raw.tableSize; i++){
+        if(raw.table[i].inUse){
+            if(raw.table[i].isDir){
+                Directory * dir = new Directory(NUM_DIR_ENTRIES);
+                OpenFile * dir_file = new OpenFile(raw.table[i].sector);
+                dir->FetchFrom(dir_file);
+                dir->Clean(freeMap);
+				if(freeMap->Test(raw.table[i].sector)){
+					freeMap->Clear(raw.table[i].sector);
+				}
+                delete dir;
+                delete dir_file;
+            }
+            raw.table[i].inUse = false;
+			raw.table[i].isDir = false;
+			raw.table[i].sector = NOT_ASSIGNED;
+        }
+    }
 }

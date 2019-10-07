@@ -13,6 +13,8 @@
 
 #include "debug.hh"
 
+const unsigned NOT_ASSIGNED = 4294967295;
+
 /// Typedef for host memory references, expressed in numerical (integer)
 /// form.
 

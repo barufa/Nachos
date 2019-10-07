@@ -85,6 +85,10 @@ public:
 
 #else // FILESYS
 
+class Directory;
+
+const unsigned PATH_MAX_LEN = 100;
+
 class FileSystem {
 public:
 
@@ -99,15 +103,15 @@ public:
 
     /// Create a file (UNIX `creat`).
     bool
-    Create(const char * name, unsigned initialSize);
+    Create(const char * path, unsigned initialSize);
 
     /// Open a file (UNIX `open`).
     OpenFile *
-    Open(const char * name);
+    Open(const char * path);
 
     /// Delete a file (UNIX `unlink`).
     bool
-    Remove(const char * name);
+    Remove(const char * path);
 
     /// List all the files in the file system.
     void
@@ -124,11 +128,16 @@ public:
     bool
     Expand(unsigned sector, unsigned size);
 
+	bool MakeDir(const char * path);
+
+	bool RemoveDir(const char * path);
+
 private:
     OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
     ///< file.
     OpenFile * directoryFile; ///< “Root” directory -- list of file names,
     ///< represented as a file.
+	Directory * OpenPath(const char * path,int * sector);
 };
 
 #endif /* ifdef FILESYS_STUB */

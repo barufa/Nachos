@@ -158,7 +158,15 @@ main(int argc, char ** argv)
             printf("\n");
         } else if (!strcmp(*argv, "-tf")) { // Performance test.
             PerformanceTest();
-        }
+		} else if (!strcmp(*argv, "-mkd")) { // Crea un directorio
+	   		ASSERT(argc > 1);
+	   		fileSystem->MakeDir(*(argv + 1));
+	   		argCount = 2;
+   		} else if (!strcmp(*argv, "-rmd")) { // Crea un directorio
+		ASSERT(argc > 1);
+		fileSystem->RemoveDir(*(argv + 1));
+		argCount = 2;
+	}
         #endif // ifdef FILESYS
         #ifdef NETWORK
         if (!strcmp(*argv, "-tn")) {

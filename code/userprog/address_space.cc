@@ -20,12 +20,11 @@
 #include "bin/noff.h"
 #include "machine/endianness.hh"
 #include "threads/system.hh"
-
+#include "lib/utility.hh"
 
 unsigned AddressSpace::last_page = 0;
 unsigned AddressSpace::next_id   = 0;
 // Valores altos para usar como flags
-const unsigned NOT_ASSIGNED = 4294967295;
 const unsigned IN_SWAP      = 4294967294;
 
 /// Do little endian to big endian conversion on the bytes in the object file

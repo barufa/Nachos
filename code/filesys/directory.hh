@@ -14,10 +14,11 @@
 #ifndef NACHOS_FILESYS_DIRECTORY__HH
 #define NACHOS_FILESYS_DIRECTORY__HH
 
-
+#include "lib/bitmap.hh"
 #include "raw_directory.hh"
 #include "open_file.hh"
 
+const unsigned NUM_DIR_ENTRIES = 9;
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
 /// directory describes a file, and where to find it on disk.
@@ -32,7 +33,7 @@ class Directory {
 public:
 
     /// Initialize an empty directory with space for `size` files.
-    Directory(unsigned size);
+    Directory(unsigned size = NUM_DIR_ENTRIES);
 
     /// De-allocate the directory.
     ~Directory();
@@ -47,11 +48,11 @@ public:
 
     /// Find the sector number of the `FileHeader` for file: `name`.
     int
-    Find(const char * name);
+    Find(const char * name, bool isDir=false);
 
     /// Add a file name into the directory.
     bool
-    Add(const char * name, int newSector);
+    Add(const char * name, int newSector, bool isDir=false);
 
     /// Remove a file from the directory.
     bool
@@ -59,7 +60,7 @@ public:
 
     /// Print the names of all the files in the directory.
     void
-    List() const;
+    Get_List(const char * ind = "") const;
 
     /// Verbose print of the contents of the directory -- all the file names
     /// and their contents.
@@ -73,12 +74,18 @@ public:
     const RawDirectory *
     GetRaw() const;
 
+    bool
+    Empty() const;
+
+    void
+    Clean(Bitmap *);
+
 private:
     RawDirectory raw;
 
     /// Find the index into the directory table corresponding to `name`.
     int
-    FindIndex(const char * name);
+    FindIndex(const char * name, bool isDir);
 };
 
 

@@ -33,28 +33,28 @@
 /// * `freeMap` is the bit map of free disk sectors.
 /// * `fileSize` is the bit map of free disk sectors.
 
-static unsigned NOT_ASSIGNED = 4294967295;
-
 bool
 FileHeader::Allocate(Bitmap * freeMap, unsigned fileSize)
 {
     ASSERT(freeMap != nullptr);
     DEBUG('f', "Alloque %u bytes\n", fileSize);
+	//Limpio la estructura
+	for (unsigned i = 0; i < NUM_DIRECT; i++) {
+		raw.dataSectors[i] = NOT_ASSIGNED;
+	}
+	raw.unrefSectors = NOT_ASSIGNED;
 
     if (fileSize == 0) {
         // Creo que raw_file_header, pero sin bloques
         raw.numBytes     = 0;
         raw.numSectors   = 0;
-        raw.unrefSectors = NOT_ASSIGNED;
-        for (unsigned i = 0; i < NUM_DIRECT; i++) {
-            raw.dataSectors[i] = NOT_ASSIGNED;
-        }
         return true;
     }
 
     raw.numBytes   = fileSize;
     raw.numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
     if (freeMap->CountClear() < raw.numSectors) {
+		DEBUG('f',"No hay suficiente espacio en el disco\n");
         return false; // Not enough space.
     }
 
@@ -91,6 +91,12 @@ FileHeader::Allocate(Bitmap * freeMap, unsigned fileSize)
         return rest_sectors == 0;
     }
 
+	for (unsigned i = 0; i < NUM_DIRECT; i++) {
+		DEBUG('f',"Direct[%u] = %u\n",i,raw.dataSectors[i]);
+	}
+	DEBUG('f',"Unref = %u\n",raw.unrefSectors);
+	raw.unrefSectors = NOT_ASSIGNED;
+
     return true;
 } // FileHeader::Allocate
 
@@ -101,30 +107,44 @@ void
 FileHeader::Deallocate(Bitmap * freeMap)
 {
     ASSERT(freeMap != nullptr);
+	for (unsigned i = 0; i < NUM_DIRECT; i++) {
+		DEBUG('f',"Direct[%u] = %u\n",i,raw.dataSectors[i]);
+	}
     // Borro los sectores directos
     for (unsigned i = 0; i < min(raw.numSectors, NUM_DIRECT); i++) {
         if (raw.dataSectors[i] != NOT_ASSIGNED) {
             ASSERT(freeMap->Test(raw.dataSectors[i]));
             freeMap->Clear(raw.dataSectors[i]);
+			raw.dataSectors[i] = NOT_ASSIGNED;
         }
     }
-    // Borro los sectores de doble indireccion
-    unsigned * unrf_lv1 = new unsigned[32];
-    unsigned * unrf_lv2 = new unsigned[32];
-    synchDisk->ReadSector(raw.unrefSectors, (char *) unrf_lv1);
-    for (unsigned i = 0; i < 32; i++) {
-        if (unrf_lv1[i] != NOT_ASSIGNED) {
-            ASSERT(freeMap->Test(unrf_lv1[i]));
-            synchDisk->ReadSector(unrf_lv1[i], (char *) unrf_lv2);
-            for (unsigned j = 0; j < 32; j++) {
-                if (unrf_lv2[i] != NOT_ASSIGNED) {
-                    ASSERT(freeMap->Test(unrf_lv2[i]));
-                    freeMap->Clear(unrf_lv2[j]);
-                }
-            }
-            freeMap->Clear(unrf_lv1[i]);
-        }
-    }
+
+	if(raw.unrefSectors != NOT_ASSIGNED){
+		// Borro los sectores de doble indireccion
+	    unsigned * unrf_lv1 = new unsigned[32];
+	    unsigned * unrf_lv2 = new unsigned[32];
+	    synchDisk->ReadSector(raw.unrefSectors, (char *) unrf_lv1);
+	    for (unsigned i = 0; i < 32; i++) {
+			DEBUG('f',"Level1[%u] = %u\n",i,unrf_lv1[i]);
+	        if (unrf_lv1[i] != NOT_ASSIGNED) {
+	            ASSERT(freeMap->Test(unrf_lv1[i]));
+	            synchDisk->ReadSector(unrf_lv1[i], (char *) unrf_lv2);
+	            for (unsigned j = 0; j < 32; j++) {
+					DEBUG('f',"Level2[%u] = %u\n",j,unrf_lv2[j]);
+	                if (unrf_lv2[j] != NOT_ASSIGNED) {
+	                    ASSERT(freeMap->Test(unrf_lv2[j]));
+	                    freeMap->Clear(unrf_lv2[j]);
+						unrf_lv2[j] = NOT_ASSIGNED;
+	                }
+	            }
+	            freeMap->Clear(unrf_lv1[i]);
+				unrf_lv1[i] = NOT_ASSIGNED;
+	        }
+	    }
+	}
+	raw.unrefSectors = NOT_ASSIGNED;
+	raw.numBytes = 0;
+	raw.numSectors = 0;
 }
 
 /// Fetch contents of file header from disk.
@@ -195,17 +215,42 @@ void
 FileHeader::Print()
 {
     char * data = new char [SECTOR_SIZE];
+	List<unsigned> * sectors_list = new List<unsigned>;
 
     printf("FileHeader contents.\n"
       "    Size: %u bytes\n"
       "    Block numbers: ",
       raw.numBytes);
-    for (unsigned i = 0; i < raw.numSectors; i++)
-        printf("%u ", raw.dataSectors[i]);
+
+	for (unsigned i = 0; i < min(raw.numSectors,NUM_DIRECT); i++){
+		printf("%u ", raw.dataSectors[i]);
+		sectors_list->Append(raw.dataSectors[i]);
+	}
+
+	if(raw.numSectors > NUM_DIRECT){
+		ASSERT(raw.unrefSectors != NOT_ASSIGNED);
+		unsigned * unrf_lv1 = new unsigned[32];
+	    unsigned * unrf_lv2 = new unsigned[32];
+	    synchDisk->ReadSector(raw.unrefSectors, (char *) unrf_lv1);
+		for (unsigned i = 0; i < 32; i++) {
+			if (unrf_lv1[i] != NOT_ASSIGNED) {
+	            synchDisk->ReadSector(unrf_lv1[i], (char *) unrf_lv2);
+	            for (unsigned j = 0; j < 32; j++) {
+					 if (unrf_lv2[j] != NOT_ASSIGNED) {
+	                    printf("%u ", unrf_lv2[j]);
+						sectors_list->Append(unrf_lv2[j]);
+	                }
+	            }
+	        }
+	    }
+	}
+
     printf("\n    Contents:\n");
-    for (unsigned i = 0, k = 0; i < raw.numSectors; i++) {
-        synchDisk->ReadSector(raw.dataSectors[i], data);
-        for (unsigned j = 0; j < SECTOR_SIZE && k < raw.numBytes; j++, k++) {
+	unsigned bytes = 0;
+	while(!sectors_list->IsEmpty()){
+		unsigned sector = sectors_list->Pop();
+		synchDisk->ReadSector(sector, data);
+		for (unsigned j = 0; j < SECTOR_SIZE && bytes < raw.numBytes; j++, bytes++) {
             if ('\040' <= data[j] && data[j] <= '\176') // isprint(data[j])
                 printf("%c", data[j]);
             else
@@ -214,6 +259,7 @@ FileHeader::Print()
         printf("\n");
     }
     delete [] data;
+	delete sectors_list;
 }
 
 const RawFileHeader *
