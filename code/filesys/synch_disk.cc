@@ -15,6 +15,7 @@
 
 #include "synch_disk.hh"
 
+static const char * sector_empty[SECTOR_SIZE];
 
 /// Disk interrupt handler.  Need this to be a C routine, because C++ cannot
 /// handle pointers to member functions.
@@ -57,7 +58,7 @@ SynchDisk::ReadSector(int sectorNumber, char * data)
     ASSERT(data != nullptr);
 
     lock->Acquire(); // Only one disk I/O at a time.
-    disk->ReadRequest(sectorNumber, data);
+	disk->ReadRequest(sectorNumber, data);
     semaphore->P(); // Wait for interrupt.
     lock->Release();
 }
@@ -84,4 +85,10 @@ void
 SynchDisk::RequestDone()
 {
     semaphore->V();
+}
+
+void
+SynchDisk::ClearSector(int sectorNumber)
+{
+	WriteSector(sectorNumber,(const char *)sector_empty);
 }

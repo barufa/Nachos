@@ -3,9 +3,9 @@
 int
 main(void)
 {
-    char * argv[] = { "friends.txt", "Joey doesn't share food!" };
+    char * argv[] = {"userland/filetest","Friends.txt", "Joe doesn't share food!", NULL};
     SpaceId n     = Exec("userland/filetest", argv, 1);
 
     Join(n);
-    Halt();
+    Exit(0);
 }

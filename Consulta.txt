@@ -1,0 +1,8 @@
+Cual es el problema de la sincronizacion de las carpetas?
+	Alcanza con un lock por directorio?
+	Si, no pueden ocurrir dos modificaciones al mismo tiempo
+Ejercicio 4:
+	Implementar una memoria cache para el disco(desde 0)?
+	Hacer un wraper entre el disk y synch_disk para simular sectores cacheados(podriamos usar LRU o similar)
+Ejercicio 6:
+	Podria ser con bitacoras, pero es muy complejo

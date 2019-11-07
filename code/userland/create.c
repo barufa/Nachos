@@ -1,12 +1,22 @@
 #include "syscall.h"
 
+static inline unsigned
+strlen(const char * s)
+{
+    unsigned i;
+
+    for (i = 0; s[i] != '\0'; i++);
+    return i;
+}
+
 int
 main()
 {
-    Create("test.txt");
-    OpenFileId f = Open("test.txt");
-    Write("Hola mundo\n",12,f);
-    Close(f);
-    Halt();
-    return 0;
+    char * filename    = "A.txt";
+    char * filecontent = "Hola Mundo";
+
+    Create(filename);
+    OpenFileId o = Open(filename);
+    Write(filecontent, strlen(filecontent), o);
+    Close(o);
 }

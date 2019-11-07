@@ -30,14 +30,15 @@ OpenFile::OpenFile(int _sector)
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
-    #ifdef FILESYS
+#ifdef FILESYS
     Filenode * node = filetable->find(sector);
     if (node != nullptr) {
         node->users--;
-        if (node->remove && node->users == 0)
-            fileSystem->Remove(node->name);
+        if (node->remove && node->users <= 0){
+			fileSystem->Remove(node->name);
+		}
     }
-    #endif
+#endif
     delete hdr;
 }
 
@@ -82,6 +83,7 @@ OpenFile::Write(const char * into, unsigned numBytes)
 
     int result = WriteAt(into, numBytes, seekPosition);
     seekPosition += result;
+
     return result;
 }
 
@@ -114,6 +116,7 @@ int
 OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 {
     Filenode * node = filetable->find(sector);
+	hdr->FetchFrom(sector);
 
     if (node != nullptr) {
         node->Can_Read->P();
@@ -124,7 +127,6 @@ OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
     }
 
     int ret = Internal_ReadAt(into, numBytes, position);
-
     if (node != nullptr) {
         node->Can_Read->P();
         node->lectores--;
@@ -139,12 +141,20 @@ OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 int
 OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
 {
-    Filenode * node = filetable->find(sector);
+	if (Length() < position + numBytes){
+		unsigned size = (position + numBytes) - Length() + 1;
+		if(!fileSystem->Expand(sector,size)){
+            numBytes = Length() - position;
+        }
+	}
+	ASSERT(position + numBytes <= Length());
+
+	Filenode * node = filetable->find(sector);
+	hdr->FetchFrom(sector);
 
     if (node != nullptr) {
         node->Can_Write->P();
     }
-
     int ret = Internal_WriteAt(from, numBytes, position);
 
     if (node != nullptr) {
@@ -158,7 +168,12 @@ int
 OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
 {
     ASSERT(into != nullptr);
-    ASSERT(numBytes > 0);
+    ASSERT(numBytes >= 0);
+
+    //Why??
+    if(numBytes==0){
+      return numBytes;
+    }
 
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;
@@ -243,6 +258,7 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
         synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
           &buf[(i - firstSector) * SECTOR_SIZE]);
     }
+
     // delete freeMap;
     delete [] buf;
     return numBytes;
@@ -252,5 +268,12 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
 unsigned
 OpenFile::Length() const
 {
+	hdr->FetchFrom(sector);
     return hdr->FileLength();
+}
+
+unsigned
+OpenFile::Get_Sector() const
+{
+    return sector;
 }

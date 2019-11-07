@@ -8,8 +8,8 @@
 #include "threads/system.hh"
 
 
-const unsigned MAX_ARG_COUNT  = 32;
-const unsigned MAX_ARG_LENGTH = 128;
+const unsigned MAX_ARG_COUNT  = 10;
+const unsigned MAX_ARG_LENGTH = 40;
 
 char **
 SaveArgs(int address)
@@ -56,7 +56,7 @@ WriteArgs(char ** args)
     int sp = machine->ReadRegister(STACK_REG);
 
     for (i = 0; i < MAX_ARG_COUNT; i++) {
-        if (args[i] == nullptr) // If the last was reached, terminate.
+        if (args[i] == NULL) // If the last was reached, terminate.
             break;
         sp -= strlen(args[i]) + 1; // Decrease SP (leave one byte for \0).
         DEBUG('e', "Writing argv[%d]=%s in SP: %d\n", i, args[i], sp);

@@ -75,7 +75,7 @@ Scheduler::FindNextToRun()
     }
 
 
-    DEBUG('A', "****No hay procesos para ejecutar****\n");
+    // DEBUG('A', "****No hay procesos para ejecutar****\n");
 
     return NULL;
 }
@@ -129,8 +129,9 @@ Scheduler::Run(Thread * nextThread)
     // now (for example, in `Thread::Finish`), because up to this point, we
     // were still running on the old thread's stack!
     if (threadToBeDestroyed != nullptr) {
-        delete threadToBeDestroyed;
-        threadToBeDestroyed = nullptr;
+		Thread* tmp = threadToBeDestroyed;
+ 		threadToBeDestroyed = nullptr;
+ 		delete tmp;
     }
 
     #ifdef USER_PROGRAM

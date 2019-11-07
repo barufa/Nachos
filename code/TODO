@@ -1,3 +1,15 @@
+Solucionar problema lock de carpetas en filesys
+
+Solucionar problema Halt y Exit magicos en filesys
+
+Utilizar los bits de las paginas en la practica 4 y optimizar con eso
+
+Realizar los opcionales pero interesantes(Hacer un Wraper con cache entre el synch_disk y el disco)
+
 Las banderas de debug estan en cumbia. Escribirlas en thread/main y acomodarlas (a cosas iguales poner las mismas banderas).
 
-El ejercicio 2 de la practica 4 es sopechosamente muy bueno. Los hits ratios estan siempre(o casi siempre) por encima de 0.9. Aparentemente esta bien (by Esteban). Contar los errores dos veces.
+Comentar un poco el codigo(o borrar comentarios inutiles)
+
+Identar correctamente el codigo(unificar formato)
+
+Chequear todas la practicas y entregar

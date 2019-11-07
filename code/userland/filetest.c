@@ -19,4 +19,5 @@ main(int argc, char ** argv)
     OpenFileId o = Open(filename);
     Write(filecontent, strlen(filecontent), o);
     Close(o);
+    Exit(strlen(filecontent));
 }

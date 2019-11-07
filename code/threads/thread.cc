@@ -48,6 +48,7 @@ Thread::Thread(const char * threadName, bool j_flag, int _priority)
     priority          = _priority;
     original_priority = _priority;
     dead              = NULL;
+	path              = "/";
     DEBUG('e', "Thread constructor starting with join_flag=%d - name=%s\n",
       j_flag, name);
     if (join_flag) {
@@ -160,6 +161,18 @@ Thread::GetName() const
     return name;
 }
 
+const char *
+Thread::GetPath() const
+{
+    return path;
+}
+
+void
+Thread::SetPath(const char * _path)
+{
+	path = _path;
+}
+
 int
 Thread::GetPriority()
 {
@@ -202,10 +215,8 @@ Thread::Finish(int ret)
     ASSERT(this == currentThread);
 
     DEBUG('t', "Finishing thread \"%s\"\n", GetName());
-
     if (join_flag) {
         dead->Send(ret);
-        delete dead;
     }
 
     threadToBeDestroyed = currentThread;
@@ -221,8 +232,11 @@ Thread::Join()
           currentThread->GetName());
         DEBUG('t', "%s is waiting \"%s\" to finishes\n",
           currentThread->GetName(), GetName());
-        int msm;
+        int msm = 0;
         dead->Receive(&msm);
+        DEBUG('t',"Joining with %d\n",msm);
+        delete dead;
+        dead = nullptr;
         // con delete dead aca me aseguro de que viva hasta que main termine de usarlo
         // el destructor de thread lo destruia antes de tiempo(pero casi no tiraba errores)
         // ~ delete dead;

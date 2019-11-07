@@ -110,10 +110,9 @@ main(int argc, char ** argv)
     int argCount; // The number of arguments for a particular command.
 
     Initialize(argc, argv);
-    DEBUG('t', "Entering main\n");
-
-    for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
-        argCount = 1;
+	DEBUG('t', "Entering main\n");
+	for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
+		argCount = 1;
         if (!strcmp(*argv, "-z")) { // Print version info and exit.
             PrintVersion();
             return 0;
@@ -151,10 +150,15 @@ main(int argc, char ** argv)
             fileSystem->Remove(*(argv + 1));
             argCount = 2;
         } else if (!strcmp(*argv, "-ls")) { // List Nachos directory.
-            fileSystem->List();
+			if(argc > 1) {
+                fileSystem->List(*(argv + 1));
+                argCount = 2;
+            } else {
+                fileSystem->List();
+            }
             printf("\n");
         } else if (!strcmp(*argv, "-D")) { // Print entire filesystem.
-            fileSystem->Print();
+			fileSystem->Print();
             printf("\n");
         } else if (!strcmp(*argv, "-tf")) { // Performance test.
             PerformanceTest();
@@ -162,11 +166,14 @@ main(int argc, char ** argv)
 	   		ASSERT(argc > 1);
 	   		fileSystem->MakeDir(*(argv + 1));
 	   		argCount = 2;
-   		} else if (!strcmp(*argv, "-rmd")) { // Crea un directorio
-		ASSERT(argc > 1);
-		fileSystem->RemoveDir(*(argv + 1));
-		argCount = 2;
-	}
+   		} else if (!strcmp(*argv, "-cd")) { // Crea un directorio
+			if(argc > 1) {
+                currentThread->SetPath(*(argv + 1));
+                argCount = 2;
+            } else {
+                currentThread->SetPath("/");
+            }
+   		}
         #endif // ifdef FILESYS
         #ifdef NETWORK
         if (!strcmp(*argv, "-tn")) {

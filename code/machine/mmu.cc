@@ -38,14 +38,9 @@ MMU::MMU()
     for (unsigned i = 0; i < MEMORY_SIZE; i++)
         mainMemory[i] = 0;
 
-    #ifdef USE_TLB
     tlb = new TranslationEntry[TLB_SIZE];
     Clear_TLB();
     pageTable = nullptr;
-    #else // Use linear page table.
-    tlb       = nullptr;
-    pageTable = nullptr;
-    #endif
 }
 
 MMU::~MMU()

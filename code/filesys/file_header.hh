@@ -74,6 +74,13 @@ public:
 
 private:
     RawFileHeader raw;
+	unsigned sectornumber = NOT_ASSIGNED;
+
+	void
+	Get_Lock();
+
+	void
+	Release_Lock();
 };
 
 

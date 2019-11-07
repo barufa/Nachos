@@ -18,7 +18,7 @@
 #include "raw_directory.hh"
 #include "open_file.hh"
 
-const unsigned NUM_DIR_ENTRIES = 9;
+const unsigned NUM_DIR_ENTRIES = 1;
 
 /// The following class defines a UNIX-like “directory”.  Each entry in the
 /// directory describes a file, and where to find it on disk.
@@ -55,7 +55,7 @@ public:
     Add(const char * name, int newSector, bool isDir=false);
 
     /// Remove a file from the directory.
-    bool
+    unsigned
     Remove(const char * name);
 
     /// Print the names of all the files in the directory.
@@ -82,10 +82,19 @@ public:
 
 private:
     RawDirectory raw;
-
+	unsigned sectornumber = NOT_ASSIGNED;
     /// Find the index into the directory table corresponding to `name`.
     int
     FindIndex(const char * name, bool isDir);
+
+	void
+	Get_Lock();
+
+	void
+	Release_Lock();
+
+	unsigned
+	Extend_Table(unsigned cnt);
 };
 
 

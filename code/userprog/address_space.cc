@@ -68,9 +68,8 @@ AddressSpace::AddressSpace(OpenFile * _executable)
     ASSERT(executable != nullptr);
 
     executable->ReadAt((char *) &noffH, sizeof noffH, 0);
-    if (noffH.noffMagic != NOFF_MAGIC &&
-      WordToHost(noffH.noffMagic) == NOFF_MAGIC)
-        SwapHeader(&noffH);
+    if (noffH.noffMagic != NOFF_MAGIC && WordToHost(noffH.noffMagic) == NOFF_MAGIC)
+		SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFF_MAGIC);
 
     unsigned size = noffH.code.size + noffH.initData.size
@@ -219,8 +218,6 @@ AddressSpace::Update_TLB(unsigned vpn)
     DEBUG('W', "Swapeando %d(%d) con %d(%d)\n", vpn,
       pageTable[vpn].physicalPage, next_vpn,
       pageTable[next_vpn].physicalPage);
-    DEBUG('Z', "Valor 4(%d) %s\n", pageTable[4].physicalPage,
-      pageTable[4].valid ? "y es valida" : "y no es valida");
     return true;
 }
 

@@ -10,7 +10,7 @@
 
 
 /// Sum total of the arrays does not fit in physical memory.
-#define DIM 25
+#define DIM 13
 
 static int A[DIM][DIM];
 static int B[DIM][DIM];
@@ -36,6 +36,6 @@ main(void)
                 C[i][j] += A[i][k] * B[k][j];
 
     // And then we are done.
-    // ~ Exit(C[DIM - 1][DIM - 1]);
-    Halt();
+    Exit(C[DIM - 1][DIM - 1]);
+    //Result:1872
 }

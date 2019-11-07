@@ -32,7 +32,6 @@
 #define SC_READ   14
 #define SC_WRITE  15
 
-
 #ifndef IN_ASM
 
 /// The system call interface.  These are the operations the Nachos kernel
@@ -104,11 +103,16 @@ typedef int OpenFileId;
 # define CONSOLE_INPUT  0
 # define CONSOLE_OUTPUT 1
 # define ENDCHAR        0
+
+# ifndef NULL
+# define NULL ((void *)0)
+# endif
+
 /// Create a Nachos file, with `name`.
 void
 Create(const char * name);    //
 
-/// Remove the Nachos file named `name`.
+/// Remove the Nachos file/directory named `name`.
 int
 Remove(const char * name);
 
@@ -134,6 +138,18 @@ Read(char * buffer, int size, OpenFileId id);   //
 void
 Close(OpenFileId id);     //
 
+///Ls to filesys
+void
+Ls();
+//Change the current path
+void
+Cd(const char * path);
+/// Create a new directory
+void
+NewDir(const char * dir);
+
+void
+Copy(const char * UnixFile,const char * NachosFile);
 
 #endif // ifndef IN_ASM
 

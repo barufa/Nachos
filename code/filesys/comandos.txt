@@ -1,0 +1,39 @@
+./filesys/nachos -f -mkd /folder -ls
+./filesys/nachos -cp filesys/test/small /small -ls
+./filesys/nachos -cp filesys/test/medium /medium -ls
+./filesys/nachos -cp filesys/test/big /big -ls
+./filesys/nachos -pr /medium -ls
+./filesys/nachos -D
+./filesys/nachos -rm /small -ls
+./filesys/nachos -rm /big -ls
+./filesys/nachos -D
+./filesys/nachos -cp filesys/test/huge /huge -ls
+./filesys/nachos -rm /huge -ls
+./filesys/nachos -D
+./filesys/nachos -cp filesys/test/small /folder/small -ls
+./filesys/nachos -mkd /folder/folderB -ls
+./filesys/nachos -cp filesys/test/medium /folder/folderB/medium -ls
+./filesys/nachos -pr /folder/small -ls
+./filesys/nachos -ls /folder/
+./filesys/nachos -cd /folder/ -ls
+./filesys/nachos -rm /folder/small -ls
+./filesys/nachos -pr /medium -ls
+./filesys/nachos -pr /folder/folderB/medium -ls
+./filesys/nachos -rm /folder -ls
+./filesys/nachos -D
+./filesys/nachos -rm /medium -ls
+./filesys/nachos -D
+
+./filesys/nachos -f -cp userland/test /test -ls
+./filesys/nachos -x /test
+./filesys/nachos -pr A.txt -ls
+./filesys/nachos -f -cp userland/TestWrite1 /TestWrite1 -ls
+./filesys/nachos -cp userland/TestWrite2 /TestWrite2 -ls
+./filesys/nachos -x /TestWrite1
+./filesys/nachos -pr File.txt -ls
+./filesys/nachos -f -cp userland/shell /shell -ls
+./filesys/nachos -cp userland/cat /cat -ls
+./filesys/nachos -cp userland/matmult /matmult -ls
+./filesys/nachos -x /shell
+./filesys/nachos -D
+

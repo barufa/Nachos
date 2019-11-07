@@ -46,6 +46,9 @@ public:
     void
     RequestDone();
 
+	void
+	ClearSector(int sectorNumber);
+
 private:
     Disk * disk;           ///< Raw disk device.
     Semaphore * semaphore; ///< To synchronize requesting thread with the

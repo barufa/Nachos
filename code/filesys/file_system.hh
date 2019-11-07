@@ -50,7 +50,7 @@ public:
     ~FileSystem(){ }
 
     bool
-    Create(const char * name, unsigned initialSize)
+    Create(const char * name, unsigned initialSize = 0)
     {
         ASSERT(name != nullptr);
 
@@ -103,7 +103,7 @@ public:
 
     /// Create a file (UNIX `creat`).
     bool
-    Create(const char * path, unsigned initialSize);
+    Create(const char * path, unsigned initialSize = 32);
 
     /// Open a file (UNIX `open`).
     OpenFile *
@@ -115,7 +115,7 @@ public:
 
     /// List all the files in the file system.
     void
-    List();
+    List(const char * path = nullptr);
 
     /// Check the filesystem.
     bool
@@ -128,9 +128,11 @@ public:
     bool
     Expand(unsigned sector, unsigned size);
 
-	bool MakeDir(const char * path);
+	bool
+	MakeDir(const char * path);
 
-	bool RemoveDir(const char * path);
+	bool
+	CheckPath(const char * path);
 
 private:
     OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
@@ -138,6 +140,8 @@ private:
     OpenFile * directoryFile; ///< “Root” directory -- list of file names,
     ///< represented as a file.
 	Directory * OpenPath(const char * path,int * sector);
+	///Borra un directorio
+	bool RemoveDir(const char * path);
 };
 
 #endif /* ifdef FILESYS_STUB */

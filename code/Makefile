@@ -50,7 +50,11 @@ print:
 
 polish: clean
 	@rm -f */Makefile.depends
-
+	@rm -f DISK
+	@rm -f swap.*
+	@rm -f A.txt
+	@rm -f File.txt
+	@rm -f Friends.txt
 uncrustify:
 	export UNCRUSTIFY_CONFIG='../style-c-cpp.cfg'
 	find . \( -name "*.cpp" -o -name "*.c" -o -name "*.cc" -o -name "*.h" -o -name "*.hh" \) -exec uncrustify --no-backup {} +
