@@ -10,7 +10,7 @@
 class DirectoryEntry;
 
 struct RawDirectory {
-	unsigned         used;
+    unsigned         used;
     unsigned         tableSize; ///< Number of directory entries.
     DirectoryEntry * table;     ///< Table of pairs:
     ///< *<file name, file header location>*.

@@ -30,15 +30,15 @@ OpenFile::OpenFile(int _sector)
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
-#ifdef FILESYS
+    #ifdef FILESYS
     Filenode * node = filetable->find(sector);
     if (node != nullptr) {
         node->users--;
-        if (node->remove && node->users <= 0){
-			fileSystem->Remove(node->name);
-		}
+        if (node->remove && node->users <= 0) {
+            fileSystem->Remove(node->name);
+        }
     }
-#endif
+    #endif
     delete hdr;
 }
 
@@ -116,7 +116,8 @@ int
 OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 {
     Filenode * node = filetable->find(sector);
-	hdr->FetchFrom(sector);
+
+    hdr->FetchFrom(sector);
 
     if (node != nullptr) {
         node->Can_Read->P();
@@ -141,16 +142,16 @@ OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 int
 OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
 {
-	if (Length() < position + numBytes){
-		unsigned size = (position + numBytes) - Length() + 1;
-		if(!fileSystem->Expand(sector,size)){
+    if (Length() < position + numBytes) {
+        unsigned size = (position + numBytes) - Length() + 1;
+        if (!fileSystem->Expand(sector, size)) {
             numBytes = Length() - position;
         }
-	}
-	ASSERT(position + numBytes <= Length());
+    }
+    ASSERT(position + numBytes <= Length());
 
-	Filenode * node = filetable->find(sector);
-	hdr->FetchFrom(sector);
+    Filenode * node = filetable->find(sector);
+    hdr->FetchFrom(sector);
 
     if (node != nullptr) {
         node->Can_Write->P();
@@ -170,9 +171,9 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
     ASSERT(into != nullptr);
     ASSERT(numBytes >= 0);
 
-    //Why??
-    if(numBytes==0){
-      return numBytes;
+    // Why??
+    if (numBytes == 0) {
+        return numBytes;
     }
 
     unsigned fileLength = hdr->FileLength();
@@ -268,7 +269,7 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
 unsigned
 OpenFile::Length() const
 {
-	hdr->FetchFrom(sector);
+    hdr->FetchFrom(sector);
     return hdr->FileLength();
 }
 

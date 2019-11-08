@@ -114,7 +114,7 @@ SimpleThreadCond(void * args_)
             printf("Thread `%s` eates 1 %d\n", name, *n);
             (*n)--;
             l->Release();
-        } else if (num % 5 != 0) {      // Creo 1
+        } else if (num % 5 != 0) { // Creo 1
             l->Acquire();
             (*n)++;
             printf("Thread `%s` creates 1 %d\n", name, *n);// *n volatil, solo para ver

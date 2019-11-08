@@ -151,11 +151,11 @@ public:
 
     bool join_flag;
 
-	const char *
+    const char *
     GetPath() const;
 
-	void
-	SetPath(const char * path);
+    void
+    SetPath(const char * path);
 
 private:
     // Some of the private data for this class is listed above.
@@ -169,7 +169,7 @@ private:
     ThreadStatus status;
 
     const char * name;
-	const char * path;
+    const char * path;
     Port * dead;
     int priority;
     int original_priority;

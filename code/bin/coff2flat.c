@@ -31,11 +31,11 @@
 
 // NOTE -- once you have implemented large files, it is ok to make this
 // bigger!
-#define STACK_SIZE              1024  // In bytes.
-#define ReadStructOrDie(f, s)  ReadOrDie(f, (char *) &(s), sizeof (s))
+#define STACK_SIZE 1024 // In bytes.
+#define ReadStructOrDie(f, s) ReadOrDie(f, (char *) &(s), sizeof(s))
 
 static inline void
-Die(const char *format, ...)
+Die(const char * format, ...)
 {
     assert(format != NULL);
 
@@ -50,7 +50,7 @@ Die(const char *format, ...)
 
 /// Read and check for error.
 static void
-ReadOrDie(FILE *f, char *buffer, size_t numBytes)
+ReadOrDie(FILE * f, char * buffer, size_t numBytes)
 {
     assert(f != NULL);
     assert(buffer != NULL);
@@ -61,7 +61,7 @@ ReadOrDie(FILE *f, char *buffer, size_t numBytes)
 
 /// Write and check for error.
 static void
-WriteOrDie(FILE *f, const char *buffer, size_t numBytes)
+WriteOrDie(FILE * f, const char * buffer, size_t numBytes)
 {
     assert(f != NULL);
     assert(buffer != NULL);
@@ -72,15 +72,15 @@ WriteOrDie(FILE *f, const char *buffer, size_t numBytes)
 
 /// Do the real work.
 void
-main(int argc, char *argv[])
+main(int argc, char * argv[])
 {
-    FILE *in, *out;
-    int   top, tmp;
-    char *buffer;
+    FILE * in, * out;
+    int top, tmp;
+    char * buffer;
 
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <coffFileName> <flatFileName>\n",
-                argv[0]);
+          argv[0]);
         exit(1);
     }
 
@@ -99,21 +99,21 @@ main(int argc, char *argv[])
     }
 
     /// Load the COFF file.
-    char *errorS;
+    char * errorS;
     coffReaderData d;
     if (!CoffReaderLoad(&d, in, &errorS))
         Die(errorS);
 
     // Copy the segments in.
-    CoffSection *sc;
+    CoffSection * sc;
     top = 0;
     printf("Translating COFF sections into flat:\n");
     while ((sc = CoffReaderNextSection(&d)) != NULL) {
         CoffSectionPrint(sc);
 
-        size_t addr = CoffSectionAddr(sc);
-        const char *name = CoffSectionName(sc);
-        size_t size = CoffSectionSize(sc);
+        size_t addr       = CoffSectionAddr(sc);
+        const char * name = CoffSectionName(sc);
+        size_t size       = CoffSectionSize(sc);
 
         if (addr + size > top)
             top = addr + size;
@@ -134,4 +134,4 @@ main(int argc, char *argv[])
 
     fclose(in);
     fclose(out);
-}
+} /* main */

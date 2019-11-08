@@ -4,7 +4,7 @@
 /// limitation of liability and disclaimer of warranty provisions.
 
 
-const char *NORMAL_OPS[] = {
+const char * NORMAL_OPS[] = {
     "special",
     "bcond",
     "j",
@@ -71,7 +71,7 @@ const char *NORMAL_OPS[] = {
     "077"
 };
 
-const char *SPECIAL_OPS[] = {
+const char * SPECIAL_OPS[] = {
     "sll",
     "001",
     "srl",

@@ -45,14 +45,14 @@
 
 /// Stop Nachos, and print out performance stats.
 void
-Halt();     //
+Halt(); //
 
 
 /// Address space control operations: `Exit`, `Exec`, and `Join`.
 
 /// This user program is done (`status = 0` means exited normally).
 void
-Exit(int status);     //
+Exit(int status); //
 
 /// A unique identifier for an executing user program (address space).
 typedef int SpaceId;
@@ -66,7 +66,7 @@ Exec(char * name, char ** argv, int joinable);
 ///
 /// Return the exit status.
 int
-Join(SpaceId id);    //
+Join(SpaceId id); //
 
 
 /// User-level thread operations: `Fork` and `Yield`.  To allow multiple
@@ -105,12 +105,12 @@ typedef int OpenFileId;
 # define ENDCHAR        0
 
 # ifndef NULL
-# define NULL ((void *)0)
+#  define NULL ((void *) 0)
 # endif
 
 /// Create a Nachos file, with `name`.
 void
-Create(const char * name);    //
+Create(const char * name); //
 
 /// Remove the Nachos file/directory named `name`.
 int
@@ -119,11 +119,11 @@ Remove(const char * name);
 /// Open the Nachos file `name`, and return an `OpenFileId` that can be used
 /// to read and write to the file.
 OpenFileId
-Open(const char * name);          //
+Open(const char * name); //
 
 /// Write `size` bytes from `buffer` to the open file.
 void
-Write(const char * buffer, int size, OpenFileId id);    //
+Write(const char * buffer, int size, OpenFileId id); //
 
 /// Read `size` bytes from the open file into `buffer`.
 ///
@@ -132,16 +132,16 @@ Write(const char * buffer, int size, OpenFileId id);    //
 /// read, return whatever is available (for I/O devices, you should always
 /// wait until you can return at least one character).
 int
-Read(char * buffer, int size, OpenFileId id);   //
+Read(char * buffer, int size, OpenFileId id); //
 
 /// Close the file, we are done reading and writing to it.
 void
-Close(OpenFileId id);     //
+Close(OpenFileId id); //
 
 ///Ls to filesys
 void
 Ls();
-//Change the current path
+// Change the current path
 void
 Cd(const char * path);
 /// Create a new directory
@@ -149,7 +149,7 @@ void
 NewDir(const char * dir);
 
 void
-Copy(const char * UnixFile,const char * NachosFile);
+Copy(const char * UnixFile, const char * NachosFile);
 
 #endif // ifndef IN_ASM
 

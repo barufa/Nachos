@@ -9,7 +9,7 @@
 #include "syscall.h"
 
 
-#define DIM  2048
+#define DIM 2048
 
 /// Size of physical memory; with code, we will run out of space!
 static int A[DIM];
@@ -23,13 +23,15 @@ strlen(const char * s)
     return i;
 }
 
-void PutStr(const char * str){
+void
+PutStr(const char * str)
+{
     Write(str, strlen(str), CONSOLE_OUTPUT);
     Write("\n", strlen("\n"), CONSOLE_OUTPUT);
 }
 
 int
-main(int argc,char * argv[])
+main(int argc, char * argv[])
 {
     int i, j, m = 0;
 
@@ -37,12 +39,12 @@ main(int argc,char * argv[])
     for (i = 0; i < DIM; i++)
         A[i] = DIM - i;
 
-    for (i = 0; i <= DIM + 1; i++){
-        if(m > A[i]){
-		m = A[i];
-	}
+    for (i = 0; i <= DIM + 1; i++) {
+        if (m > A[i]) {
+            m = A[i];
+        }
     }
-    //PutStr("Retornando 0?");
+    // PutStr("Retornando 0?");
     // And then we're done -- should be 0!
     Exit(m);
 }

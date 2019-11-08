@@ -9,7 +9,7 @@
 #define NACHOS_FILESYS_SYNCHDISK__HH
 
 
-#include "machine/disk.hh"
+#include "cache_disk.hh"
 #include "threads/synch.hh"
 
 
@@ -41,18 +41,11 @@ public:
     void
     WriteSector(int sectorNumber, const char * data);
 
-    /// Called by the disk device interrupt handler, to signal that the
-    /// current disk operation is complete.
     void
-    RequestDone();
-
-	void
-	ClearSector(int sectorNumber);
+    ClearSector(int sectorNumber);
 
 private:
-    Disk * disk;           ///< Raw disk device.
-    Semaphore * semaphore; ///< To synchronize requesting thread with the
-    ///< interrupt handler.
+    CacheDisk * disk;           ///< Raw disk device.
     Lock * lock; ///< Only one read/write request can be sent to the disk at
     ///< a time.
 };

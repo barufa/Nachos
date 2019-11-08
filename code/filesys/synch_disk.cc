@@ -17,16 +17,6 @@
 
 static const char * sector_empty[SECTOR_SIZE];
 
-/// Disk interrupt handler.  Need this to be a C routine, because C++ cannot
-/// handle pointers to member functions.
-static void
-DiskRequestDone(void * arg)
-{
-    ASSERT(arg != nullptr);
-    SynchDisk * disk = (SynchDisk *) arg;
-    disk->RequestDone();
-}
-
 /// Initialize the synchronous interface to the physical disk, in turn
 /// initializing the physical disk.
 ///
@@ -34,9 +24,8 @@ DiskRequestDone(void * arg)
 ///   (usually, `DISK`).
 SynchDisk::SynchDisk(const char * name)
 {
-    semaphore = new Semaphore("synch disk", 0);
     lock      = new Lock("synch disk lock");
-    disk      = new Disk(name, DiskRequestDone, this);
+    disk      = new CacheDisk(name);
 }
 
 /// De-allocate data structures needed for the synchronous disk abstraction.
@@ -44,7 +33,6 @@ SynchDisk::~SynchDisk()
 {
     delete disk;
     delete lock;
-    delete semaphore;
 }
 
 /// Read the contents of a disk sector into a buffer.  Return only after the
@@ -56,10 +44,8 @@ void
 SynchDisk::ReadSector(int sectorNumber, char * data)
 {
     ASSERT(data != nullptr);
-
     lock->Acquire(); // Only one disk I/O at a time.
-	disk->ReadRequest(sectorNumber, data);
-    semaphore->P(); // Wait for interrupt.
+    disk->ReadSector(sectorNumber, data);
     lock->Release();
 }
 
@@ -74,21 +60,12 @@ SynchDisk::WriteSector(int sectorNumber, const char * data)
     ASSERT(data != nullptr);
 
     lock->Acquire(); // only one disk I/O at a time
-    disk->WriteRequest(sectorNumber, data);
-    semaphore->P(); // wait for interrupt
+    disk->WriteSector(sectorNumber, data);
     lock->Release();
-}
-
-/// Disk interrupt handler.  Wake up any thread waiting for the disk
-/// request to finish.
-void
-SynchDisk::RequestDone()
-{
-    semaphore->V();
 }
 
 void
 SynchDisk::ClearSector(int sectorNumber)
 {
-	WriteSector(sectorNumber,(const char *)sector_empty);
+    WriteSector(sectorNumber, (const char *) sector_empty);
 }

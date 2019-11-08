@@ -33,20 +33,20 @@ FileTable::~FileTable()
 Filenode *
 FileTable::add_file(const char * _name, int k)
 {
-	if(find(k)==NULL){
-		Filenode v;
+    if (find(k) == NULL) {
+        Filenode v;
 
-		v.name = new char[strlen(_name) + 2];
-		strcpy(v.name, _name);
-		v.remove    = false;
-		v.users     = v.lectores = 0;
-		v.sector    = k;
-		v.Can_Read  = new Semaphore("Can_Read", 1);
-		v.Can_Write = new Semaphore("Can_Write", 1);
-		v.Dir_Lock = new Lock("Dir_Write");
-		v.File_Lock = new Lock("File_Lock");
-		listmap->Prepend(v);
-	}
+        v.name = new char[strlen(_name) + 2];
+        strcpy(v.name, _name);
+        v.remove    = false;
+        v.users     = v.lectores = 0;
+        v.sector    = k;
+        v.Can_Read  = new Semaphore("Can_Read", 1);
+        v.Can_Write = new Semaphore("Can_Write", 1);
+        v.Dir_Lock  = new Lock("Dir_Write");
+        v.File_Lock = new Lock("File_Lock");
+        listmap->Prepend(v);
+    }
     return find(k);
 }
 
@@ -66,8 +66,8 @@ FileTable::remove(int k)
         delete [] (node->name);
         delete (node->Can_Read);
         delete (node->Can_Write);
-		delete (node->Dir_Lock);
-		delete (node->File_Lock);
+        delete (node->Dir_Lock);
+        delete (node->File_Lock);
         listmap->Remove(*node);
     }
 }

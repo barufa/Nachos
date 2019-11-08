@@ -95,10 +95,11 @@ echo './filesys/nachos -rm /medium -ls'
 ./filesys/nachos -rm /medium -ls
 echo './filesys/nachos -D'
 ./filesys/nachos -D
+exit
 
 echo ""
 echo "Chequeando FileSystem(Ejecucion de programas)"
-./filesys/nachos -f -mkd /userland
+./filesys/nachos -f -mkd /userland -ls
 echo './filesys/nachos -cp userland/cat userland/cat -ls'
 ./filesys/nachos -cp userland/cat userland/cat -ls
 echo './filesys/nachos -cp userland/create userland/create -ls'

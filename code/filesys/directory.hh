@@ -48,11 +48,11 @@ public:
 
     /// Find the sector number of the `FileHeader` for file: `name`.
     int
-    Find(const char * name, bool isDir=false);
+    Find(const char * name, bool isDir = false);
 
     /// Add a file name into the directory.
     bool
-    Add(const char * name, int newSector, bool isDir=false);
+    Add(const char * name, int newSector, bool isDir = false);
 
     /// Remove a file from the directory.
     unsigned
@@ -82,19 +82,19 @@ public:
 
 private:
     RawDirectory raw;
-	unsigned sectornumber = NOT_ASSIGNED;
+    unsigned sectornumber = NOT_ASSIGNED;
     /// Find the index into the directory table corresponding to `name`.
     int
     FindIndex(const char * name, bool isDir);
 
-	void
-	Get_Lock();
+    void
+    Get_Lock();
 
-	void
-	Release_Lock();
+    void
+    Release_Lock();
 
-	unsigned
-	Extend_Table(unsigned cnt);
+    unsigned
+    Extend_Table(unsigned cnt);
 };
 
 

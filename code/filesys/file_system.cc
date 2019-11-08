@@ -63,107 +63,111 @@ static const unsigned FREE_MAP_FILE_SIZE  = NUM_SECTORS / BITS_IN_BYTE;
 static const unsigned DIRECTORY_FILE_SIZE = sizeof(DirectoryEntry)
   * NUM_DIR_ENTRIES;
 
-static const char * getName(const char * name){
+static const char *
+getName(const char * name)
+{
+    int pos = strlen(name) - 1;
 
-    int pos = strlen(name)-1;
+    // No deberia pasar, pero...
+    if (name[pos] == '/') {
+        pos--;
+    } else if (name[0] != '/') {
+        return name;
+    }
 
-    //No deberia pasar, pero...
-    if(name[pos]=='/'){
-		pos--;
-	}else if(name[0]!='/'){
-		return name;
-	}
-
-	for(unsigned i = pos;0<=i;i--){
-		if(name[i]=='/'){
-			return name+i+1;
-		}
-	}
-	return name;
+    for (unsigned i = pos; 0 <= i; i--) {
+        if (name[i] == '/') {
+            return name + i + 1;
+        }
+    }
+    return name;
 }
 
-static const char * getParent(const char * path){
-
+static const char *
+getParent(const char * path)
+{
     char * parent = new char[PATH_MAX_LEN];
-    strncpy(parent,path,PATH_MAX_LEN);
 
-	DEBUG('f',"Buscando padre de %s\n", path);
+    strncpy(parent, path, PATH_MAX_LEN);
 
-    int pos = strlen(parent)-1;
-    if(parent[pos]=='/'){
-		pos--;
-	}
+    DEBUG('f', "Buscando padre de %s\n", path);
 
-	for(unsigned i = pos;i>=0;i--){
-		if(parent[i]=='/'){
-            parent[i+1]='\0';
-			return parent;
-		}
-	}
-	ASSERT(false);
-	return parent;
+    int pos = strlen(parent) - 1;
+    if (parent[pos] == '/') {
+        pos--;
+    }
+
+    for (unsigned i = pos; i >= 0; i--) {
+        if (parent[i] == '/') {
+            parent[i + 1] = '\0';
+            return parent;
+        }
+    }
+    ASSERT(false);
+    return parent;
 }
 
-static const char * CheckRoot(const char * _path) {
+static const char *
+CheckRoot(const char * _path)
+{
+    ASSERT(_path != nullptr);
 
-	ASSERT(_path!=nullptr);
+    if (_path[0] != '/') {
+        char * path  = new char[2 * FILE_NAME_MAX_LEN];
+        unsigned len = strlen(currentThread->GetPath());
+        strncpy(path, currentThread->GetPath(), len);
+        if (path[len - 1] != '/') {
+            path[len] = '/';
+            len++;
+        }
+        strncpy(path + len, _path, strlen(_path));
+        return path;
+    } else {
+        return _path;
+    }
 
-	if(_path[0]!='/'){
-		char * path = new char[2*FILE_NAME_MAX_LEN];
-		unsigned len = strlen(currentThread->GetPath());
-		strncpy(path,currentThread->GetPath(),len);
-		if(path[len-1]!='/'){
-			path[len] = '/';
-			len++;
-		}
-		strncpy(path+len,_path,strlen(_path));
-		return path;
-	}else{
-		return _path;
-	}
-
-	return nullptr;
+    return nullptr;
 }
 
 Directory *
-FileSystem::OpenPath(const char * __path,int * _sector){
+FileSystem::OpenPath(const char * __path, int * _sector)
+{
+    ASSERT(__path != nullptr);
+    ASSERT(_sector != nullptr);
 
-	ASSERT(__path!=nullptr);
-	ASSERT(_sector!=nullptr);
+    const char * _path = CheckRoot(__path);
 
-	const char * _path = CheckRoot(__path);
+    OpenFile * dir_file = nullptr;
+    int sector = DIRECTORY_SECTOR;
+    Directory * dir = new Directory(NUM_DIR_ENTRIES);
+    char * path = new char[PATH_MAX_LEN], * p;
+    strncpy(path, _path + 1, strlen(_path) - 1);
+    p = path;
+    DEBUG('f', "Abriendo %s\n", path);
 
-	OpenFile * dir_file = nullptr;
-	int sector = DIRECTORY_SECTOR;
-	Directory * dir = new Directory(NUM_DIR_ENTRIES);
-	char * path = new char[PATH_MAX_LEN], *p;
-	strncpy(path,_path+1,strlen(_path)-1);
-	p = path;
-	DEBUG('f',"Abriendo %s\n", path);
+    dir->FetchFrom(directoryFile);
+    unsigned l = strlen(path);
+    for (unsigned i = 0; i < l; i++) {
+        if (path[i] == '/') {
+            path[i] = '\0';
+            sector  = dir->Find(p, true);
+            if (sector == -1) {
+                DEBUG('f', "No existe %s en %s\n", p, _path);
+                return nullptr;
+            } else {
+                DEBUG('f', "Accediendo a directorio %s\n", p);
+                dir_file = new OpenFile(sector);
+                dir->FetchFrom(dir_file);
+                delete dir_file;
+            }
+            p += i + 1;
+        }
+    }
+    *_sector = sector;
 
-	dir->FetchFrom(directoryFile);
-	unsigned l = strlen(path);
-	for(unsigned i = 0;i < l;i++){
-		if(path[i]=='/'){
-			path[i] = '\0';
-			sector = dir->Find(p,true);
-			if(sector==-1){
-				DEBUG('f',"No existe %s en %s\n",p,_path);
-				return nullptr;
-			}else{
-				DEBUG('f',"Accediendo a directorio %s\n",p);
-				dir_file = new OpenFile(sector);
-				dir->FetchFrom(dir_file);
-				delete dir_file;
-			}
-			p += i+1;
-		}
-	}
-	*_sector = sector;
-
-	delete path;
-	return dir;
-}
+    delete path;
+    return dir;
+} // FileSystem::OpenPath
 
 /// Initialize the file system.  If `format == true`, the disk has nothing on
 /// it, and we need to initialize the disk to contain an empty directory, and
@@ -276,21 +280,22 @@ FileSystem::Create(const char * _path, unsigned initialSize)
 {
     ASSERT(_path != nullptr);
 
-	const char * path = CheckRoot(_path);
+    const char * path = CheckRoot(_path);
 
-	int sector, dir_sector = DIRECTORY_SECTOR;
-    Directory * directory = OpenPath(path,&dir_sector);
+    int sector, dir_sector = DIRECTORY_SECTOR;
+    Directory * directory = OpenPath(path, &dir_sector);
     Bitmap * freeMap;
     FileHeader * header;
     bool success;
-	const char * name = getName(path);
+    const char * name = getName(path);
 
     DEBUG('f', "Creating file %s, size %u\n", name, initialSize);
 
-	if (directory == nullptr ||
-		directory->Find(name,true) != -1 ||
-		directory->Find(name,false) != -1) {
-		DEBUG('f',"No encuentra el directorio o el nombre ya existe\n");
+    if (directory == nullptr ||
+      directory->Find(name, true) != -1 ||
+      directory->Find(name, false) != -1)
+    {
+        DEBUG('f', "No encuentra el directorio o el nombre ya existe\n");
         success = false; // File is already in directory.
     } else {
         freeMap = new Bitmap(NUM_SECTORS);
@@ -309,22 +314,22 @@ FileSystem::Create(const char * _path, unsigned initialSize)
                 // Everthing worked, flush all changes back to disk.
                 header->WriteBack(sector);
                 freeMap->WriteBack(freeMapFile);
-				if(dir_sector==DIRECTORY_SECTOR){
-					directory->WriteBack(directoryFile);
-				}else{
-					OpenFile * f = new OpenFile(dir_sector);
-					directory->WriteBack(f);
-					delete f;
-				}
+                if (dir_sector == DIRECTORY_SECTOR) {
+                    directory->WriteBack(directoryFile);
+                } else {
+                    OpenFile * f = new OpenFile(dir_sector);
+                    directory->WriteBack(f);
+                    delete f;
+                }
             }
             delete header;
         }
         delete freeMap;
     }
     delete directory;
-	if(success){
-		DEBUG('f',"Archivo %s creado\n",path);
-	}
+    if (success) {
+        DEBUG('f', "Archivo %s creado\n", path);
+    }
 
     return success;
 } // FileSystem::Create
@@ -341,21 +346,21 @@ FileSystem::Open(const char * _path)
 {
     ASSERT(_path != nullptr);
 
-	const char * path = CheckRoot(_path);
+    const char * path = CheckRoot(_path);
 
-	int sector, dir_sector;
-	OpenFile * openFile   = nullptr;
-    Directory * directory = OpenPath(path,&dir_sector);
-	const char * name = getName(path);
+    int sector, dir_sector;
+    OpenFile * openFile   = nullptr;
+    Directory * directory = OpenPath(path, &dir_sector);
+    const char * name     = getName(path);
 
-	DEBUG('f', "Opening file %s en %s\n", name, path);
+    DEBUG('f', "Opening file %s en %s\n", name, path);
     sector = directory->Find(name);
     if (sector > 1) {// `name` was found in directory.
-		Filenode * node = filetable->find(sector);
+        Filenode * node = filetable->find(sector);
         if (node == nullptr)
             node = filetable->add_file(name, sector);
         if (node->remove == false) {
-			node->users++;
+            node->users++;
             openFile = new OpenFile(sector);
         }
     }
@@ -380,47 +385,47 @@ FileSystem::Remove(const char * _path)
 {
     ASSERT(_path != nullptr);
 
-	const char * path = CheckRoot(_path);
+    const char * path = CheckRoot(_path);
 
-	int sector, dir_sector;
+    int sector, dir_sector;
     Directory * directory = OpenPath(path, &dir_sector);
-	const char * name = getName(path);
+    const char * name     = getName(path);
 
     sector = directory->Find(name);
     if (sector < 0) {
-		sector = directory->Find(name,true);
-		if(sector < 0){
-			delete directory;
-	        return false; // file not found
-		}
-		return RemoveDir(path);
+        sector = directory->Find(name, true);
+        if (sector < 0) {
+            delete directory;
+            return false; // file not found
+        }
+        return RemoveDir(path);
     }
     // Si hay alguien usando el archivo, solo lo marco para eliminar
-	Filenode * node = filetable->find(sector);
+    Filenode * node = filetable->find(sector);
     if (node != nullptr && node->users != 0) {
         node->remove = true;
     } else {
         Bitmap * freeMap;
         FileHeader * fileHeader = new FileHeader;
 
-		directory->Remove(name);
-		freeMap = new Bitmap(NUM_SECTORS);
+        directory->Remove(name);
+        freeMap = new Bitmap(NUM_SECTORS);
         freeMap->FetchFrom(freeMapFile);
 
-		//Aca tira la falla
+        // Aca tira la falla
         fileHeader->FetchFrom(sector);
-		fileHeader->Deallocate(freeMap); // Remove data blocks.
+        fileHeader->Deallocate(freeMap); // Remove data blocks.
         freeMap->Clear(sector);          // Remove header block.
 
-        freeMap->WriteBack(freeMapFile);     // Flush to disk.
+        freeMap->WriteBack(freeMapFile); // Flush to disk.
 
-		if(dir_sector==DIRECTORY_SECTOR){
-			directory->WriteBack(directoryFile); // Flush to disk.
-		}else{
-			OpenFile * f = new OpenFile(dir_sector);
-			directory->WriteBack(f);
-			delete f;
-		}
+        if (dir_sector == DIRECTORY_SECTOR) {
+            directory->WriteBack(directoryFile); // Flush to disk.
+        } else {
+            OpenFile * f = new OpenFile(dir_sector);
+            directory->WriteBack(f);
+            delete f;
+        }
 
         filetable->remove(sector);
 
@@ -429,7 +434,7 @@ FileSystem::Remove(const char * _path)
     }
     delete directory;
 
-	DEBUG('f',"Se elimino el archivo\n");
+    DEBUG('f', "Se elimino el archivo\n");
 
     return true;
 } // FileSystem::Remove
@@ -439,21 +444,22 @@ void
 FileSystem::List(const char * path)
 {
     Directory * directory = nullptr;
-	if(path == nullptr){
-		return List(currentThread->GetPath());
-	} else if(strcmp(path,"/")==0){
-		directory = new Directory(NUM_DIR_ENTRIES);
-		directory->FetchFrom(directoryFile);
-	}else{
-		int _sec = 0;
-		const char * _path = CheckRoot(path);
-		directory = OpenPath(_path,&_sec);
-	}
 
-	if(directory != nullptr){
-		directory->Get_List();
-	    delete directory;
-	}
+    if (path == nullptr) {
+        return List(currentThread->GetPath());
+    } else if (strcmp(path, "/") == 0) {
+        directory = new Directory(NUM_DIR_ENTRIES);
+        directory->FetchFrom(directoryFile);
+    } else {
+        int _sec = 0;
+        const char * _path = CheckRoot(path);
+        directory = OpenPath(_path, &_sec);
+    }
+
+    if (directory != nullptr) {
+        directory->Get_List();
+        delete directory;
+    }
 }
 
 static bool
@@ -692,134 +698,137 @@ FileSystem::Expand(unsigned sector, unsigned size)
 }
 
 bool
-FileSystem::MakeDir(const char * _path){
-	ASSERT(_path!=nullptr);
+FileSystem::MakeDir(const char * _path)
+{
+    ASSERT(_path != nullptr);
 
-	const char * path = CheckRoot(_path);
+    const char * path = CheckRoot(_path);
 
-	int dir_sector, sector;
-	FileHeader *header;
-	Bitmap * freeMap;
-	const char * parent_path = getParent(path);
-	const char * name = getName(path);
-	Directory * directory = OpenPath(parent_path,&dir_sector);
-	bool success = true;
+    int dir_sector, sector;
+    FileHeader * header;
+    Bitmap * freeMap;
+    const char * parent_path = getParent(path);
+    const char * name        = getName(path);
+    Directory * directory    = OpenPath(parent_path, &dir_sector);
+    bool success = true;
 
-	DEBUG('F',"Creando el directorio %s en %s\n",name,parent_path);
+    DEBUG('F', "Creando el directorio %s en %s\n", name, parent_path);
 
-	directory->Get_List();
+    directory->Get_List();
 
-	if(directory->Find(name,true)!=-1 || directory->Find(name,false)!=-1){
-		DEBUG('f',"El directorio %s ya existe\n",name);
-		delete directory;
-		return false;
-	}
+    if (directory->Find(name,
+      true) != -1 || directory->Find(name, false) != -1)
+    {
+        DEBUG('f', "El directorio %s ya existe\n", name);
+        delete directory;
+        return false;
+    }
 
-	freeMap = new Bitmap(NUM_SECTORS);
-	freeMap->FetchFrom(freeMapFile);
-	sector = freeMap->Find(); // Find a sector to hold the file header.
-	if (sector == -1) {
-		DEBUG('F',"No hay sufuciente espacio en el disco\n");
-		success = false; // No free block for file header.
-	} else if (!directory->Add(name, sector, true)) {
-		success = false; // No space in directory.
-	} else {
-		DEBUG('F',"Alocando espacio para el directorio\n");
-		header = new FileHeader;
-		if (!header->Allocate(freeMap, DIRECTORY_FILE_SIZE)) {
-			success = false; // No space on disk for data.
-			directory->Remove(name);
-			if(freeMap->Test(sector)){
-				DEBUG('F',"Liberando %u por un error\n",sector);
-				freeMap->Clear(sector);
-			}
-		} else {
-			success = true;
-			DEBUG('F',"Guardo las estructuras en %u\n",sector);
-			synchDisk->ClearSector(sector);
-			header->WriteBack(sector);
-			freeMap->WriteBack(freeMapFile);
-			DEBUG('F',"Actualizo el directorio padre\n");
-			if(dir_sector==DIRECTORY_SECTOR){
-				directory->WriteBack(directoryFile);
-			}else{
-				OpenFile * f = new OpenFile(dir_sector);
-				directory->WriteBack(f);
-				delete f;
-			}
-		}
-		delete header;
-	}
-	delete freeMap;
-	delete directory;
+    freeMap = new Bitmap(NUM_SECTORS);
+    freeMap->FetchFrom(freeMapFile);
+    sector = freeMap->Find(); // Find a sector to hold the file header.
+    if (sector == -1) {
+        DEBUG('F', "No hay sufuciente espacio en el disco\n");
+        success = false; // No free block for file header.
+    } else if (!directory->Add(name, sector, true)) {
+        success = false; // No space in directory.
+    } else {
+        DEBUG('F', "Alocando espacio para el directorio\n");
+        header = new FileHeader;
+        if (!header->Allocate(freeMap, DIRECTORY_FILE_SIZE)) {
+            success = false; // No space on disk for data.
+            directory->Remove(name);
+            if (freeMap->Test(sector)) {
+                DEBUG('F', "Liberando %u por un error\n", sector);
+                freeMap->Clear(sector);
+            }
+        } else {
+            success = true;
+            DEBUG('F', "Guardo las estructuras en %u\n", sector);
+            synchDisk->ClearSector(sector);
+            header->WriteBack(sector);
+            freeMap->WriteBack(freeMapFile);
+            DEBUG('F', "Actualizo el directorio padre\n");
+            if (dir_sector == DIRECTORY_SECTOR) {
+                directory->WriteBack(directoryFile);
+            } else {
+                OpenFile * f = new OpenFile(dir_sector);
+                directory->WriteBack(f);
+                delete f;
+            }
+        }
+        delete header;
+    }
+    delete freeMap;
+    delete directory;
 
-	return success;
-}
+    return success;
+} // FileSystem::MakeDir
 
 bool
-FileSystem::RemoveDir(const char * _path){
+FileSystem::RemoveDir(const char * _path)
+{
+    ASSERT(_path);
 
-	ASSERT(_path);
+    const char * path = CheckRoot(_path);
 
-	const char * path = CheckRoot(_path);
+    if (strcmp(path, "/") == 0) {
+        return false;
+    }
 
-    if(strcmp(path,"/")==0){
-		return false;
-	}
+    int dir_sector = -1, folder_sector;
+    Bitmap * freeMap;
+    const char * name     = getName(path);
+    Directory * directory = OpenPath(path, &dir_sector);
 
-	int dir_sector = -1, folder_sector;
-	Bitmap * freeMap;
-    const char * name = getName(path);
-	Directory * directory = OpenPath(path,&dir_sector);
-
-	DEBUG('F',"Eliminando el directorio %s y su contenido\n",path);
+    DEBUG('F', "Eliminando el directorio %s y su contenido\n", path);
     freeMap = new Bitmap(NUM_SECTORS);
     freeMap->FetchFrom(freeMapFile);
 
-	folder_sector = directory->Remove(name);
+    folder_sector = directory->Remove(name);
 
-	if(folder_sector){
-		Directory * folder = new Directory(NUM_DIR_ENTRIES);
-		OpenFile * folder_file = new OpenFile(folder_sector);
-		folder->FetchFrom(folder_file);
-		folder->Clean(freeMap);
-		FileHeader *header = new FileHeader;
-		header->FetchFrom(folder_sector);
-		header->Deallocate(freeMap);
-		freeMap->Clear(folder_sector);
-		delete header;
-	}
+    if (folder_sector) {
+        Directory * folder     = new Directory(NUM_DIR_ENTRIES);
+        OpenFile * folder_file = new OpenFile(folder_sector);
+        folder->FetchFrom(folder_file);
+        folder->Clean(freeMap);
+        FileHeader * header = new FileHeader;
+        header->FetchFrom(folder_sector);
+        header->Deallocate(freeMap);
+        freeMap->Clear(folder_sector);
+        delete header;
+    }
 
-	// Flush to disk.
-    if(dir_sector==DIRECTORY_SECTOR){
+    // Flush to disk.
+    if (dir_sector == DIRECTORY_SECTOR) {
         directory->WriteBack(directoryFile);
-    }else{
+    } else {
         OpenFile * f = new OpenFile(dir_sector);
         directory->WriteBack(f);
         delete f;
     }
-	freeMap->WriteBack(freeMapFile);
+    freeMap->WriteBack(freeMapFile);
 
     delete freeMap;
     delete directory;
 
-	return true;
-}
+    return true;
+} // FileSystem::RemoveDir
 
 bool
-FileSystem::CheckPath(const char * _path){
+FileSystem::CheckPath(const char * _path)
+{
+    ASSERT(_path != nullptr);
 
-	ASSERT(_path!=nullptr);
+    const char * path = CheckRoot(_path);
 
-	const char * path = CheckRoot(_path);
+    int _sec = 0;
+    Directory * directory = OpenPath(path, &_sec);
 
-	int _sec = 0;
-	Directory * directory = OpenPath(path,&_sec);
+    if (directory != nullptr) {
+        delete directory;
+        return true;
+    }
 
-	if(directory != nullptr){
-		delete directory;
-		return true;
-	}
-
-	return false;
+    return false;
 }

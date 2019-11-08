@@ -9,7 +9,7 @@ typedef struct Filenode {
     char *      name;
     unsigned    users = 0, sector = 0, lectores = 0;
     // Para leer y escribir de forma segura
-	Lock * Dir_Lock,*File_Lock;
+    Lock *      Dir_Lock, * File_Lock;
     Semaphore * Can_Write, * Can_Read;
     friend bool operator == (const Filenode &x, const Filenode &y){
         return x.sector == y.sector;

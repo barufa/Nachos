@@ -37,5 +37,5 @@ main(void)
 
     // And then we are done.
     Exit(C[DIM - 1][DIM - 1]);
-    //Result:1872
+    // Result:1872
 }

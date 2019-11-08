@@ -13,19 +13,25 @@
 
 typedef coffSectionHeader CoffSection;
 
-size_t CoffSectionAddr(const CoffSection *sh);
+size_t
+CoffSectionAddr(const CoffSection * sh);
 
-bool CoffSectionEmpty(const CoffSection *sh);
+bool
+CoffSectionEmpty(const CoffSection * sh);
 
 // Returns a dynamically allocated string.  It should be freed by the caller
 // when no longer needed.
-char *CoffSectionName(const CoffSection *sh);
+char *
+CoffSectionName(const CoffSection * sh);
 
-size_t CoffSectionSize(const CoffSection *sh);
+size_t
+CoffSectionSize(const CoffSection * sh);
 
-void CoffSectionPrint(const CoffSection *sh);
+void
+CoffSectionPrint(const CoffSection * sh);
 
-char *CoffSectionRead(const CoffSection *sh, FILE *f, char **error);
+char *
+CoffSectionRead(const CoffSection * sh, FILE * f, char ** error);
 
 
-#endif
+#endif // ifndef NACHOS_BIN_COFF_SECTION__H

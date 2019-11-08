@@ -128,20 +128,22 @@ public:
     bool
     Expand(unsigned sector, unsigned size);
 
-	bool
-	MakeDir(const char * path);
+    bool
+    MakeDir(const char * path);
 
-	bool
-	CheckPath(const char * path);
+    bool
+    CheckPath(const char * path);
 
 private:
     OpenFile * freeMapFile; ///< Bit map of free disk blocks, represented as a
     ///< file.
     OpenFile * directoryFile; ///< “Root” directory -- list of file names,
     ///< represented as a file.
-	Directory * OpenPath(const char * path,int * sector);
-	///Borra un directorio
-	bool RemoveDir(const char * path);
+    Directory *
+    OpenPath(const char * path, int * sector);
+    ///Borra un directorio
+    bool
+    RemoveDir(const char * path);
 };
 
 #endif /* ifdef FILESYS_STUB */

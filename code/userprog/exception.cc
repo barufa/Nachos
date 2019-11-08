@@ -35,18 +35,14 @@ Copy(const char * unixFile, const char * nachosFile);
 static void
 IncrementPC()
 {
-    unsigned pc,old,next,curr;
+    unsigned pc;
 
-    pc = machine->ReadRegister(PC_REG);
-    old = pc;
+    pc  = machine->ReadRegister(PC_REG);
     machine->WriteRegister(PREV_PC_REG, pc);
-    pc = machine->ReadRegister(NEXT_PC_REG);
-    curr = pc;
+    pc  = machine->ReadRegister(NEXT_PC_REG);
     machine->WriteRegister(PC_REG, pc);
-    pc += 4;
-    next = pc;
+    pc  += 4;
     machine->WriteRegister(NEXT_PC_REG, pc);
-    DEBUG('S',"%s\tPrePC:%u PC:%u NextPC:%u\n",currentThread->GetName(),old,curr,next);
 }
 
 /// Do some default behavior for an unexpected exception.
@@ -158,7 +154,7 @@ SyscallHandler(ExceptionType _et)
                         OpenFile * file = currentThread->GetFile(id);
                         char * bff      = new char[size];
                         ReadBufferFromUser(buffer, bff, size);
-		                r = file->Write(bff, size);
+                        r = file->Write(bff, size);
                         delete bff;
                     }
                     break;
@@ -213,22 +209,23 @@ SyscallHandler(ExceptionType _et)
         }
         case SC_EXEC: {// Codeado
             DEBUG('S', "Calling SC_EXEC.\n");
-            int nameaddr    = arg1;
-            int argv        = arg2;
-            int join_flag   = arg3;
-            int r           = -1;
-            void * argvs    = (void *)SaveArgs(argv);
+            int nameaddr  = arg1;
+            int argv      = arg2;
+            int join_flag = arg3;
+            int r         = -1;
+            void * argvs  = (void *) SaveArgs(argv);
 
             char * filename = new char[FILE_NAME_MAX_LEN + 1];
 
             if (ReadStringFromUser(nameaddr, filename, FILE_NAME_MAX_LEN)) {
                 DEBUG('e', "Opening %s file to execute\n", filename);
-                DEBUG('e', "The program is executing with join_flag=%d\n",join_flag);
+                DEBUG('e', "The program is executing with join_flag=%d\n",
+                  join_flag);
                 OpenFile * executable = fileSystem->Open(filename);
                 Thread * newThread    = new Thread("Child_Thread", join_flag);
                 newThread->space = new AddressSpace(executable);
                 r = newThread->pid;
-                newThread->Fork(run_program, (void *)argvs);
+                newThread->Fork(run_program, (void *) argvs);
             }
             machine_ret(r);
             break;

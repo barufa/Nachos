@@ -313,4 +313,4 @@ Port::Receive(int * msg)
       currentThread->GetName(), *msg);
     num_tot--;
     internal_lock->Release();
-}
+} // Port::Receive

@@ -16,8 +16,8 @@ extern char mem[];
 extern int TRACE, Regtrace;
 
 // Machine registers
-static int Reg[32];  // General purpose registers.
-static int HI, LO;   // mul/div machine registers.
+static int Reg[32]; // General purpose registers.
+static int HI, LO;  // mul/div machine registers.
 
 // Condition-code calculations
 
@@ -45,7 +45,7 @@ CcSub(int rr, int op1, int op2)
     Z = rr == 0;
     V = B31((op1 & ~op2 & ~rr) | (~op1 & op2 & rr));
     C = (unsigned) op1 < (unsigned) op2;
-    //C = B31((~op1 & op2) | (rr & (~op1 | op2)));
+    // C = B31((~op1 & op2) | (rr & (~op1 | op2)));
 }
 
 static inline void
@@ -65,7 +65,6 @@ CcMulscc(int rr, int op1, int op2)
     V = B31((op1 & op2 & ~rr) | (~op1 & ~op2 & rr));
     C = B31((op1 & op2) | (~rr & (op1 | op2)));
 }
-
 
 // Debug aid.
 void
@@ -91,7 +90,6 @@ DumpReg(void)
     printf("\n");
 }
 
-
 /// Unimplemented.
 static void
 Unimplemented(void)
@@ -101,11 +99,11 @@ Unimplemented(void)
 }
 
 void
-RunProgram(unsigned startpc, int argc, char *argv[])
+RunProgram(unsigned startpc, int argc, char * argv[])
 {
     int aci, ai;
     int instr, pc, xpc, npc;
-    int i;  // Temporary for local stuff.
+    int i; // Temporary for local stuff.
     int icount;
 
     // `i`, `aci` and `ai` are virtual addresses.
@@ -150,60 +148,56 @@ RunProgram(unsigned startpc, int argc, char *argv[])
     //     |---------| <- i
     //     |         |
 
-    icount = 0;
-    pc = startpc; npc = pc + 4;
-    i = MEMSIZE - 1024 + memoffset;  // Initial SP value.
-    Reg[29] = i;                     // Initialize SP.
+    icount  = 0;
+    pc      = startpc;
+    npc     = pc + 4;
+    i       = MEMSIZE - 1024 + memoffset; // Initial SP value.
+    Reg[29] = i;                          // Initialize SP.
     // Setup argc and argv stuff (icky!)
     Store(i, argc);
     aci = i + 4;
     ai  = aci + 32;
     for (unsigned j = 0; j < argc; ++j) {
         strncpy((mem - memoffset) + ai, argv[j],
-                MEMSIZE + memoffset - ai);
+          MEMSIZE + memoffset - ai);
         Store(aci, ai);
         aci += 4;
-        ai += strlen(argv[j]) + 1;
+        ai  += strlen(argv[j]) + 1;
     }
 
     for (;;) {
         icount++;
-        xpc = pc;
-        pc = npc;
-        npc = pc + 4;
-        instr = IFetch(xpc);
-        Reg[0] = 0;  // Force r0 = 0.
+        xpc    = pc;
+        pc     = npc;
+        npc    = pc + 4;
+        instr  = IFetch(xpc);
+        Reg[0] = 0; // Force r0 = 0.
 
-        if (instr != 0)  // Eliminate no-ops.
-        {
-            switch (instr >> 26 & 0x0000003F)
-            {
-                case I_SPECIAL:
-                {
-                    switch (instr & 0x0000003F)
-                    {
-
+        if (instr != 0) { // Eliminate no-ops.
+            switch (instr >> 26 & 0x0000003F) {
+                case I_SPECIAL: {
+                    switch (instr & 0x0000003F) {
                         case I_SLL:
                             Reg[rd(instr)] = Reg[rt(instr)] << shamt(instr);
                             break;
                         case I_SRL:
                             Reg[rd(instr)] = (unsigned) Reg[rt(instr)]
-                                             >> shamt(instr);
+                              >> shamt(instr);
                             break;
                         case I_SRA:
                             Reg[rd(instr)] = Reg[rt(instr)] >> shamt(instr);
                             break;
                         case I_SLLV:
                             Reg[rd(instr)] = Reg[rt(instr)]
-                                             << Reg[rs(instr)];
+                                << Reg[rs(instr)];
                             break;
                         case I_SRLV:
                             Reg[rd(instr)] =
-                            (unsigned) Reg[rt(instr)] >> Reg[rs(instr)];
+                              (unsigned) Reg[rt(instr)] >> Reg[rs(instr)];
                             break;
                         case I_SRAV:
                             Reg[rd(instr)] = Reg[rt(instr)]
-                                             >> Reg[rs(instr)];
+                              >> Reg[rs(instr)];
                             break;
                         case I_JR:
                             npc = Reg[rs(instr)];
@@ -238,24 +232,24 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             int t1l, t1h, t2l, t2h;
                             int neg;
 
-                            t1 = Reg[rs(instr)];
-                            t2 = Reg[rt(instr)];
+                            t1  = Reg[rs(instr)];
+                            t2  = Reg[rt(instr)];
                             neg = 0;
                             if (t1 < 0) {
-                                t1 = -t1;
+                                t1  = -t1;
                                 neg = !neg;
                             }
                             if (t2 < 0) {
-                                t2 = -t2;
+                                t2  = -t2;
                                 neg = !neg;
                             }
-                            LO = t1 * t2;
+                            LO  = t1 * t2;
                             t1l = t1 & 0xFFFF;
                             t1h = (t1 >> 16) & 0xFFFF;
                             t2l = t2 & 0xFFFF;
                             t2h = (t2 >> 16) & 0xFFFF;
-                            HI = t1h * t2h
-                                 + (t1h * t2l >> 16) + (t2h * t1l >> 16);
+                            HI  = t1h * t2h
+                              + (t1h * t2l >> 16) + (t2h * t1l >> 16);
                             if (neg) {
                                 LO = ~LO;
                                 HI = ~HI;
@@ -269,15 +263,15 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             int t1, t2;
                             int t1l, t1h, t2l, t2h;
 
-                            t1 = Reg[rs(instr)];
-                            t2 = Reg[rt(instr)];
+                            t1  = Reg[rs(instr)];
+                            t2  = Reg[rt(instr)];
                             t1l = t1 & 0xFFFF;
                             t1h = t1 >> 16 & 0xFFFF;
                             t2l = t2 & 0xFFFF;
                             t2h = t2 >> 16 & 0xFFFF;
-                            LO = t1 * t2;
-                            HI = t1h * t2h
-                                 + (t1h * t2l >> 16) + (t2h * t1l >> 16);
+                            LO  = t1 * t2;
+                            HI  = t1h * t2h
+                              + (t1h * t2l >> 16) + (t2h * t1l >> 16);
                             break;
                         }
                         case I_DIV:
@@ -286,9 +280,9 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             break;
                         case I_DIVU:
                             LO = (unsigned) Reg[rs(instr)]
-                                 / (unsigned) Reg[rt(instr)];
+                              / (unsigned) Reg[rt(instr)];
                             HI = (unsigned) Reg[rs(instr)]
-                                 % (unsigned) Reg[rt(instr)];
+                              % (unsigned) Reg[rt(instr)];
                             break;
 
                         case I_ADD:
@@ -310,7 +304,7 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             break;
                         case I_NOR:
                             Reg[rd(instr)] = ~(Reg[rs(instr)]
-                                               | Reg[rt(instr)]);
+                              | Reg[rt(instr)]);
                             break;
 
                         case I_SLT:
@@ -318,7 +312,7 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             break;
                         case I_SLTU:
                             Reg[rd(instr)] = (unsigned) Reg[rs(instr)]
-                                             < (unsigned) Reg[rt(instr)];
+                              < (unsigned) Reg[rt(instr)];
                             break;
                         default:
                             Unimplemented();
@@ -326,10 +320,8 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                     }
                 } break;
 
-                case I_BCOND:
-                {
-                    switch (rt(instr))  // This field encodes the op.
-                    {
+                case I_BCOND: {
+                    switch (rt(instr)) { // This field encodes the op.
                         case I_BLTZ:
                             if (Reg[rs(instr)] < 0)
                                 npc = xpc + 4 + (immed(instr) << 2);
@@ -353,7 +345,6 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                             Unimplemented();
                             break;
                     }
-
                 } break;
 
                 case I_J:
@@ -361,7 +352,7 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                     break;
                 case I_JAL:
                     Reg[31] = xpc + 8;
-                    npc = (xpc & 0xF0000000) | (instr & 0x03FFFFFF) << 2;
+                    npc     = (xpc & 0xF0000000) | (instr & 0x03FFFFFF) << 2;
                     break;
                 case I_BEQ:
                     if (Reg[rs(instr)] == Reg[rt(instr)])
@@ -390,7 +381,7 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                     break;
                 case I_SLTIU:
                     Reg[rt(instr)] = (unsigned) Reg[rs(instr)]
-                                     < (unsigned) immed(instr);
+                      < (unsigned) immed(instr);
                     break;
                 case I_ANDI:
                     Reg[rt(instr)] = Reg[rs(instr)] & immed(instr);
@@ -415,7 +406,7 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                     i = Reg[rs(instr)] + immed(instr);
                     Reg[rt(instr)] &= -1 >> 8 * (-i & 0x03);
                     Reg[rt(instr)] |= Fetch(i & 0xFFFFFFFC)
-                                      << 8 * (i & 0x03);
+                        << 8 * (i & 0x03);
                     break;
                 case I_LW:
                     Reg[rt(instr)] = Fetch(Reg[rs(instr)] + immed(instr));
@@ -470,10 +461,10 @@ RunProgram(unsigned startpc, int argc, char *argv[])
             }
         }
 
-#ifdef DEBUG
+        #ifdef DEBUG
         printf("%d(%X) = %d(%X) op %d(%X)\n",
-               Reg[rd], Reg[rd], op1, op1, op2, op2);
-#endif
+          Reg[rd], Reg[rd], op1, op1, op2, op2);
+        #endif
         if (TRACE) {
             DumpAscii(instr, xpc);
             printf("\n");
@@ -481,4 +472,4 @@ RunProgram(unsigned startpc, int argc, char *argv[])
                 DumpReg();
         }
     }
-}
+} /* RunProgram */

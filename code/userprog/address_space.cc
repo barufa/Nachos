@@ -25,7 +25,7 @@
 unsigned AddressSpace::last_page = 0;
 unsigned AddressSpace::next_id   = 0;
 // Valores altos para usar como flags
-const unsigned IN_SWAP      = 4294967294;
+const unsigned IN_SWAP = 4294967294;
 
 /// Do little endian to big endian conversion on the bytes in the object file
 /// header, in case the file was generated on a little endian machine, and we
@@ -68,8 +68,9 @@ AddressSpace::AddressSpace(OpenFile * _executable)
     ASSERT(executable != nullptr);
 
     executable->ReadAt((char *) &noffH, sizeof noffH, 0);
-    if (noffH.noffMagic != NOFF_MAGIC && WordToHost(noffH.noffMagic) == NOFF_MAGIC)
-		SwapHeader(&noffH);
+    if (noffH.noffMagic != NOFF_MAGIC &&
+      WordToHost(noffH.noffMagic) == NOFF_MAGIC)
+        SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFF_MAGIC);
 
     unsigned size = noffH.code.size + noffH.initData.size
@@ -143,7 +144,8 @@ AddressSpace::InitRegisters()
     // allocated the stack; but subtract off a bit, to make sure we do not
     // accidentally reference off the end!
     machine->WriteRegister(STACK_REG, numPages * PAGE_SIZE - 16);
-    DEBUG('a', "Initializing stack register to %u\n", numPages * PAGE_SIZE - 16);
+    DEBUG('a', "Initializing stack register to %u\n",
+      numPages * PAGE_SIZE - 16);
 }
 
 bool
@@ -171,7 +173,8 @@ AddressSpace::LoadPage(unsigned vpn)
             uint32_t code_begin = noffH.code.virtualAddr;
             uint32_t code_end   = noffH.code.virtualAddr + noffH.code.size;
             uint32_t data_begin = noffH.initData.virtualAddr;
-            uint32_t data_end   = noffH.initData.virtualAddr + noffH.initData.size;
+            uint32_t data_end   = noffH.initData.virtualAddr
+              + noffH.initData.size;
             uint32_t VirtualAddr  = pageTable[vpn].virtualPage * PAGE_SIZE;
             uint32_t PhysicalAddr = pageTable[vpn].physicalPage * PAGE_SIZE;
             uint32_t inFileAddr   = 0;
@@ -189,7 +192,7 @@ AddressSpace::LoadPage(unsigned vpn)
         coremap->store(vpn, this);
     }
     return pageTable[vpn].valid;
-}
+} // AddressSpace::LoadPage
 
 bool
 AddressSpace::Update_TLB(unsigned vpn)
