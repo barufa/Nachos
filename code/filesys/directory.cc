@@ -58,8 +58,8 @@ Directory::Get_Lock()
         node->Dir_Lock->Acquire();
         DEBUG('f', "Tomando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
           currentThread->GetName());
-        // OpenFile * Dir_file = new OpenFile(sectornumber);
-        // FetchFrom(Dir_file);
+        OpenFile * Dir_file = new OpenFile(sectornumber);
+        FetchFrom(Dir_file);
     }
 }
 
@@ -69,8 +69,6 @@ Directory::Release_Lock()
     if (sectornumber != NOT_ASSIGNED) {
         ASSERT(filetable->find(sectornumber) != nullptr);
         Filenode * node = filetable->find(sectornumber);
-        // OpenFile * Dir_file = new OpenFile(sectornumber);
-        // WriteBack(Dir_file);
         DEBUG('f', "Liberando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
           currentThread->GetName());
         node->Dir_Lock->Release();

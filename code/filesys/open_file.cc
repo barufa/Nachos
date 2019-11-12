@@ -194,13 +194,10 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
 
     // Read in all the full and partial sectors that we need.
     buf = new char [numSectors * SECTOR_SIZE];
-    // Bitmap * freeMap = fileSystem->Get_freeMapFile();
-    // hdr->UpdateFreeMap(freeMap);//Necesario?
     for (unsigned i = firstSector; i <= lastSector; i++) {
         synchDisk->ReadSector(hdr->ByteToSector(i * SECTOR_SIZE),
           &buf[(i - firstSector) * SECTOR_SIZE]);
     }
-    // delete freeMap;
     // Copy the part we want.
     memcpy(into, &buf[position - firstSector * SECTOR_SIZE], numBytes);
     delete [] buf;
@@ -253,14 +250,10 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
     memcpy(&buf[position - firstSector * SECTOR_SIZE], from, numBytes);
 
     // Write modified sectors back.
-    // Bitmap * freeMap = fileSystem->Get_freeMapFile();
-    // hdr->UpdateFreeMap(freeMap);//Necesario?
     for (unsigned i = firstSector; i <= lastSector; i++) {
         synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
           &buf[(i - firstSector) * SECTOR_SIZE]);
     }
-
-    // delete freeMap;
     delete [] buf;
     return numBytes;
 } // OpenFile::WriteAt

@@ -120,7 +120,9 @@ PrepareArguments(char * line, char ** argv, unsigned argvSize)
         ;
 
     // Se que line[start]!=ARG_SEPARATOR
-    for (i = start; i < MAX_LINE_SIZE && line[start] != '\0' && line[i] != '\0'; i++)
+    for (i = start;
+      i < MAX_LINE_SIZE && line[start] != '\0' && line[i] != '\0';
+      i++)
     {
         if (line[i] == ARG_SEPARATOR) {
             if (argCount == argvSize) {
@@ -184,7 +186,8 @@ main(void)
 {
     const OpenFileId INPUT  = CONSOLE_INPUT;
     const OpenFileId OUTPUT = CONSOLE_OUTPUT;
-    char root_line[MAX_LINE_SIZE + 1] = { 'u', 's', 'e', 'r', 'l', 'a', 'n', 'd', '/' };
+    char root_line[MAX_LINE_SIZE
+    + 1]        = { 'u', 's', 'e', 'r', 'l', 'a', 'n', 'd', '/' };
     char * line = &root_line[9];
     char * argv[MAX_ARG_COUNT + 1];
     int background, last_ret = 0;

@@ -24,8 +24,8 @@ static const char * sector_empty[SECTOR_SIZE];
 ///   (usually, `DISK`).
 SynchDisk::SynchDisk(const char * name)
 {
-    lock      = new Lock("synch disk lock");
-    disk      = new CacheDisk(name);
+    lock = new Lock("synch disk lock");
+    disk = new CacheDisk(name);
 }
 
 /// De-allocate data structures needed for the synchronous disk abstraction.

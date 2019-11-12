@@ -168,6 +168,7 @@ Condition::~Condition()
         f->V();
         delete f;
     }
+    internal->Release();
     delete q_threads;
     delete internal;
 }

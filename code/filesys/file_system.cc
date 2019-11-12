@@ -136,7 +136,7 @@ FileSystem::OpenPath(const char * __path, int * _sector)
     ASSERT(_sector != nullptr);
 
     const char * _path = CheckRoot(__path);
-    DEBUG('I',"_path: \"%s\"",_path);
+    DEBUG('I', "_path: \"%s\"", _path);
     OpenFile * dir_file = nullptr;
     int sector = DIRECTORY_SECTOR;
     Directory * dir = new Directory(NUM_DIR_ENTRIES);
@@ -713,6 +713,13 @@ FileSystem::MakeDir(const char * _path)
     bool success = true;
 
     DEBUG('F', "Creando el directorio %s en %s\n", name, parent_path);
+
+    if (directory == nullptr ||
+      directory->Find(name, true) != -1 ||
+      directory->Find(name, false) != -1)
+    {
+        return false;
+    }
 
     directory->Get_List();
 

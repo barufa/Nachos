@@ -18,7 +18,7 @@ main(void)
     Write("Start Writer 2\n", strlen("Start Writer 2\n"), CONSOLE_OUTPUT);
     for (i = 0; i < 20; i++) {
         Write("Test Writer 2 \n", strlen("Test Writer 2 \n"), id);
-        for (j = 0; j < 1000; j++);
+        for (j = 0; j < 100; j++);
     }
     Write("Finish Writer 2\n", strlen("Finish Writer 2\n"), CONSOLE_OUTPUT);
     Close(id);

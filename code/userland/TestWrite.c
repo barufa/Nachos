@@ -31,7 +31,7 @@ main(int argc, char * argv[])
     PUT("Start Writer 1\n");
     for (i = 0; i < 30; i++) {
         Write("Test Writer 1 \n", strlen("Test Writer 1 \n"), id);
-        for (j = 0; j < 5000; j++);
+        for (j = 0; j < 50; j++);
     }
     Close(id);
     PUT("Finish Writer 1\n");

@@ -9,11 +9,11 @@
 
 const unsigned CACHE_SIZE = 64;
 
-typedef struct{
-    char * data;
-    bool modified;
+typedef struct {
+    char *   data;
+    bool     modified;
     unsigned sector;
-}SectorCache;
+} SectorCache;
 
 class CacheDisk {
 public:
@@ -40,8 +40,8 @@ public:
     RequestDone();
 
 private:
-    Disk * disk;           ///< Raw disk device.
-    List<SectorCache> * cache;
+    Disk * disk; ///< Raw disk device.
+    List < SectorCache > *cache;
     Semaphore * semaphore;
 
     SectorCache *
@@ -51,7 +51,7 @@ private:
     CacheRemove();
 
     bool
-    IsOnCache(int sectorNumber,SectorCache ** Sec);
+    IsOnCache(int sectorNumber, SectorCache ** Sec);
 
     void
     InternalWrite(int sectorNumber, const char * data);

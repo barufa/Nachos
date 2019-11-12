@@ -58,4 +58,3 @@ polish: clean
 uncrustify:
 	export UNCRUSTIFY_CONFIG='../style-c-cpp.cfg'
 	find . \( -name "*.cpp" -o -name "*.c" -o -name "*.cc" -o -name "*.h" -o -name "*.hh" \) -exec uncrustify --no-backup {} +
-	find . \( -name "*.cpp" -o -name "*.c" -o -name "*.cc" -o -name "*.h" -o -name "*.hh" \) -exec uncrustify --no-backup {} +

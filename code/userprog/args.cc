@@ -62,7 +62,7 @@ WriteArgs(char ** args)
         DEBUG('e', "Writing argv[%d]=%s in SP: %d\n", i, args[i], sp);
         WriteStringToUser(args[i], sp); // Write the string there.
         args_address[i] = sp;           // Save the argument's address.
-        delete args[i];                 // Free the memory.
+        delete[] args[i];               // Free the memory.
     }
 
     DEBUG('e', "We have an argc: %d\n", i);
@@ -89,7 +89,7 @@ WriteArgs(char ** args)
     DEBUG('e', "SP points to the address: %d\n", sp);
 
     machine->WriteRegister(STACK_REG, sp);
-    delete args; // Free the array.
+    delete[] args; // Free the array.
 
     DEBUG('e', "argc = %d - argv = %d values in WriteArgs\n", argc, argv);
 

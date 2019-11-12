@@ -37,11 +37,11 @@ IncrementPC()
 {
     unsigned pc;
 
-    pc  = machine->ReadRegister(PC_REG);
+    pc = machine->ReadRegister(PC_REG);
     machine->WriteRegister(PREV_PC_REG, pc);
-    pc  = machine->ReadRegister(NEXT_PC_REG);
+    pc = machine->ReadRegister(NEXT_PC_REG);
     machine->WriteRegister(PC_REG, pc);
-    pc  += 4;
+    pc += 4;
     machine->WriteRegister(NEXT_PC_REG, pc);
 }
 
@@ -146,7 +146,7 @@ SyscallHandler(ExceptionType _et)
                     char * bff = new char[size + 1];
                     ReadBufferFromUser(buffer, bff, size);
                     r = synchConsole->PutString(bff, size);
-                    delete bff;
+                    delete[] bff;
                     break;
                 }
                 default: {
@@ -155,7 +155,7 @@ SyscallHandler(ExceptionType _et)
                         char * bff      = new char[size];
                         ReadBufferFromUser(buffer, bff, size);
                         r = file->Write(bff, size);
-                        delete bff;
+                        delete[] bff;
                     }
                     break;
                 }
@@ -174,6 +174,7 @@ SyscallHandler(ExceptionType _et)
                 r = currentThread->AddFile(file);
             }
 
+            delete[] filename;
             machine_ret(r);
             break;
         }
@@ -227,6 +228,8 @@ SyscallHandler(ExceptionType _et)
                 r = newThread->pid;
                 newThread->Fork(run_program, (void *) argvs);
             }
+
+            delete[] filename;
             machine_ret(r);
             break;
         }
@@ -246,7 +249,7 @@ SyscallHandler(ExceptionType _et)
                     r = synchConsole->GetString(bff, size);
                     WriteBufferToUser(buffer, bff, r);
                     DEBUG('S', "Read: %s[%d]\n", bff, r);
-                    delete bff;
+                    delete[] bff;
                     break;
                 }
                 default: {
@@ -257,7 +260,7 @@ SyscallHandler(ExceptionType _et)
                         r = file->Read(bff, size);
                         WriteBufferToUser(buffer, bff, r);
                         DEBUG('S', "Read: %s", bff);
-                        delete bff;
+                        delete[] bff;
                     }
                     break;
                 }

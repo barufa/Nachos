@@ -248,25 +248,31 @@ void
 AddressSpace::save_page(unsigned vpn)
 {
     TranslationEntry * page = &pageTable[vpn];
+    bool dirty = false;
 
     for (unsigned i = 0; i < TLB_SIZE; i++) {
         if (machine->GetMMU()->Get_Entry(i).virtualPage == vpn) {
             *page       = machine->GetMMU()->Get_Entry(i);
+            dirty       = page->dirty;
             page->valid = false;
+            page->dirty = false;
             machine->GetMMU()->Set_Entry(*page, i);
             break;
         }
     }
     char * mainMemory     = machine->GetMMU()->mainMemory;
     uint32_t PhysicalAddr = page->physicalPage * PAGE_SIZE;
-    swap->WriteAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
 
-    DEBUG('W', "Enviando %u a swap con %x\n", vpn,
-      ((int *) mainMemory)[PhysicalAddr]);
+    if (dirty || !swap_find(vpn)) {
+        swap->WriteAt(&mainMemory[PhysicalAddr], PAGE_SIZE, vpn * PAGE_SIZE);
+        DEBUG('W', "Enviando %u a swap con %x\n", vpn,
+          ((int *) mainMemory)[PhysicalAddr]);
+    }
 
     bitmap->Clear(page->physicalPage);
     memset(&mainMemory[PhysicalAddr], 0, PAGE_SIZE);
     page->valid        = false;
+    page->dirty        = false;
     page->physicalPage = IN_SWAP;
 }
 

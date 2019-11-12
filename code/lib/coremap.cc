@@ -31,10 +31,6 @@ aux_get_sz(PageContent pc)
     size++;
 }
 
-// ~ void aux_get_prt(PageContent pc){
-// ~ DEBUG('W',"\t(%u,%u,%u)\n",pc.space,pc.vpn,pc.ppn);
-// ~ }
-
 ////////////////////////////////////////////////////////////////////////////////
 
 CoreMap::CoreMap()

@@ -45,8 +45,8 @@ public:
     ClearSector(int sectorNumber);
 
 private:
-    CacheDisk * disk;           ///< Raw disk device.
-    Lock * lock; ///< Only one read/write request can be sent to the disk at
+    CacheDisk * disk; ///< Raw disk device.
+    Lock * lock;      ///< Only one read/write request can be sent to the disk at
     ///< a time.
 };
 
