@@ -1,17 +1,11 @@
-Solucionar problema lock de carpetas en filesys
+Solucionar problema Exit magicos en filesys(shell y cat con -d S y Halt)
+	Si bien algunos programas andan, si ejecuto la shell y luego cat la shell hace una llamada a exit(mismo problema que Seba)
+
+Solucionar problema lock de carpetas en filesys(valgrind)
 	Si descomento el codigo de los fecht y write back salta un error.
 	Son necesarios tantos fecths y writebacks?
 
-Solucionar problema de syncronizacion de cache_disk
-	Si lo pongo a correr(correctamente) no termina de sincronizar con el disco al finalizar nachos
-	y arroja un error cuando se destruye el thread de main
-
-Solucionar problema Exit magicos en filesys(shell)
-	Si bien algunos programas andan, si ejecuto la shell y luego cat la shell hace una llamada a exit(mismo problema que Seba)
-
 Utilizar los bits de las paginas en la practica 4 y optimizar con eso
-
-Realizar los opcionales pero interesantes(Hacer un Wraper con cache entre el synch_disk y el disco)
 
 Las banderas de debug estan en cumbia. Escribirlas en thread/main y acomodarlas (a cosas iguales poner las mismas banderas).
 

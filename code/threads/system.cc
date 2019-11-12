@@ -214,11 +214,9 @@ Initialize(int argc, char ** argv)
 void
 Cleanup()
 {
-    DEBUG('i', "Cleaning up...\n");
+    DEBUG('I', "Cleaning up...\n");
 
     // 2007, Jose Miguel Santos Espino
-    delete preemptiveScheduler;
-
     #ifdef NETWORK
     delete postOffice;
     #endif
@@ -242,6 +240,8 @@ Cleanup()
     delete timer;
     delete scheduler;
     delete interrupt;
+
+    delete preemptiveScheduler;
 
     exit(0);
 }

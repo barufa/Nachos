@@ -47,20 +47,22 @@ CacheDisk::CacheDisk(const char * name)
 
 CacheDisk::~CacheDisk()
 {
+    DEBUG('I', "Inside ~CacheDisk()\n");
     while(!cache->IsEmpty()){
         CacheRemove();
     }
     delete cache;
     delete disk;
     delete semaphore;
+    DEBUG('I', "Leaving ~CacheDisk()\n");
 }
 
 void
 CacheDisk::ReadSector(int sectorNumber, char * data)
 {
     ASSERT(data != nullptr);
-    // SectorCache * sec = CacheAdd(sectorNumber);
-    // memcpy(data,sec->data,SECTOR_SIZE);
+    SectorCache * sec = CacheAdd(sectorNumber);
+    memcpy(data,sec->data,SECTOR_SIZE);
     InternalRead(sectorNumber,data);
 }
 
@@ -68,9 +70,9 @@ void
 CacheDisk::WriteSector(int sectorNumber, const char * data)
 {
     ASSERT(data != nullptr);
-    // SectorCache * sec = CacheAdd(sectorNumber);
-    // memcpy(sec->data,data,SECTOR_SIZE);
-    // sec->modified = true;
+    SectorCache * sec = CacheAdd(sectorNumber);
+    memcpy(sec->data,data,SECTOR_SIZE);
+    sec->modified = true;
     InternalWrite(sectorNumber,data);
 }
 
@@ -92,10 +94,11 @@ CacheDisk::CacheAdd(int sectorNumber){
         InternalRead(s->sector,s->data);
         s->modified = false;
         cache->Append(*s);
-    }else{
+    }else if(s!=NULL){
         //Move sector to the end
+        SectorCache cache_item = *s;
         cache->Remove(*s);
-        cache->Append(*s);
+        cache->Append(cache_item);
     }
 
     return s;
@@ -110,7 +113,7 @@ CacheDisk::CacheRemove(){
         if(s.modified){
             InternalWrite(s.sector,s.data);
         }
-        delete s.data;
+        delete[] s.data;
     }
 }
 

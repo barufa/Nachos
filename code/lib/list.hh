@@ -26,6 +26,7 @@ public:
 
     // Initialize a list element.
     ListElement(Item itemPtr, int sortKey);
+    ~ListElement();
 
     ListElement * next; ///< Next element on list, null if this is the last.
     int key;            ///< Priority, for a sorted list.
@@ -106,6 +107,11 @@ ListElement < Item > ::ListElement(Item anItem, int sortKey)
     item = anItem;
     key  = sortKey;
     next = nullptr; // Assume we will put it at the end of the list.
+}
+
+template < class Item >
+ListElement < Item > ::~ListElement(){
+    key = 0;
 }
 
 /// Initialize a list, empty to start with.
@@ -208,7 +214,7 @@ List < Item > ::Remove(Item item)
             if (last == ptr) {
                 last = prev_ptr;
             }
-            delete ptr;
+            // delete ptr;
             return;
         }
     }

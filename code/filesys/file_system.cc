@@ -136,7 +136,7 @@ FileSystem::OpenPath(const char * __path, int * _sector)
     ASSERT(_sector != nullptr);
 
     const char * _path = CheckRoot(__path);
-
+    DEBUG('I',"_path: \"%s\"",_path);
     OpenFile * dir_file = nullptr;
     int sector = DIRECTORY_SECTOR;
     Directory * dir = new Directory(NUM_DIR_ENTRIES);
@@ -165,7 +165,7 @@ FileSystem::OpenPath(const char * __path, int * _sector)
     }
     *_sector = sector;
 
-    delete path;
+    delete[] path;
     return dir;
 } // FileSystem::OpenPath
 

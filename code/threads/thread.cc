@@ -75,7 +75,7 @@ Thread::Thread(const char * threadName, bool j_flag, int _priority)
 /// Nachos.
 Thread::~Thread()
 {
-    DEBUG('t', "Deleting thread \"%s\"\n", name);
+    DEBUG('e', "Deleting thread \"%s\"\n", name);
     ASSERT(this != currentThread);
 
     if (stack != nullptr)
