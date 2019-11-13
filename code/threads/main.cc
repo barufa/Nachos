@@ -63,6 +63,30 @@
 /// limitation of liability and disclaimer of warranty provisions.
 
 
+/// Flags for debugging(with -d):
+/// Threads:    S->semaphore
+///             L->lock
+///             C->conditional variables
+///             P->port(synch)
+///             H->scheduler
+///             T->threads
+///             t->thread_test
+///             I->system
+/// Userprog:   g->args
+///             w->synch console
+///             a->address space
+///             p->preemptive
+///             M->coremap
+/// Filesystem: f->file_header
+///             O->OpenFile
+///             K->Cache_disk
+///             D->directory
+/// Machine:    d->disk
+///             i->interrupt
+///             m->machine
+///             P->mips_sim
+///             N->Network
+
 #include "copyright.h"
 #include "lib/utility.hh"
 #include "system.hh"
@@ -110,7 +134,7 @@ main(int argc, char ** argv)
     int argCount; // The number of arguments for a particular command.
 
     Initialize(argc, argv);
-    DEBUG('t', "Entering main\n");
+
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
         argCount = 1;
         if (!strcmp(*argv, "-z")) { // Print version info and exit.

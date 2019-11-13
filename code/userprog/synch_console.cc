@@ -3,7 +3,7 @@
 SynchConsole::SynchConsole(const char * s, const char * read_buffer,
   const char * write_buffer)
 {
-    DEBUG('a', "Creando %s consola syncronizada\n", s);
+    DEBUG('w', "Creando %s consola syncronizada\n", s);
     console = new Console(read_buffer, write_buffer,
         SynchConsole::CheckCharAvail,
         SynchConsole::WriteDone, this);
@@ -16,7 +16,7 @@ SynchConsole::SynchConsole(const char * s, const char * read_buffer,
 
 SynchConsole::~SynchConsole()
 {
-    DEBUG('a', "Borrando consola %s syncronizada\n", name);
+    DEBUG('w', "Borrando consola %s syncronizada\n", name);
     delete can_read;
     delete write_done;
     delete write;
@@ -27,9 +27,9 @@ SynchConsole::~SynchConsole()
 void
 SynchConsole::PutChar(char ch)
 {
-    DEBUG('a', "%s: Llamando a putchar\n", name);
+    DEBUG('w', "%s: Llamando a putchar\n", name);
     write->Acquire();
-    DEBUG('a', "%s: Escribiendo...\n", name);
+    DEBUG('w', "%s: Escribiendo...\n", name);
     console->PutChar(ch);
     write_done->P();
     write->Release();
@@ -38,10 +38,10 @@ SynchConsole::PutChar(char ch)
 char
 SynchConsole::GetChar()
 {
-    DEBUG('a', "%s: Llamando a getchar\n", name);
+    DEBUG('w', "%s: Llamando a getchar\n", name);
     read->Acquire();
     can_read->P();
-    DEBUG('a', "%s: Leyendo...\n", name);
+    DEBUG('w', "%s: Leyendo...\n", name);
     char ch = console->GetChar();
     read->Release();
 

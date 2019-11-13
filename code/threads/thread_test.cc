@@ -63,7 +63,7 @@ SimpleThreadSem(void * _args)
     Semaphore * f     = (Semaphore *) _args;
 
     f->P();
-    DEBUG('s', "Thread `%s` has entered in the critical zone\n", name);
+    DEBUG('t', "Thread `%s` has entered in the critical zone\n", name);
     for (unsigned num = 0; num <= 10; num++) {
         if (num == 10) {
             printf("!!! Thread `%s` has finished\n", name);
@@ -72,7 +72,7 @@ SimpleThreadSem(void * _args)
             currentThread->Yield();
         }
     }
-    DEBUG('s', "Thread `%s` is leaving the critical zone\n", name);
+    DEBUG('t', "Thread `%s` is leaving the critical zone\n", name);
     f->V();
 }
 
@@ -84,13 +84,13 @@ SimpleThreadLock(void * args_)
     int * s  = ((arg_lock *) args_)->sum;
 
     for (unsigned num = 0; num < 100; num++) {
-        DEBUG('s', "Thread `%s` is trying to enter in the critical zone\n",
+        DEBUG('t', "Thread `%s` is trying to enter in the critical zone\n",
           name);
         l->Acquire();
-        DEBUG('s', "Thread `%s` has entered in the critical zone\n", name);
+        DEBUG('t', "Thread `%s` has entered in the critical zone\n", name);
         printf("*** Thread `%s` is running\n", name);
         (*s)++;
-        DEBUG('s', "Thread `%s` is leaving the critical zone\n", name);
+        DEBUG('t', "Thread `%s` is leaving the critical zone\n", name);
         l->Release();
     }
     printf("\t %s finishes with SUM = %d\n", name, *s);

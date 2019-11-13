@@ -49,7 +49,7 @@ Thread::Thread(const char * threadName, bool j_flag, int _priority)
     original_priority = _priority;
     dead              = NULL;
     path              = "/";
-    DEBUG('e', "Thread constructor starting with join_flag=%d - name=%s\n",
+    DEBUG('T', "Thread constructor starting with join_flag=%d - name=%s\n",
       j_flag, name);
     if (join_flag) {
         dead = new Port("Join_Port");
@@ -75,7 +75,7 @@ Thread::Thread(const char * threadName, bool j_flag, int _priority)
 /// Nachos.
 Thread::~Thread()
 {
-    DEBUG('e', "Deleting thread \"%s\"\n", name);
+    DEBUG('T', "Deleting thread \"%s\"\n", name);
     ASSERT(this != currentThread);
 
     if (stack != nullptr)
@@ -114,10 +114,10 @@ Thread::Fork(VoidFunctionPtr func, void * arg)
     ASSERT(func != nullptr);
 
     #ifdef HOST_x86_64
-    DEBUG('t', "Forking thread \"%s\" with func = 0x%lX, arg = %ld\n",
+    DEBUG('T', "Forking thread \"%s\" with func = 0x%lX, arg = %ld\n",
       name, (HostMemoryAddress) func, arg);
     #else
-    DEBUG('t', "Forking thread \"%s\" with func = 0x%X, arg = %d\n",
+    DEBUG('T', "Forking thread \"%s\" with func = 0x%X, arg = %d\n",
       name, (HostMemoryAddress) func, arg);
     #endif
 
@@ -214,7 +214,7 @@ Thread::Finish(int ret)
     interrupt->SetLevel(INT_OFF);
     ASSERT(this == currentThread);
 
-    DEBUG('t', "Finishing thread \"%s\"\n", GetName());
+    DEBUG('T', "Finishing thread \"%s\"\n", GetName());
     if (join_flag) {
         dead->Send(ret);
     }
@@ -228,13 +228,13 @@ int
 Thread::Join()
 {
     if (join_flag) {
-        DEBUG('e', "The Thread::Join method is joining - name=%s\n",
+        DEBUG('T', "The Thread::Join method is joining - name=%s\n",
           currentThread->GetName());
-        DEBUG('t', "%s is waiting \"%s\" to finishes\n",
+        DEBUG('T', "%s is waiting \"%s\" to finishes\n",
           currentThread->GetName(), GetName());
         int msm = 0;
         dead->Receive(&msm);
-        DEBUG('t', "Joining with %d\n", msm);
+        DEBUG('T', "Joining with %d\n", msm);
         delete dead;
         dead = nullptr;
         // con delete dead aca me aseguro de que viva hasta que main termine de usarlo
@@ -267,7 +267,7 @@ Thread::Yield()
 
     ASSERT(this == currentThread);
 
-    DEBUG('t', "Yielding thread \"%s\"\n", GetName());
+    DEBUG('T', "Yielding thread \"%s\"\n", GetName());
 
     Thread * nextThread = scheduler->FindNextToRun();
     if (nextThread != nullptr) {
@@ -298,7 +298,7 @@ Thread::Sleep()
     ASSERT(this == currentThread);
     ASSERT(interrupt->GetLevel() == INT_OFF);
 
-    DEBUG('t', "Sleeping thread \"%s\"\n", GetName());
+    DEBUG('T', "Sleeping thread \"%s\"\n", GetName());
 
     Thread * nextThread;
     status = BLOCKED;
@@ -392,7 +392,7 @@ Thread::RestoreUserState()
 OpenFileId
 Thread::AddFile(OpenFile * file)
 {
-    DEBUG('a', "%s: Adding a file\n", currentThread->GetName());
+    DEBUG('T', "%s: Adding a file\n", currentThread->GetName());
     ASSERT(file != NULL);
     return DescriptorTable->Add(file);
 }
@@ -414,14 +414,14 @@ Thread::IsOpenFile(OpenFileId fId)
 OpenFile *
 Thread::RemoveFile(OpenFileId fId)
 {
-    DEBUG('a', "%s: removing a file\n", currentThread->GetName());
+    DEBUG('T', "%s: removing a file\n", currentThread->GetName());
     return DescriptorTable->Remove(fId);
 }
 
 void
 Thread::ResetTable()
 {
-    DEBUG('a', "%s: reset descriptortable\n", currentThread->GetName());
+    DEBUG('T', "%s: reset descriptortable\n", currentThread->GetName());
     delete DescriptorTable;
     DescriptorTable = new Table<OpenFile *>();
     // DescriptorTable->Add(0);//Adding CONSOLE_INPUT

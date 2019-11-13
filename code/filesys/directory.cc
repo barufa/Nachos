@@ -56,7 +56,7 @@ Directory::Get_Lock()
         ASSERT(filetable->find(sectornumber) != nullptr);
         Filenode * node = filetable->find(sectornumber);
         node->Dir_Lock->Acquire();
-        DEBUG('f', "Tomando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
+        DEBUG('D', "Tomando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
           currentThread->GetName());
         OpenFile * Dir_file = new OpenFile(sectornumber);
         FetchFrom(Dir_file);
@@ -69,7 +69,7 @@ Directory::Release_Lock()
     if (sectornumber != NOT_ASSIGNED) {
         ASSERT(filetable->find(sectornumber) != nullptr);
         Filenode * node = filetable->find(sectornumber);
-        DEBUG('f', "Liberando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
+        DEBUG('D', "Liberando Dir Lock:%x Thread:%s\n", node->Dir_Lock,
           currentThread->GetName());
         node->Dir_Lock->Release();
     }
@@ -116,12 +116,6 @@ Directory::FetchFrom(OpenFile * file)
     if (filetable->find(sectornumber) == nullptr) {
         filetable->add_file("Dir", sectornumber);
     }
-    // DEBUG('G',"**********************************\n");
-    // for (unsigned i = 0; i < raw.tableSize; i++){
-    //  DEBUG('G',"raw.table[%u].inUse = %s\t",i,raw.table[i].inUse? "True":"False");
-    //  DEBUG('G',"raw.table[%u].sector = %u\n",i,raw.table[i].sector);
-    // }
-    // DEBUG('G',"**********************************\n");
 }
 
 /// Write any modifications to the directory back to disk.
@@ -232,7 +226,7 @@ Directory::Remove(const char * name)
     raw.table[i].inUse  = false;
     raw.table[i].isDir  = false;
     raw.table[i].sector = NOT_ASSIGNED;
-    DEBUG('G', "Delete Index %d - Sector %d\n", i, sec);
+    DEBUG('D', "Delete Index %d - Sector %d\n", i, sec);
     Release_Lock();
     return (sec == NOT_ASSIGNED ? 0 : sec);
 }
@@ -247,11 +241,11 @@ Directory::Get_List(const char * ind) const
     strncpy(p, ind, l);
     p[l]     = '\t';
     p[l + 1] = '\0';
-    DEBUG('f', "%sSize: %u\n", ind, raw.tableSize);
+    DEBUG('D', "%sSize: %u\n", ind, raw.tableSize);
     for (unsigned i = 0; i < raw.tableSize; i++) {
-        DEBUG('f', "%sraw.table[%u].inUse = %s\n", ind, i,
+        DEBUG('D', "%sraw.table[%u].inUse = %s\n", ind, i,
           raw.table[i].inUse ? "True" : "False");
-        DEBUG('f', "%sraw.table[%u].isDir = %s\n", ind, i,
+        DEBUG('D', "%sraw.table[%u].isDir = %s\n", ind, i,
           raw.table[i].isDir ? "True" : "False");
         if (raw.table[i].inUse) {
             printf("%s%s: %s\n", ind, raw.table[i].isDir ? "Dir" : "File",
@@ -339,9 +333,9 @@ Directory::Clean(Bitmap * freeMap)
                 delete dir;
                 delete dir_file;
                 delete header;
-                DEBUG('F', "Liberando Carpeta %u\n", raw.table[i].sector);
+                DEBUG('D', "Liberando Carpeta %u\n", raw.table[i].sector);
             } else {
-                DEBUG('F', "Liberando Archivo %u\n", raw.table[i].sector);
+                DEBUG('D', "Liberando Archivo %u\n", raw.table[i].sector);
                 Filenode * node = filetable->find(raw.table[i].sector);
                 if (node != nullptr && node->users != 0) {
                     node->remove = true;

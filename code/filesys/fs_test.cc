@@ -46,7 +46,7 @@ Copy(const char * from, const char * to)
     int fileLength = ftell(fp);
     fseek(fp, 0, 0);
 
-    DEBUG('f', "Copying file %s, size %u, to file %s\n",
+    DEBUG('F', "Copying file %s, size %u, to file %s\n",
       from, fileLength, to);
 
     // Create a Nachos file of the same length.
@@ -70,7 +70,7 @@ Copy(const char * from, const char * to)
     // Close the UNIX and the Nachos files.
     delete openFile;
     fclose(fp);
-    DEBUG('f', "Fin copy %s\n", to);
+    DEBUG('F', "Fin copy %s\n", to);
 } // Copy
 
 /// Print the contents of the Nachos file `name`.

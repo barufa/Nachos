@@ -94,6 +94,8 @@ Initialize(int argc, char ** argv)
 {
     ASSERT(argc == 0 || argv != nullptr);
 
+    DEBUG('I', "Initializing with argc:%d argv:%x...\n",argc,argv);
+
     int argCount;
     const char * debugArgs = "";
     bool randomYield       = false;
@@ -208,6 +210,9 @@ Initialize(int argc, char ** argv)
     #ifdef NETWORK
     postOffice = new PostOffice(netname, rely, 10);
     #endif
+
+    DEBUG('I', "Leaving Initialize()...\n");
+
 } // Initialize
 
 /// Nachos is halting.  De-allocate global data structures.
@@ -242,6 +247,8 @@ Cleanup()
     delete interrupt;
 
     delete preemptiveScheduler;
+
+    DEBUG('I', "Leaving Cleanup()...\n");
 
     exit(0);
 }

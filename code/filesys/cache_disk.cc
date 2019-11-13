@@ -47,14 +47,14 @@ CacheDisk::CacheDisk(const char * name)
 
 CacheDisk::~CacheDisk()
 {
-    DEBUG('I', "Inside ~CacheDisk()\n");
+    DEBUG('K', "Inside ~CacheDisk()\n");
     while (!cache->IsEmpty()) {
         CacheRemove();
     }
     delete cache;
     delete disk;
     delete semaphore;
-    DEBUG('I', "Leaving ~CacheDisk()\n");
+    DEBUG('K', "Leaving ~CacheDisk()\n");
 }
 
 void
@@ -81,6 +81,8 @@ SectorCache *
 CacheDisk::CacheAdd(int sectorNumber)
 {
     SectorCache * s = NULL;
+
+    DEBUG('K',"Adding %d to cache\n",sectorNumber);
 
     if (!IsOnCache(sectorNumber, &s)) {
         // Check Size
@@ -112,6 +114,7 @@ CacheDisk::CacheRemove()
 {
     if (!cache->IsEmpty()) {
         SectorCache s = cache->Pop();
+        DEBUG('K',"Removing %d from cache\n",s.sector);
         // Sincronizo de ser necesario
         if (s.modified) {
             InternalWrite(s.sector, s.data);

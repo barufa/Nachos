@@ -29,7 +29,7 @@ SaveArgs(int address)
         return nullptr;
     }
 
-    DEBUG('e', "Saving %u command line arguments from parent process.\n", i);
+    DEBUG('g', "Saving %u command line arguments from parent process.\n", i);
 
     char ** ret = new char * [i]; // Allocate an array of `i` pointers. We
                                   // know that `i` will always be at least 1.
@@ -48,7 +48,7 @@ WriteArgs(char ** args)
 {
     ASSERT(args != nullptr);
 
-    DEBUG('e', "Writing command line arguments into child process.\n");
+    DEBUG('g', "Writing command line arguments into child process.\n");
     int argc, argv;
     // Start writing the arguments where the current SP points.
     int args_address[MAX_ARG_COUNT];
@@ -59,13 +59,13 @@ WriteArgs(char ** args)
         if (args[i] == NULL) // If the last was reached, terminate.
             break;
         sp -= strlen(args[i]) + 1; // Decrease SP (leave one byte for \0).
-        DEBUG('e', "Writing argv[%d]=%s in SP: %d\n", i, args[i], sp);
+        DEBUG('g', "Writing argv[%d]=%s in SP: %d\n", i, args[i], sp);
         WriteStringToUser(args[i], sp); // Write the string there.
         args_address[i] = sp;           // Save the argument's address.
         delete[] args[i];               // Free the memory.
     }
 
-    DEBUG('e', "We have an argc: %d\n", i);
+    DEBUG('g', "We have an argc: %d\n", i);
     // getting the number of arguments we got
     argc = i;
     ASSERT(i < MAX_ARG_COUNT);
@@ -77,21 +77,21 @@ WriteArgs(char ** args)
         if (j == 0) argv = sp + 4 * j;
         // Save the address of the j-th argument counting from the end down
         // to the beginning.
-        DEBUG('e', "Writing value: %d in memory address: %d\n", args_address[j],
+        DEBUG('g', "Writing value: %d in memory address: %d\n", args_address[j],
           sp + 4 * j);
         machine->WriteMem(sp + 4 * j, 4, args_address[j]);
     }
 
-    DEBUG('e', "Writing null in memory address: %d\n", sp + 4 * i);
+    DEBUG('g', "Writing null in memory address: %d\n", sp + 4 * i);
     machine->WriteMem(sp + 4 * i, 4, 0); // The last is null.
 
     sp -= 16; // Make room for the “register saves”.
-    DEBUG('e', "SP points to the address: %d\n", sp);
+    DEBUG('g', "SP points to the address: %d\n", sp);
 
     machine->WriteRegister(STACK_REG, sp);
     delete[] args; // Free the array.
 
-    DEBUG('e', "argc = %d - argv = %d values in WriteArgs\n", argc, argv);
+    DEBUG('g', "argc = %d - argv = %d values in WriteArgs\n", argc, argv);
 
     int * argumentos = new int[2];
     argumentos[0] = argc;

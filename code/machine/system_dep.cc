@@ -246,7 +246,7 @@ AssignNameToSocket(const char * socketName, int sockID)
     InitSocketName(&uName, socketName);
     retVal = bind(sockID, (struct sockaddr *) &uName, sizeof uName);
     ASSERT(retVal >= 0);
-    DEBUG('n', "Created socket %s\n", socketName);
+    DEBUG('I', "Created socket %s\n", socketName);
 }
 
 /// Delete the UNIX file name we assigned to our IPC port, on cleanup.

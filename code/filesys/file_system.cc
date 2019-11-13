@@ -90,7 +90,7 @@ getParent(const char * path)
 
     strncpy(parent, path, PATH_MAX_LEN);
 
-    DEBUG('f', "Buscando padre de %s\n", path);
+    DEBUG('F', "Buscando padre de %s\n", path);
 
     int pos = strlen(parent) - 1;
     if (parent[pos] == '/') {
@@ -136,14 +136,14 @@ FileSystem::OpenPath(const char * __path, int * _sector)
     ASSERT(_sector != nullptr);
 
     const char * _path = CheckRoot(__path);
-    DEBUG('I', "_path: \"%s\"", _path);
+    DEBUG('F', "_path: \"%s\"", _path);
     OpenFile * dir_file = nullptr;
     int sector = DIRECTORY_SECTOR;
     Directory * dir = new Directory(NUM_DIR_ENTRIES);
     char * path = new char[PATH_MAX_LEN], * p;
     strncpy(path, _path + 1, strlen(_path) - 1);
     p = path;
-    DEBUG('f', "Abriendo %s\n", path);
+    DEBUG('F', "Abriendo %s\n", path);
 
     dir->FetchFrom(directoryFile);
     unsigned l = strlen(path);
@@ -152,10 +152,10 @@ FileSystem::OpenPath(const char * __path, int * _sector)
             path[i] = '\0';
             sector  = dir->Find(p, true);
             if (sector == -1) {
-                DEBUG('f', "No existe %s en %s\n", p, _path);
+                DEBUG('F', "No existe %s en %s\n", p, _path);
                 return nullptr;
             } else {
-                DEBUG('f', "Accediendo a directorio %s\n", p);
+                DEBUG('F', "Accediendo a directorio %s\n", p);
                 dir_file = new OpenFile(sector);
                 dir->FetchFrom(dir_file);
                 delete dir_file;
@@ -180,14 +180,14 @@ FileSystem::OpenPath(const char * __path, int * _sector)
 /// * `format` -- should we initialize the disk?
 FileSystem::FileSystem(bool format)
 {
-    DEBUG('f', "Initializing the file system.\n");
+    DEBUG('F', "Initializing the file system.\n");
     if (format) {
         Bitmap * freeMap       = new Bitmap(NUM_SECTORS);
         Directory * directory  = new Directory(NUM_DIR_ENTRIES);
         FileHeader * mapHeader = new FileHeader;
         FileHeader * dirHeader = new FileHeader;
 
-        DEBUG('f', "Formatting the file system.\n");
+        DEBUG('F', "Formatting the file system.\n");
 
         // First, allocate space for FileHeaders for the directory and bitmap
         // (make sure no one else grabs these!)
@@ -205,7 +205,7 @@ FileSystem::FileSystem(bool format)
         // the file header off of disk (and currently the disk has garbage on
         // it!).
 
-        DEBUG('f', "Writing headers back to disk.\n");
+        DEBUG('F', "Writing headers back to disk.\n");
         mapHeader->WriteBack(FREE_MAP_SECTOR);
         dirHeader->WriteBack(DIRECTORY_SECTOR);
 
@@ -222,7 +222,7 @@ FileSystem::FileSystem(bool format)
         // sectors on the disk have been allocated for the file headers and
         // to hold the file data for the directory and bitmap.
 
-        DEBUG('f', "Writing bitmap and directory back to disk.\n");
+        DEBUG('F', "Writing bitmap and directory back to disk.\n");
         freeMap->WriteBack(freeMapFile); // flush changes to disk
         directory->WriteBack(directoryFile);
 
@@ -289,13 +289,13 @@ FileSystem::Create(const char * _path, unsigned initialSize)
     bool success;
     const char * name = getName(path);
 
-    DEBUG('f', "Creating file %s, size %u\n", name, initialSize);
+    DEBUG('F', "Creating file %s, size %u\n", name, initialSize);
 
     if (directory == nullptr ||
       directory->Find(name, true) != -1 ||
       directory->Find(name, false) != -1)
     {
-        DEBUG('f', "No encuentra el directorio o el nombre ya existe\n");
+        DEBUG('F', "No encuentra el directorio o el nombre ya existe\n");
         success = false; // File is already in directory.
     } else {
         freeMap = new Bitmap(NUM_SECTORS);
@@ -328,7 +328,7 @@ FileSystem::Create(const char * _path, unsigned initialSize)
     }
     delete directory;
     if (success) {
-        DEBUG('f', "Archivo %s creado\n", path);
+        DEBUG('F', "Archivo %s creado\n", path);
     }
 
     return success;
@@ -353,7 +353,7 @@ FileSystem::Open(const char * _path)
     Directory * directory = OpenPath(path, &dir_sector);
     const char * name     = getName(path);
 
-    DEBUG('f', "Opening file %s en %s\n", name, path);
+    DEBUG('F', "Opening file %s en %s\n", name, path);
     sector = directory->Find(name);
     if (sector > 1) {// `name` was found in directory.
         Filenode * node = filetable->find(sector);
@@ -434,7 +434,7 @@ FileSystem::Remove(const char * _path)
     }
     delete directory;
 
-    DEBUG('f', "Se elimino el archivo\n");
+    DEBUG('F', "Se elimino el archivo\n");
 
     return true;
 } // FileSystem::Remove
@@ -468,11 +468,11 @@ AddToShadowBitmap(unsigned sector, Bitmap * map)
     ASSERT(map != nullptr);
 
     if (map->Test(sector)) {
-        DEBUG('f', "Sector %u was already marked.\n", sector);
+        DEBUG('F', "Sector %u was already marked.\n", sector);
         return false;
     }
     map->Mark(sector);
-    DEBUG('f', "Marked sector %u.\n", sector);
+    DEBUG('F', "Marked sector %u.\n", sector);
     return true;
 }
 
@@ -480,7 +480,7 @@ static bool
 CheckForError(bool value, const char * message)
 {
     if (!value)
-        DEBUG('f', message);
+        DEBUG('F', message);
     return !value;
 }
 
@@ -502,7 +502,7 @@ CheckFileHeader(const RawFileHeader * rh, unsigned num, Bitmap * shadowMap)
 
     bool error = false;
 
-    DEBUG('f',
+    DEBUG('F',
       "Checking file header %u.  File size: %u bytes, number of sectors: %u.\n",
       num, rh->numBytes, rh->numSectors);
     error |= CheckForError(rh->numSectors >= DivRoundUp(rh->numBytes,
@@ -523,7 +523,7 @@ CheckBitmaps(const Bitmap * freeMap, const Bitmap * shadowMap)
     bool error = false;
 
     for (unsigned i = 0; i < NUM_SECTORS; i++) {
-        DEBUG('f', "Checking sector %u. Original: %u, shadow: %u.\n",
+        DEBUG('F', "Checking sector %u. Original: %u, shadow: %u.\n",
           i, freeMap->Test(i), shadowMap->Test(i));
         error |= CheckForError(freeMap->Test(i) == shadowMap->Test(i),
             "Inconsistent bitmap.");
@@ -542,31 +542,31 @@ CheckDirectory(const RawDirectory * rd, Bitmap * shadowMap)
     const char * knownNames[NUM_DIR_ENTRIES];
 
     for (unsigned i = 0; i < NUM_DIR_ENTRIES; i++) {
-        DEBUG('f', "Checking direntry: %u.\n", i);
+        DEBUG('F', "Checking direntry: %u.\n", i);
         const DirectoryEntry * e = &rd->table[i];
 
         if (e->inUse) {
             if (strlen(e->name) > FILE_NAME_MAX_LEN) {
-                DEBUG('f', "Filename too long.\n");
+                DEBUG('F', "Filename too long.\n");
                 error = true;
             }
 
             // Check for repeated filenames.
-            DEBUG('f', "Checking for repeated names.  Name count: %u.\n",
+            DEBUG('F', "Checking for repeated names.  Name count: %u.\n",
               nameCount);
             bool repeated = false;
             for (unsigned j = 0; j < nameCount; j++) {
-                DEBUG('f', "Comparing \"%s\" and \"%s\".\n",
+                DEBUG('F', "Comparing \"%s\" and \"%s\".\n",
                   knownNames[j], e->name);
                 if (strcmp(knownNames[j], e->name) == 0) {
-                    DEBUG('f', "Repeated filename.\n");
+                    DEBUG('F', "Repeated filename.\n");
                     repeated = true;
                     error    = true;
                 }
             }
             if (!repeated) {
                 knownNames[nameCount] = e->name;
-                DEBUG('f', "Added \"%s\" at %u.\n", e->name, nameCount);
+                DEBUG('F', "Added \"%s\" at %u.\n", e->name, nameCount);
                 nameCount++;
             }
 
@@ -587,19 +587,19 @@ CheckDirectory(const RawDirectory * rd, Bitmap * shadowMap)
 bool
 FileSystem::Check()
 {
-    DEBUG('f', "Performing filesystem check\n");
+    DEBUG('F', "Performing filesystem check\n");
     bool error = false;
 
     Bitmap * shadowMap = new Bitmap(NUM_SECTORS);
     shadowMap->Mark(FREE_MAP_SECTOR);
     shadowMap->Mark(DIRECTORY_SECTOR);
 
-    DEBUG('f', "Checking bitmap's file header.\n");
+    DEBUG('F', "Checking bitmap's file header.\n");
 
     FileHeader * bitH = new FileHeader;
     const RawFileHeader * bitRH = bitH->GetRaw();
     bitH->FetchFrom(FREE_MAP_SECTOR);
-    DEBUG('f', "  File size: %u bytes, expected %u bytes.\n"
+    DEBUG('F', "  File size: %u bytes, expected %u bytes.\n"
       "  Number of sectors: %u, expected %u.\n",
       bitRH->numBytes, FREE_MAP_FILE_SIZE,
       bitRH->numSectors, FREE_MAP_FILE_SIZE / SECTOR_SIZE);
@@ -611,7 +611,7 @@ FileSystem::Check()
     error |= CheckFileHeader(bitRH, FREE_MAP_SECTOR, shadowMap);
     delete bitH;
 
-    DEBUG('f', "Checking directory.\n");
+    DEBUG('F', "Checking directory.\n");
 
     FileHeader * dirH = new FileHeader;
     const RawFileHeader * dirRH = dirH->GetRaw();
@@ -628,12 +628,12 @@ FileSystem::Check()
     delete dir;
 
     // The two bitmaps should match.
-    DEBUG('f', "Checking bitmap consistency.\n");
+    DEBUG('F', "Checking bitmap consistency.\n");
     error |= CheckBitmaps(freeMap, shadowMap);
     delete shadowMap;
     delete freeMap;
 
-    DEBUG('f', error ? "Filesystem check succeeded.\n" :
+    DEBUG('F', error ? "Filesystem check succeeded.\n" :
       "Filesystem check failed.\n");
 
     return !error;
@@ -726,7 +726,7 @@ FileSystem::MakeDir(const char * _path)
     if (directory->Find(name,
       true) != -1 || directory->Find(name, false) != -1)
     {
-        DEBUG('f', "El directorio %s ya existe\n", name);
+        DEBUG('F', "El directorio %s ya existe\n", name);
         delete directory;
         return false;
     }

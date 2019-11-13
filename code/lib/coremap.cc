@@ -46,6 +46,7 @@ CoreMap::~CoreMap()
 void
 CoreMap::store(unsigned vpn, AddressSpace * space)
 {
+    DEBUG('M',"Thread:%s is saving vpn:%u in the coremap\n",currentThread->GetName(),vpn);
     ASSERT(currentThread->space == space);
     PageContent pc;
     pc.space = space;
@@ -64,7 +65,7 @@ void
 CoreMap::remove(unsigned page)
 {
     PageContent pc;
-
+    DEBUG('M',"Removing %u from the coremap\n",page);
     if (find(page, &pc)) {
         core_map->Remove(pc);
     }
@@ -101,7 +102,7 @@ void
 CoreMap::clean_space(AddressSpace * space)
 {
     PageContent pc;
-
+    DEBUG('M',"Cleaning space of %s\n",currentThread->GetName());
     while (get_space_addr(space, &pc)) {
         core_map->Remove(pc);
     }

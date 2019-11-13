@@ -89,7 +89,7 @@ FileHeader::Allocate(Bitmap * freeMap, unsigned fileSize)
     for (unsigned i = 0; i < min(raw.numSectors, NUM_DIRECT); i++) {
         raw.dataSectors[i] = freeMap->Find();
         synchDisk->ClearSector(raw.dataSectors[i]);
-        DEBUG('F', "Tomo %u\n", raw.dataSectors[i]);
+        DEBUG('f', "Tomo %u\n", raw.dataSectors[i]);
     }
 
     DEBUG('f', "raw.numSectors = %u\n", raw.numSectors);
@@ -123,9 +123,9 @@ FileHeader::Allocate(Bitmap * freeMap, unsigned fileSize)
     }
 
     for (unsigned i = 0; i < NUM_DIRECT; i++) {
-        DEBUG('G', "Direct[%u] = %u\n", i, raw.dataSectors[i]);
+        DEBUG('f', "Direct[%u] = %u\n", i, raw.dataSectors[i]);
     }
-    DEBUG('G', "Unref = %u\n", raw.unrefSectors);
+    DEBUG('f', "Unref = %u\n", raw.unrefSectors);
     raw.unrefSectors = NOT_ASSIGNED;
 
     return true;
@@ -139,13 +139,13 @@ FileHeader::Deallocate(Bitmap * freeMap)
 {
     ASSERT(freeMap != nullptr);
     for (unsigned i = 0; i < NUM_DIRECT; i++) {
-        DEBUG('G', "Direct[%u] = %u\n", i, raw.dataSectors[i]);
+        DEBUG('f', "Direct[%u] = %u\n", i, raw.dataSectors[i]);
     }
     // Borro los sectores directos
     for (unsigned i = 0; i < min(raw.numSectors, NUM_DIRECT); i++) {
         if (raw.dataSectors[i] != NOT_ASSIGNED) {
             ASSERT(freeMap->Test(raw.dataSectors[i]));
-            DEBUG('G', "Liberando %u\n", raw.dataSectors[i]);
+            DEBUG('f', "Liberando %u\n", raw.dataSectors[i]);
             freeMap->Clear(raw.dataSectors[i]);
             raw.dataSectors[i] = NOT_ASSIGNED;
         }
@@ -157,11 +157,11 @@ FileHeader::Deallocate(Bitmap * freeMap)
         unsigned * unrf_lv2 = new unsigned[32];
         synchDisk->ReadSector(raw.unrefSectors, (char *) unrf_lv1);
         for (unsigned i = 0; i < 32; i++) {
-            DEBUG('G', "Level1[%u] = %u\n", i, unrf_lv1[i]);
+            DEBUG('f', "Level1[%u] = %u\n", i, unrf_lv1[i]);
             if (unrf_lv1[i] != NOT_ASSIGNED && freeMap->Test(unrf_lv1[i])) {
                 synchDisk->ReadSector(unrf_lv1[i], (char *) unrf_lv2);
                 for (unsigned j = 0; j < 32; j++) {
-                    DEBUG('G', "Level2[%u] = %u\n", j, unrf_lv2[j]);
+                    DEBUG('f', "Level2[%u] = %u\n", j, unrf_lv2[j]);
                     if (unrf_lv2[j] != NOT_ASSIGNED &&
                       freeMap->Test(unrf_lv2[j]))
                     {
@@ -186,12 +186,9 @@ FileHeader::Deallocate(Bitmap * freeMap)
 void
 FileHeader::FetchFrom(unsigned sector)
 {
-    DEBUG('G', "\tReading %u\n", sector);
+    DEBUG('f', "\tReading %u\n", sector);
     sectornumber = sector;
     synchDisk->ReadSector(sector, (char *) this);
-    // for(unsigned i = 0;i<NUM_DIRECT;i++){
-    //  DEBUG('G',"Data[%u]:%u\n",i,raw.dataSectors[i]);
-    // }
 }
 
 /// Write the modified contents of the file header back to disk.
@@ -202,10 +199,7 @@ FileHeader::WriteBack(unsigned sector)
 {
     sectornumber = sector;
     synchDisk->WriteSector(sector, (char *) this);
-    DEBUG('G', "\tWriting %u\n", sector);
-    // for(unsigned i = 0;i<NUM_DIRECT;i++){
-    //  DEBUG('G',"Data[%u]:%u\n",i,raw.dataSectors[i]);
-    // }
+    DEBUG('f', "\tWriting %u\n", sector);
 }
 
 /// Return which disk sector is storing a particular byte within the file.

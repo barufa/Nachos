@@ -1,10 +1,4 @@
 Solucionar problema Exit magicos en filesys(shell y cat con -d S y Halt)
 	Si bien algunos programas andan, si ejecuto la shell y luego cat la shell hace una llamada a exit(mismo problema que Seba)
 
-Las banderas de debug estan en cumbia. Escribirlas en thread/main y acomodarlas (a cosas iguales poner las mismas banderas).
-
-Comentar un poco el codigo(o borrar comentarios inutiles)
-
-Identar correctamente el codigo(unificar formato)
-
 Chequear todas la practicas y entregar

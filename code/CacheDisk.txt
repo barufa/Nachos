@@ -1,0 +1,14 @@
+Se opto por realizar la optimizacion de b del ejercicio 4. Para la misma se
+implemento una cache de 64 sectores(que se asume es parte del disco) para
+brindar un acceso rapido a los ultimos sectores que fueron utilizados, ya que
+estos tiene una alta probabilidad de volver a ser usados.
+Para determinar que sector en cache enviar a disco cuando sea necesario, se
+opto por el algoritmo LRU(de forma similar a como funcionaba con el sistema de
+paginacion).
+La implementacion es relativamente simple y directa. Solo hay que agregar un
+objecto que se encargue del manejo de la cache y que se situe entre synch_disk
+y el disco simulado.
+Gracias a esto, podemos acceder varias veces a "los mismos bloques" sin tener
+una gran penalidad en el tiempo de ejecucion. De esta forma, si varios hilos
+se encuentran utilizando los mismo sectores del disco, la mayor parte de los
+accesos se realizan a la cache y no al disco de la maquina.

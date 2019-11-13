@@ -47,7 +47,7 @@ Scheduler::ReadyToRun(Thread * thread)
 
     int priority = thread->GetPriority();
 
-    DEBUG('p', "Putting thread %s with priority %d on ready list\n",
+    DEBUG('H', "Putting thread %s with priority %d on ready list\n",
       thread->GetName(), priority);
     thread->SetStatus(READY);
 
@@ -75,7 +75,7 @@ Scheduler::FindNextToRun()
     }
 
 
-    // DEBUG('A', "****No hay procesos para ejecutar****\n");
+    DEBUG('H', "****No hay procesos para ejecutar****\n");
 
     return NULL;
 }
@@ -112,7 +112,7 @@ Scheduler::Run(Thread * nextThread)
     currentThread = nextThread;        // Switch to the next thread.
     currentThread->SetStatus(RUNNING); // `nextThread` is now running.
 
-    DEBUG('p', "Switching from thread \"%s\" to thread \"%s\"\n",
+    DEBUG('H', "Switching from thread \"%s\" to thread \"%s\"\n",
       oldThread->GetName(), nextThread->GetName());
 
     // This is a machine-dependent assembly language routine defined in
@@ -122,7 +122,7 @@ Scheduler::Run(Thread * nextThread)
 
     SWITCH(oldThread, nextThread);
 
-    DEBUG('p', "Now in thread \"%s\"\n", currentThread->GetName());
+    DEBUG('H', "Now in thread \"%s\"\n", currentThread->GetName());
 
     // If the old thread gave up the processor because it was finishing, we
     // need to delete its carcass.  Note we cannot delete the thread before

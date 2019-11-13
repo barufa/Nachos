@@ -94,7 +94,7 @@ MMU::ReadMem(unsigned addr, unsigned size, int * value)
 {
     ASSERT(value != nullptr);
 
-    DEBUG('a', "Reading VA 0x%X, size %u\n", addr, size);
+    DEBUG('z', "Reading VA 0x%X, size %u\n", addr, size);
 
     unsigned physicalAddress;
     ExceptionType e = Translate(addr, &physicalAddress, size, false);
@@ -122,7 +122,7 @@ MMU::ReadMem(unsigned addr, unsigned size, int * value)
             ASSERT(false);
     }
 
-    DEBUG('a', "\tValue read: %8.8X\n", *value);
+    DEBUG('z', "\tValue read: %8.8X\n", *value);
     return NO_EXCEPTION;
 } // MMU::ReadMem
 
@@ -138,7 +138,7 @@ MMU::ReadMem(unsigned addr, unsigned size, int * value)
 ExceptionType
 MMU::WriteMem(unsigned addr, unsigned size, int value)
 {
-    DEBUG('a', "Writing VA 0x%X, size %u, value 0x%X\n", addr, size, value);
+    DEBUG('z', "Writing VA 0x%X, size %u, value 0x%X\n", addr, size, value);
 
     unsigned physicalAddress;
     ExceptionType e = Translate(addr, &physicalAddress, size, true);
@@ -174,29 +174,16 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry ** entry) const
     ASSERT(entry != nullptr);
     DEBUG('z', "Buscando entrada %u\n", vpn);
 
-    // ~ for(int i=0;i<NumPages;i++){
-    // ~ unsigned _vpn = i;
-    // ~ unsigned _virt = currentThread->space->pageTable[i].virtualPage;
-    // ~ unsigned _phys = currentThread->space->pageTable[i].physicalPage;
-    // ~ if(_phys == 4294967295){
-    // ~ DEBUG('z',"PageTable[%u] = (%u, No asignada)\n",_vpn,_virt);
-    // ~ } else if(_phys == 4294967294){
-    // ~ DEBUG('z',"PageTable[%u] = (%u, En swap)\n",_vpn,_virt);
-    // ~ }else{
-    // ~ DEBUG('z',"PageTable[%u] = (%u, %u)\n",_vpn,_virt,_phys);
-    // ~ }
-    // ~ }
-
     if (tlb == nullptr) {
         // Use a page table; `vpn` is an index in the table.
 
         if (vpn >= pageTableSize) {
-            DEBUG_CONT('e', "virtual page # %u too large for"
+            DEBUG_CONT('z', "virtual page # %u too large for"
               " page table size %u!\n",
               vpn, pageTableSize);
             return ADDRESS_ERROR_EXCEPTION;
         } else if (!pageTable[vpn].valid) {
-            DEBUG_CONT('a', "virtual page # %u too large for"
+            DEBUG_CONT('z', "virtual page # %u too large for"
               " page table size %u!\n",
               vpn, pageTableSize);
             return PAGE_FAULT_EXCEPTION;
@@ -217,7 +204,7 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry ** entry) const
             }
         // Not found.
         stats->numPageFaults++;
-        DEBUG_CONT('a', "no valid TLB entry found for this virtual page!\n");
+        DEBUG_CONT('z', "no valid TLB entry found for this virtual page!\n");
         return PAGE_FAULT_EXCEPTION; // Really, this is a TLB fault, the
                                      // page may be in memory, but not in
                                      // the TLB.
@@ -257,11 +244,11 @@ MMU::Translate(unsigned virtAddr, unsigned * physAddr,
     // We must have either a TLB or a page table, but not both!
     ASSERT((tlb == nullptr) != (pageTable == nullptr));
 
-    DEBUG('a', "\tTranslate: ");
+    DEBUG('z', "\tTranslate: ");
 
     // Check for alignment errors.
     if ((size == 4 && virtAddr & 0x3) || (size == 2 && virtAddr & 0x1)) {
-        DEBUG_CONT('a', "alignment problem at %u, size %u!\n",
+        DEBUG_CONT('z', "alignment problem at %u, size %u!\n",
           virtAddr, size);
         return ADDRESS_ERROR_EXCEPTION;
     }
@@ -271,7 +258,7 @@ MMU::Translate(unsigned virtAddr, unsigned * physAddr,
     unsigned vpn    = (unsigned) virtAddr / PAGE_SIZE;
     unsigned offset = (unsigned) virtAddr % PAGE_SIZE;
 
-    DEBUG('a', "virtAddr:%u vpn:%u offset:%u\n", virtAddr, vpn, offset);
+    DEBUG('z', "virtAddr:%u vpn:%u offset:%u\n", virtAddr, vpn, offset);
 
     TranslationEntry * entry;
     ExceptionType exception = RetrievePageEntry(vpn, &entry);
@@ -280,7 +267,7 @@ MMU::Translate(unsigned virtAddr, unsigned * physAddr,
 
     if (entry->readOnly && writing) { // Trying to write to a read-only
                                       // page.
-        DEBUG_CONT('a', "%u mapped read-only!\n", virtAddr);
+        DEBUG_CONT('z', "%u mapped read-only!\n", virtAddr);
         return READ_ONLY_EXCEPTION;
     }
 
@@ -289,7 +276,7 @@ MMU::Translate(unsigned virtAddr, unsigned * physAddr,
     // If the `pageFrame` is too big, there is something really wrong!  An
     // invalid translation was loaded into the page table or TLB.
     if (pageFrame >= NUM_PHYS_PAGES) {
-        DEBUG_CONT('a', "frame %u > %u!\n", pageFrame, NUM_PHYS_PAGES);
+        DEBUG_CONT('z', "frame %u > %u!\n", pageFrame, NUM_PHYS_PAGES);
         return BUS_ERROR_EXCEPTION;
     }
 
@@ -300,6 +287,6 @@ MMU::Translate(unsigned virtAddr, unsigned * physAddr,
 
     *physAddr = pageFrame * PAGE_SIZE + offset;
     ASSERT(*physAddr >= 0 && *physAddr + size <= MEMORY_SIZE);
-    DEBUG_CONT('a', "physical address 0x%X\n", *physAddr);
+    DEBUG_CONT('z', "physical address 0x%X\n", *physAddr);
     return NO_EXCEPTION;
 } // MMU::Translate

@@ -71,11 +71,11 @@ Machine::FetchInstruction(Instruction * instr)
         const struct OpString * str = &OP_STRINGS[instr->opCode];
 
         ASSERT(instr->opCode <= MAX_OPCODE);
-        DEBUG('m', "At PC = 0x%X: ", registers[PC_REG]);
-        DEBUG_CONT('m', str->string, instr->RegFromType(str->args[0]),
+        DEBUG('P', "At PC = 0x%X: ", registers[PC_REG]);
+        DEBUG_CONT('P', str->string, instr->RegFromType(str->args[0]),
           instr->RegFromType(str->args[1]),
           instr->RegFromType(str->args[2]));
-        DEBUG_CONT('m', "\n");
+        DEBUG_CONT('P', "\n");
     }
     return true;
 }
@@ -324,7 +324,7 @@ Machine::ExecInstruction(const Instruction * instr)
             break;
 
         case OP_LUI:
-            DEBUG('m', "Executing: LUI r%d,%d\n", instr->rt, instr->extra);
+            DEBUG('P', "Executing: LUI r%d,%d\n", instr->rt, instr->extra);
             registers[instr->rt] = instr->extra << 16;
             break;
 

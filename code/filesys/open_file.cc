@@ -21,6 +21,7 @@
 /// * `sector` is the location on disk of the file header for this file.
 OpenFile::OpenFile(int _sector)
 {
+    DEBUG('O',"Creating OpenFile for sector:%d\n",_sector);
     sector = _sector;
     hdr    = new FileHeader;
     hdr->FetchFrom(sector);
@@ -30,11 +31,13 @@ OpenFile::OpenFile(int _sector)
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
+    DEBUG('O',"Deleting OpenFile for sector:%d\n",sector);
     #ifdef FILESYS
     Filenode * node = filetable->find(sector);
     if (node != nullptr) {
         node->users--;
         if (node->remove && node->users <= 0) {
+            DEBUG('O',"Removing file:%s\n",node->name);
             fileSystem->Remove(node->name);
         }
     }
@@ -115,15 +118,21 @@ OpenFile::Write(const char * into, unsigned numBytes)
 int
 OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 {
+    DEBUG('O',"Inside ReadAt\n");
+
     Filenode * node = filetable->find(sector);
+
 
     hdr->FetchFrom(sector);
 
     if (node != nullptr) {
+        DEBUG('O',"Waiting for read %s\n",node->name);
         node->Can_Read->P();
         node->lectores++;
-        if (node->lectores == 1) // Bloqueo escritura
+        if (node->lectores == 1){ // Bloqueo escritura
+            DEBUG('O',"Disabling writing\n",node->name);
             node->Can_Write->P();
+        }
         node->Can_Read->V();
     }
 
@@ -131,10 +140,14 @@ OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
     if (node != nullptr) {
         node->Can_Read->P();
         node->lectores--;
-        if (node->lectores == 0) // Desbloqueo escritura
+        if (node->lectores == 0){ // Desbloqueo escritura
+            DEBUG('O',"Enabling writing\n",node->name);
             node->Can_Write->V();
+        }
         node->Can_Read->V();
     }
+
+    DEBUG('O',"Leaving ReadAt\n");
 
     return ret;
 }
@@ -142,6 +155,7 @@ OpenFile::ReadAt(char * into, unsigned numBytes, unsigned position)
 int
 OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
 {
+    DEBUG('O',"Inside WriteAt\n");
     if (Length() < position + numBytes) {
         unsigned size = (position + numBytes) - Length() + 1;
         if (!fileSystem->Expand(sector, size)) {
@@ -154,13 +168,17 @@ OpenFile::WriteAt(const char * from, unsigned numBytes, unsigned position)
     hdr->FetchFrom(sector);
 
     if (node != nullptr) {
+        DEBUG('O',"Waiting for write %s\n",node->name);
         node->Can_Write->P();
     }
     int ret = Internal_WriteAt(from, numBytes, position);
 
     if (node != nullptr) {
+        DEBUG('O',"Leaving writing of %s\n",node->name);
         node->Can_Write->V();
     }
+
+    DEBUG('O',"Leaving ReadAt\n");
 
     return ret;
 }
@@ -171,7 +189,6 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
     ASSERT(into != nullptr);
     ASSERT(numBytes >= 0);
 
-    // Why??
     if (numBytes == 0) {
         return numBytes;
     }
@@ -185,7 +202,7 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
 
     if (position + numBytes > fileLength)
         numBytes = fileLength - position;
-    DEBUG('f', "Reading %u bytes at %u, from file of length %u.\n",
+    DEBUG('O', "Reading %u bytes at %u, from file of length %u.\n",
       numBytes, position, fileLength);
 
     firstSector = DivRoundDown(position, SECTOR_SIZE);
@@ -204,7 +221,6 @@ OpenFile::Internal_ReadAt(char * into, unsigned numBytes, unsigned position)
     return numBytes;
 } // OpenFile::Internal_ReadAt
 
-// Agregar los locks y demas
 int
 OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
   unsigned position)
@@ -226,7 +242,7 @@ OpenFile::Internal_WriteAt(const char * from, unsigned numBytes,
             numBytes = fileLength - position;
         }
     }
-    DEBUG('f', "Writing %u bytes at %u, from file of length %u.\n",
+    DEBUG('O', "Writing %u bytes at %u, from file of length %u.\n",
       numBytes, position, fileLength);
 
     firstSector = DivRoundDown(position, SECTOR_SIZE);

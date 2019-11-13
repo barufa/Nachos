@@ -8,7 +8,7 @@ main(int arg, char * argv[])
 
     do {
         Write("Tik\n-->", 7, CONSOLE_OUTPUT);
-        for (i = 0; i < 7000; i++);
+        for (i = 0; i < 15000; i++);
     } while (1);
     Exit(0);
 }
