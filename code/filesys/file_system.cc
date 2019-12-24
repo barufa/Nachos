@@ -585,58 +585,60 @@ CheckDirectory(const RawDirectory * rd, Bitmap * shadowMap)
 } // CheckDirectory
 
 bool
-FileSystem::Check()
+FileSystem::Check() //Obsolete
 {
-    DEBUG('F', "Performing filesystem check\n");
-    bool error = false;
-
-    Bitmap * shadowMap = new Bitmap(NUM_SECTORS);
-    shadowMap->Mark(FREE_MAP_SECTOR);
-    shadowMap->Mark(DIRECTORY_SECTOR);
-
-    DEBUG('F', "Checking bitmap's file header.\n");
-
-    FileHeader * bitH = new FileHeader;
-    const RawFileHeader * bitRH = bitH->GetRaw();
-    bitH->FetchFrom(FREE_MAP_SECTOR);
-    DEBUG('F', "  File size: %u bytes, expected %u bytes.\n"
-      "  Number of sectors: %u, expected %u.\n",
-      bitRH->numBytes, FREE_MAP_FILE_SIZE,
-      bitRH->numSectors, FREE_MAP_FILE_SIZE / SECTOR_SIZE);
-    error |= CheckForError(bitRH->numBytes == FREE_MAP_FILE_SIZE,
-        "Bad bitmap header: wrong file size.\n");
-    error |= CheckForError(
-        bitRH->numSectors == FREE_MAP_FILE_SIZE / SECTOR_SIZE,
-        "Bad bitmap header: wrong number of sectors.\n");
-    error |= CheckFileHeader(bitRH, FREE_MAP_SECTOR, shadowMap);
-    delete bitH;
-
-    DEBUG('F', "Checking directory.\n");
-
-    FileHeader * dirH = new FileHeader;
-    const RawFileHeader * dirRH = dirH->GetRaw();
-    dirH->FetchFrom(DIRECTORY_SECTOR);
-    error |= CheckFileHeader(dirRH, DIRECTORY_SECTOR, shadowMap);
-    delete dirH;
-
-    Bitmap * freeMap = new Bitmap(NUM_SECTORS);
-    freeMap->FetchFrom(freeMapFile);
-    Directory * dir = new Directory(NUM_DIR_ENTRIES);
-    const RawDirectory * rdir = dir->GetRaw();
-    dir->FetchFrom(directoryFile);
-    error |= CheckDirectory(rdir, shadowMap);
-    delete dir;
-
-    // The two bitmaps should match.
-    DEBUG('F', "Checking bitmap consistency.\n");
-    error |= CheckBitmaps(freeMap, shadowMap);
-    delete shadowMap;
-    delete freeMap;
-
-    DEBUG('F', error ? "Filesystem check succeeded.\n" :
-      "Filesystem check failed.\n");
-
-    return !error;
+    DEBUG('F', "This filesystem check is out of date\n");
+    return false;
+    // DEBUG('F', "Performing filesystem check\n");
+    // bool error = false;
+    //
+    // Bitmap * shadowMap = new Bitmap(NUM_SECTORS);
+    // shadowMap->Mark(FREE_MAP_SECTOR);
+    // shadowMap->Mark(DIRECTORY_SECTOR);
+    //
+    // DEBUG('F', "Checking bitmap's file header.\n");
+    //
+    // FileHeader * bitH = new FileHeader;
+    // const RawFileHeader * bitRH = bitH->GetRaw();
+    // bitH->FetchFrom(FREE_MAP_SECTOR);
+    // DEBUG('F', "  File size: %u bytes, expected %u bytes.\n"
+    //   "  Number of sectors: %u, expected %u.\n",
+    //   bitRH->numBytes, FREE_MAP_FILE_SIZE,
+    //   bitRH->numSectors, FREE_MAP_FILE_SIZE / SECTOR_SIZE);
+    // error |= CheckForError(bitRH->numBytes == FREE_MAP_FILE_SIZE,
+    //     "Bad bitmap header: wrong file size.\n");
+    // error |= CheckForError(
+    //     bitRH->numSectors == FREE_MAP_FILE_SIZE / SECTOR_SIZE,
+    //     "Bad bitmap header: wrong number of sectors.\n");
+    // error |= CheckFileHeader(bitRH, FREE_MAP_SECTOR, shadowMap);
+    // delete bitH;
+    //
+    // DEBUG('F', "Checking directory.\n");
+    //
+    // FileHeader * dirH = new FileHeader;
+    // const RawFileHeader * dirRH = dirH->GetRaw();
+    // dirH->FetchFrom(DIRECTORY_SECTOR);
+    // error |= CheckFileHeader(dirRH, DIRECTORY_SECTOR, shadowMap);
+    // delete dirH;
+    //
+    // Bitmap * freeMap = new Bitmap(NUM_SECTORS);
+    // freeMap->FetchFrom(freeMapFile);
+    // Directory * dir = new Directory(NUM_DIR_ENTRIES);
+    // const RawDirectory * rdir = dir->GetRaw();
+    // dir->FetchFrom(directoryFile);
+    // error |= CheckDirectory(rdir, shadowMap);
+    // delete dir;
+    //
+    // // The two bitmaps should match.
+    // DEBUG('F', "Checking bitmap consistency.\n");
+    // error |= CheckBitmaps(freeMap, shadowMap);
+    // delete shadowMap;
+    // delete freeMap;
+    //
+    // DEBUG('F', error ? "Filesystem check succeeded.\n" :
+    //   "Filesystem check failed.\n");
+    //
+    // return !error;
 } // FileSystem::Check
 
 /// Print everything about the file system:
